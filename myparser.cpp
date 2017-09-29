@@ -56,7 +56,6 @@ Expr* eval_binary(Binary* bin) {
 	if((ltype == NODE_FLOAT && rtype == NODE_INT) || (ltype == NODE_INT && rtype == NODE_FLOAT)) {
 		float a = resolve_scalar(lhs);
 		float b = resolve_scalar(rhs);
-		std::cout << "a: " << a << " b: " << b << std::endl;
 
 		switch(op) {
 			case OP_PLUS: return new Float(a + b);
@@ -70,12 +69,12 @@ Expr* eval_binary(Binary* bin) {
 		Vector3* a = (Vector3*)eval_expr(lhs);
 		Vector3* b = (Vector3*)eval_expr(rhs);
 
-		float ax = resolve_float(a->x); 
-		float ay = resolve_float(a->y);
-		float az = resolve_float(a->z);
-		float bx = resolve_float(b->x);
-		float by = resolve_float(b->y);
-		float bz = resolve_float(b->z);
+		float ax = resolve_scalar(a->x); 
+		float ay = resolve_scalar(a->y);
+		float az = resolve_scalar(a->z);
+		float bx = resolve_scalar(b->x);
+		float by = resolve_scalar(b->y);
+		float bz = resolve_scalar(b->z);
 
 		switch(op) {
 			case OP_PLUS: return new Vector3(new Float(ax+bx), new Float(ay+by), new Float(az+bz));
