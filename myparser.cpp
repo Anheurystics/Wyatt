@@ -157,7 +157,7 @@ void eval_stmt(Stmt* stmt) {
 		case NODE_ASSIGN: {
 			Assign* assign = (Assign*)stmt;
 			Expr* rhs = eval_expr(assign->value);
-			variables.insert(std::pair<std::string, Expr*>( assign->ident->name, rhs ));
+			variables[assign->ident->name] = rhs;
 			return;
 		}
 		case NODE_ALLOC: {
@@ -213,46 +213,3 @@ void parse(std::string code) {
 	}
 }
 
-/*
-int main(int, char**) {
-//	YY_BUFFER_STATE buffer = yy_scan_string("<1,0,0> + <2,0,0>\n\0");
-//	yyparse();
-
-	yyin = stdin;
-
-	std::vector<Node*> nodes;
-	int status = yyparse(&nodes); 
-
-	if(status == 0) {
-		for(int it = 0; it < nodes.size(); it++) {
-			Node* root = nodes[it];
-
-			if(root->type >= NODE_EXPR && root->type < NODE_STMT) {
-				Expr* result = eval_expr((Expr*)root);
-				switch(result->type) {
-					case NODE_INT: {
-						Int* i = (Int*)result;	
-						std::cout << "= " << i->value << std::endl;
-						break;
-					}
-					case NODE_FLOAT: {
-						Float* f = (Float*)result;
-						std::cout << std::fixed << std::setprecision(4) << "= " << f->value << std::endl;
-						break;
-					}
-					case NODE_VECTOR3: {
-						Vector3* v = (Vector3*)result;
-						std::cout << std::fixed << std::setprecision(4) << "= <" << resolve_scalar(v->x) << ", " << resolve_scalar(v->y) << ", " << resolve_scalar(v->z) << ">\n";
-					}
-				}
-			}
-
-			if(root->type >= NODE_STMT) {
-				eval_stmt((Stmt*)root);
-			}
-		}
-	}
-
-	return 0;
-}
-*/
