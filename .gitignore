@@ -1,0 +1,5 @@
+moc_*
+ui_mainwindow.h
+*.o
+prototype
+parsercli
