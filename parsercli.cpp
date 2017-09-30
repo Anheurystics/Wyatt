@@ -4,7 +4,9 @@
 
 int main(int, char**) {
 	std::string line;
-	while(std::getline(std::cin, line)) {
+	while(!std::cin.eof()) {
+		std::cout << "> ";
+		std::getline(std::cin, line);
 		parse(line + '\n');
 	}
 
