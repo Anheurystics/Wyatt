@@ -134,6 +134,7 @@ public:
 
 	Upload(Ident* ident, UploadList *list) {
 		type = NODE_UPLOAD;
+		this->ident = ident;
 		this->list = list;
 	}
 };

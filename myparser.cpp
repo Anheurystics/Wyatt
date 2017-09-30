@@ -9,8 +9,6 @@
 
 int yyparse();
 
-YY_BUFFER_STATE* state;
-
 #define resolve_int(n) ((Int*)n)->value
 #define resolve_float(n) ((Float*)n)->value
 #define resolve_scalar(n) ((n->type == NODE_INT)? (float)(resolve_int(n)) : resolve_float(n))
@@ -38,6 +36,7 @@ Expr* eval_binary(Binary* bin) {
 			case OP_MINUS: return new Int(a - b);
 			case OP_MULT: return new Int(a * b);
 			case OP_DIV: return new Float(a / (float)b);
+			default: return 0;
 		}
 	}
 
@@ -50,6 +49,7 @@ Expr* eval_binary(Binary* bin) {
 			case OP_MINUS: return new Float(a - b);
 			case OP_MULT: return new Float(a * b);
 			case OP_DIV: return new Float(a / b);
+			default: return 0;
 		}
 	}
 
@@ -62,6 +62,7 @@ Expr* eval_binary(Binary* bin) {
 			case OP_MINUS: return new Float(a - b);
 			case OP_MULT: return new Float(a * b);
 			case OP_DIV: return new Float(a / b);
+			default: return 0;
 		}
 	}
 
@@ -81,6 +82,7 @@ Expr* eval_binary(Binary* bin) {
 			case OP_MINUS: return new Vector3(new Float(ax-bx), new Float(ay-by), new Float(az-bz));
 			case OP_MULT: return new Float(ax*bx + ay*by + az*bz);
 			case OP_MOD: return new Vector3(new Float(ay*bz-az*by), new Float(az*bx-ax*bz), new Float(ax*by-ay*bx));
+			default: return 0;
 		}
 	}
 
@@ -92,6 +94,7 @@ Expr* eval_binary(Binary* bin) {
 		switch(op) {
 			case OP_MULT: return new Vector3(new Float(ax*b), new Float(ay*b), new Float(az*b));
 			case OP_DIV: return new Vector3(new Float(ax/b), new Float(ay/b), new Float(az/b));
+			default: return 0;
 		}
 	}
 
@@ -103,6 +106,7 @@ Expr* eval_binary(Binary* bin) {
 		switch(op) {
 			case OP_MULT: return new Vector3(new Float(bx*a), new Float(by*a), new Float(bz*a));
 			case OP_DIV: return new Vector3(new Float(bx/a), new Float(by/a), new Float(bz/a));
+			default: return 0;
 		}
 	}
 
@@ -141,6 +145,8 @@ Expr* eval_expr(Expr* node) {
 			Binary* bin = (Binary*)(node);
 			return eval_binary(bin);
 		}
+
+		default: return 0;
 	}
 
 	return 0;
@@ -165,17 +171,18 @@ void eval_stmt(Stmt* stmt) {
 			std::cout << "size: " << upload->list->list.size() << " vectors\n";
 			return;
 		}
+		default: return;
 	}
 }
 
 void parse(std::string code) {
-    YY_BUFFER_STATE buffer = yy_scan_string(code.c_str());
+    yy_scan_string(code.c_str());
 
     std::vector<Node*> nodes;
     int status = yyparse(&nodes);
 
     if(status == 0) {
-		for(int it = 0; it < nodes.size(); it++) {
+		for(unsigned int it = 0; it < nodes.size(); it++) {
 			Node* root = nodes[it];
 
 			if(root->type >= NODE_EXPR && root->type < NODE_STMT) {
@@ -195,6 +202,7 @@ void parse(std::string code) {
 						Vector3* v = (Vector3*)result;
 						std::cout << std::fixed << std::setprecision(4) << "= <" << resolve_scalar(v->x) << ", " << resolve_scalar(v->y) << ", " << resolve_scalar(v->z) << ">\n";
 					}
+					default: return;
 				}
 			}
 

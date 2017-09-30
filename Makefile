@@ -944,6 +944,7 @@ moc_customglwidget.cpp: ../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QOpenGLWidget
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qglyphrun.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qrawfont.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfontdatabase.h \
+		myparser.h \
 		customglwidget.h \
 		moc_predefs.h \
 		../../Qt5.9.0/5.9/gcc_64/bin/moc
@@ -1219,6 +1220,7 @@ ui_mainwindow.h: mainwindow.ui \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qglyphrun.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qrawfont.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfontdatabase.h \
+		myparser.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QPlainTextEdit \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qplaintextedit.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qtwidgetsglobal.h \
@@ -1639,7 +1641,8 @@ mainwindow.o: mainwindow.cpp mainwindow.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextlayout.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qglyphrun.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qrawfont.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfontdatabase.h
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfontdatabase.h \
+		myparser.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o mainwindow.cpp
 
 customglwidget.o: customglwidget.cpp customglwidget.h \
@@ -1784,7 +1787,8 @@ customglwidget.o: customglwidget.cpp customglwidget.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextlayout.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qglyphrun.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qrawfont.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfontdatabase.h
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfontdatabase.h \
+		myparser.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o customglwidget.o customglwidget.cpp
 
 shadereditor.o: shadereditor.cpp shadereditor.h \

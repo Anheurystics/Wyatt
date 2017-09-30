@@ -2,11 +2,13 @@
 #include <string>
 #include "myparser.h"
 
+using namespace std;
+
 int main(int, char**) {
-	std::string line;
-	while(!std::cin.eof()) {
-		std::cout << "> ";
-		std::getline(std::cin, line);
+	string line;
+	while(!cin.eof()) {
+		cout << "> ";
+		getline(cin, line);
 		parse(line + '\n');
 	}
 
