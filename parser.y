@@ -70,8 +70,9 @@ stmt: IDENTIFIER EQUALS expr { $$ = new Assign($1, $3); }
 	;
 
 upload_list: vec3 { $$ = new UploadList($1); }
-	| upload_list vec3 { $1->list.insert($1->list.begin(), $2); } 
-	| upload_list scalar { $1->list.insert($1->list.begin(), $2); }
+	| upload_list vec3 { $1->list.insert($1->list.end(), $2); } 
+    | scalar { $$ = new UploadList($1); }
+	| upload_list scalar { $1->list.insert($1->list.end(), $2); }
 	;
 
 scalar: INT { $$ = $1; }
