@@ -5,11 +5,13 @@
 using namespace std;
 
 int main(int, char**) {
+    MyParser parser;
+
     string line;
     while(!cin.eof()) {
         cout << "> ";
         getline(cin, line);
-        parse(line + '\n');
+        parser.parse(line + '\n');
     }
 
     return 0;

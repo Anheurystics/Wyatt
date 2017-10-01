@@ -20,7 +20,7 @@ class MyParser {
         MyParser();
         std::map<std::string, Expr*> variables;
 
-        void parse(std::string, QOpenGLFunctions*);
+        void parse(std::string);
     private:
         Expr* eval_expr(Expr*);
         Expr* eval_binary(Binary*);

@@ -65,15 +65,8 @@ void CustomGLWidget::updateShaderCode()
 
     //if(editor->getType().compare("fragment") == 0)
     //    fragmentSource = editor->document()->toPlainText().toStdString();
-
-    //if(context()) {
-    //    parser.parse(editor->document()->toPlainText().toStdString() + '\n', context()->functions());
-    //    makeCurrent();
-    //    glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
-    //    doneCurrent();
-    //}
-
-    code = editor->document()->toPlainText().toStdString() + '\n';
+    
+   code = editor->document()->toPlainText().toStdString() + '\n';
     dirtyShaders = true;
     update();
 }
@@ -103,7 +96,7 @@ void CustomGLWidget::paintGL() {
     glClear(GL_COLOR_BUFFER_BIT);
 
     if(dirtyShaders) {
-        parser.parse(code, context()->functions());
+        parser.parse(code);
     }
 
     glUseProgram(program);

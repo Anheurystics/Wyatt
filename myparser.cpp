@@ -170,7 +170,7 @@ void MyParser::eval_stmt(Stmt* stmt) {
     }
 }
 
-void MyParser::parse(std::string code, QOpenGLFunctions* glFuncs) {
+void MyParser::parse(std::string code) {
     YY_BUFFER_STATE state = yy_scan_string(code.c_str());
 
     std::vector<Node*> nodes;
@@ -205,8 +205,6 @@ void MyParser::parse(std::string code, QOpenGLFunctions* glFuncs) {
                     {
                         Vector3* v = (Vector3*)result;
                         std::cout << std::fixed << std::setprecision(4) << "= <" << resolve_scalar(v->x) << ", " << resolve_scalar(v->y) << ", " << resolve_scalar(v->z) << ">\n";
-                        glClearColor(resolve_scalar(v->x), resolve_scalar(v->y), resolve_scalar(v->z), 1.0f);
-                        glClear(GL_COLOR_BUFFER_BIT);
                     }
                     default: return;
                 }
