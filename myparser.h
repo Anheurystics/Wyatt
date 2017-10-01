@@ -7,7 +7,10 @@
 #include <map>
 #include <vector>
 #include <string>
+
+#if !noopengl
 #include <QOpenGLFunctions>
+#endif
 
 #include "parser.h"
 #include "scanner.h"
