@@ -916,13 +916,6 @@ moc_customglwidget.cpp: ../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QOpenGLWidget
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/QObject \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/QScopedPointer \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qopenglversionfunctions.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QOpenGLShaderProgram \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qopenglshaderprogram.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qvector3d.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qvector4d.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qmatrix4x4.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qquaternion.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qgenericmatrix.h \
 		mainwindow.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QMainWindow \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qmainwindow.h \
@@ -1192,13 +1185,6 @@ ui_mainwindow.h: mainwindow.ui \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/QObject \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/QScopedPointer \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qopenglversionfunctions.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QOpenGLShaderProgram \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qopenglshaderprogram.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qvector3d.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qvector4d.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qmatrix4x4.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qquaternion.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qgenericmatrix.h \
 		mainwindow.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QMainWindow \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qmainwindow.h \
@@ -1621,13 +1607,6 @@ mainwindow.o: mainwindow.cpp mainwindow.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/QObject \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/QScopedPointer \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qopenglversionfunctions.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QOpenGLShaderProgram \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qopenglshaderprogram.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qvector3d.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qvector4d.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qmatrix4x4.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qquaternion.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qgenericmatrix.h \
 		shadereditor.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QPlainTextEdit \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qplaintextedit.h \
@@ -1760,13 +1739,6 @@ customglwidget.o: customglwidget.cpp customglwidget.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/QObject \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/QScopedPointer \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qopenglversionfunctions.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QOpenGLShaderProgram \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qopenglshaderprogram.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qvector3d.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qvector4d.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qmatrix4x4.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qquaternion.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qgenericmatrix.h \
 		mainwindow.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QMainWindow \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qmainwindow.h \
@@ -1908,7 +1880,8 @@ shadereditor.o: shadereditor.cpp shadereditor.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfontdatabase.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o shadereditor.o shadereditor.cpp
 
-myparser.o: myparser.cpp parser.h \
+myparser.o: myparser.cpp myparser.h \
+		parser.h \
 		nodes.h \
 		scanner.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o myparser.o myparser.cpp

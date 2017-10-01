@@ -34,6 +34,7 @@ public slots:
 
 private:
     GLuint program;
+    GLuint vertShader, fragShader;
     GLuint vbo;
 
     std::map<std::string, GLuint> buffers;

@@ -11,9 +11,17 @@ CustomGLWidget::CustomGLWidget(QWidget *parent = 0): QOpenGLWidget(parent), prog
 }
 
 void CustomGLWidget::uploadShaders() {
-   	GLuint newProgram = glCreateProgram();
+   	//GLuint newProgram = glCreateProgram();
 
-	GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
+    if(!program) {
+        program = glCreateProgram();
+        vertShader = glCreateShader(GL_VERTEX_SHADER);
+        fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+
+        glAttachShader(program, vertShader);
+        glAttachShader(program, fragShader);
+    }
+
     const char* vSrc = vertexSource.c_str();
     glShaderSource(vertShader, 1, &vSrc, NULL);
     glCompileShader(vertShader);
@@ -28,7 +36,6 @@ void CustomGLWidget::uploadShaders() {
         return;
     }
 
-    GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
     const char* fSrc = fragmentSource.c_str();
     glShaderSource(fragShader, 1, &fSrc, NULL);
     glCompileShader(fragShader);
@@ -40,21 +47,14 @@ void CustomGLWidget::uploadShaders() {
         return;
     }
 
-    glAttachShader(newProgram, vertShader);
-    glAttachShader(newProgram, fragShader);
-    glLinkProgram(newProgram);
+    glLinkProgram(program);
 
-    glGetProgramiv(newProgram, GL_LINK_STATUS, &success);
+    glGetProgramiv(program, GL_LINK_STATUS, &success);
     glGetProgramInfoLog(program, 256, 0, log);
     if(success != GL_TRUE) {
         std::cout << "program error\n-------------\n" << log << std::endl;
         return;
     }
-
-    glDeleteShader(vertShader);
-    glDeleteShader(fragShader);
-    glDeleteProgram(program);
-    program = newProgram;
 }
 
 void CustomGLWidget::updateShaderCode()
