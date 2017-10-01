@@ -40,7 +40,7 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 7 "parser.y" /* yacc.c:1909  */
+#line 8 "parser.y" /* yacc.c:1909  */
 
 #include <string>
 #include <vector>
@@ -72,12 +72,13 @@ void yyerror(std::vector<Node*>* nodes, const char *s);
     GREATER_THAN = 271,
     COMMA = 272,
     EQUALS = 273,
-    ALLOCATE = 274,
-    UPLOAD = 275,
-    MINUS = 276,
-    MULT = 277,
-    DIV = 278,
-    MOD = 279
+    INIT = 274,
+    ALLOCATE = 275,
+    UPLOAD = 276,
+    MINUS = 277,
+    MULT = 278,
+    DIV = 279,
+    MOD = 280
   };
 #endif
 
@@ -86,7 +87,7 @@ void yyerror(std::vector<Node*>* nodes, const char *s);
 
 union YYSTYPE
 {
-#line 24 "parser.y" /* yacc.c:1909  */
+#line 25 "parser.y" /* yacc.c:1909  */
 
 	Expr* eval;
 	Int* ival;
@@ -95,9 +96,11 @@ union YYSTYPE
 	Vector3* vval;
 	Stmt* sval;
 
+    std::vector<Stmt*>* svval;
+
 	UploadList* lval;
 
-#line 101 "parser.h" /* yacc.c:1909  */
+#line 104 "parser.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

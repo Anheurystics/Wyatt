@@ -1,6 +1,7 @@
 %{
 #include <cstdio>
 #include <iostream>
+#include <vector>
 #include <cmath>
 %}
 
@@ -29,6 +30,8 @@ void yyerror(std::vector<Node*>* nodes, const char *s);
 	Vector3* vval;
 	Stmt* sval;
 
+    std::vector<Stmt*>* svval;
+
 	UploadList* lval;
 }
 
@@ -40,7 +43,7 @@ void yyerror(std::vector<Node*>* nodes, const char *s);
 %token PIPE
 %token PLUS LEFT RIGHT
 %token OPEN_PAREN CLOSE_PAREN LESS_THAN GREATER_THAN COMMA EQUALS
-%token ALLOCATE UPLOAD
+%token INIT ALLOCATE UPLOAD
 
 %left PLUS MINUS
 %left MULT DIV MOD
@@ -50,12 +53,14 @@ void yyerror(std::vector<Node*>* nodes, const char *s);
 %type<vval> vec3
 
 %type<sval> stmt
+%type<svval> stmts block init_block
 %type<lval> upload_list
 
 %start program 
 %%
 
 program:
+    | init block loop block program { }
 	| expr SEMICOLON program { nodes->insert(nodes->begin(), $1); }
 	| stmt SEMICOLON program { nodes->insert(nodes->begin(), $1); }
 	;
@@ -68,6 +73,12 @@ stmt: IDENTIFIER EQUALS expr { $$ = new Assign($1, $3); }
 	| ALLOCATE IDENTIFIER { $$ = new Alloc($2); }
 	| IDENTIFIER UPLOAD upload_list { $$ = new Upload($1, $3); }
 	;
+
+stmts: stmt SEMICOLON { std::vector<Stmt*> list; list.insert(list.begin(), $1); $$ = &list; }
+    | stmts stmt SEMICOLON { $1->insert($1->begin(), $2); }
+    ;
+
+block: OPEN_BRACE stmts CLOSE_BRACE { $$ = $2; }
 
 upload_list: vec3 { $$ = new UploadList($1); }
 	| upload_list vec3 { $1->list.insert($1->list.end(), $2); } 
