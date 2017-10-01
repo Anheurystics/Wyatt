@@ -938,9 +938,9 @@ moc_customglwidget.cpp: ../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QOpenGLWidget
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qrawfont.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfontdatabase.h \
 		myparser.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QOpenGLFunctions_3_3_Core \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qopenglfunctions_3_3_core.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QOpenGLVersionFunctions \
+		parser.h \
+		nodes.h \
+		scanner.h \
 		customglwidget.h \
 		moc_predefs.h \
 		../../Qt5.9.0/5.9/gcc_64/bin/moc
@@ -1210,9 +1210,9 @@ ui_mainwindow.h: mainwindow.ui \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qrawfont.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfontdatabase.h \
 		myparser.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QOpenGLFunctions_3_3_Core \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qopenglfunctions_3_3_core.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QOpenGLVersionFunctions \
+		parser.h \
+		nodes.h \
+		scanner.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QPlainTextEdit \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qplaintextedit.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qtwidgetsglobal.h \
@@ -1628,9 +1628,9 @@ mainwindow.o: mainwindow.cpp mainwindow.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qrawfont.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfontdatabase.h \
 		myparser.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QOpenGLFunctions_3_3_Core \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qopenglfunctions_3_3_core.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QOpenGLVersionFunctions
+		parser.h \
+		nodes.h \
+		scanner.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o mainwindow.cpp
 
 customglwidget.o: customglwidget.cpp customglwidget.h \
@@ -1770,9 +1770,9 @@ customglwidget.o: customglwidget.cpp customglwidget.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qrawfont.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfontdatabase.h \
 		myparser.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QOpenGLFunctions_3_3_Core \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qopenglfunctions_3_3_core.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QOpenGLVersionFunctions
+		parser.h \
+		nodes.h \
+		scanner.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o customglwidget.o customglwidget.cpp
 
 shadereditor.o: shadereditor.cpp shadereditor.h \
@@ -1893,8 +1893,8 @@ shadereditor.o: shadereditor.cpp shadereditor.h \
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o shadereditor.o shadereditor.cpp
 
 myparser.o: myparser.cpp myparser.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QOpenGLFunctions_3_3_Core \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qopenglfunctions_3_3_core.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QOpenGLFunctions \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qopenglfunctions.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtguiglobal.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qglobal.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qconfig-bootstrapped.h \
@@ -1918,34 +1918,31 @@ myparser.o: myparser.cpp myparser.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qnumeric.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qversiontagging.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtgui-config.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QOpenGLVersionFunctions \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qopenglversionfunctions.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qhash.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qchar.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qiterator.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qlist.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qalgorithms.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qrefcount.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qarraydata.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qhashfunctions.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qpair.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qbytearraylist.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qbytearray.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qnamespace.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qstring.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qstringbuilder.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qstringlist.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qregexp.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qstringmatcher.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qopengl.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qt_windows.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qopengles2ext.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qopenglext.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qopenglcontext.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qnamespace.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/QObject \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qobject.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qobjectdefs.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qobjectdefs_impl.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qstring.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qchar.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qbytearray.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qrefcount.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qarraydata.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qstringbuilder.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qlist.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qalgorithms.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qiterator.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qhashfunctions.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qpair.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qbytearraylist.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qstringlist.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qregexp.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qstringmatcher.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qcoreevent.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qscopedpointer.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qmetatype.h \
@@ -1955,6 +1952,8 @@ myparser.o: myparser.cpp myparser.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/QScopedPointer \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QSurfaceFormat \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qsurfaceformat.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qopenglversionfunctions.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qhash.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qvariant.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qmap.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qdebug.h \
