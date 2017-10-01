@@ -36,11 +36,11 @@ void yyerror(std::vector<Node*>* nodes, const char *s);
 %token<fval> FLOAT
 %token<idval> IDENTIFIER
 
+%token SEMICOLON OPEN_BRACE CLOSE_BRACE
 %token PIPE
 %token PLUS LEFT RIGHT
 %token OPEN_PAREN CLOSE_PAREN LESS_THAN GREATER_THAN COMMA EQUALS
 %token ALLOCATE UPLOAD
-%token<eval> NEWLINE
 
 %left PLUS MINUS
 %left MULT DIV MOD
@@ -56,8 +56,8 @@ void yyerror(std::vector<Node*>* nodes, const char *s);
 %%
 
 program:
-	| expr NEWLINE program { nodes->insert(nodes->begin(), $1); }
-	| stmt NEWLINE program { nodes->insert(nodes->begin(), $1); }
+	| expr SEMICOLON program { nodes->insert(nodes->begin(), $1); }
+	| stmt SEMICOLON program { nodes->insert(nodes->begin(), $1); }
 	;
 
 expr: scalar { $$ = $1; }

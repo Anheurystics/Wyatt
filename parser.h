@@ -59,23 +59,25 @@ void yyerror(std::vector<Node*>* nodes, const char *s);
     INT = 258,
     FLOAT = 259,
     IDENTIFIER = 260,
-    PIPE = 261,
-    PLUS = 262,
-    LEFT = 263,
-    RIGHT = 264,
-    OPEN_PAREN = 265,
-    CLOSE_PAREN = 266,
-    LESS_THAN = 267,
-    GREATER_THAN = 268,
-    COMMA = 269,
-    EQUALS = 270,
-    ALLOCATE = 271,
-    UPLOAD = 272,
-    NEWLINE = 273,
-    MINUS = 274,
-    MULT = 275,
-    DIV = 276,
-    MOD = 277
+    SEMICOLON = 261,
+    OPEN_BRACE = 262,
+    CLOSE_BRACE = 263,
+    PIPE = 264,
+    PLUS = 265,
+    LEFT = 266,
+    RIGHT = 267,
+    OPEN_PAREN = 268,
+    CLOSE_PAREN = 269,
+    LESS_THAN = 270,
+    GREATER_THAN = 271,
+    COMMA = 272,
+    EQUALS = 273,
+    ALLOCATE = 274,
+    UPLOAD = 275,
+    MINUS = 276,
+    MULT = 277,
+    DIV = 278,
+    MOD = 279
   };
 #endif
 
@@ -95,7 +97,7 @@ union YYSTYPE
 
 	UploadList* lval;
 
-#line 99 "parser.h" /* yacc.c:1909  */
+#line 101 "parser.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

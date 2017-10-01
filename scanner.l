@@ -15,7 +15,7 @@ void yyerror(const char *s);
 
 %%
 
-[ \t]          ;
+[ \t\n]          ;
 [0-9]+\.[0-9]+ { yylval.fval = new Float(float(atof(yytext))); return FLOAT; }
 [0-9]+         { yylval.ival = new Int(atoi(yytext)); return INT; }
 "allocate"     { return ALLOCATE; }
@@ -32,8 +32,10 @@ void yyerror(const char *s);
 "*"            { return MULT; }
 "/"            { return DIV; }
 "|"			   { return PIPE; }
+";"            { return SEMICOLON; }
+"{"            { return OPEN_BRACE; }
+"}"            { return CLOSE_BRACE; }
 "%"            { return MOD; }
-\n             { return NEWLINE; }
 .			   { printf("Illegal token!\n"); }
 %%
 

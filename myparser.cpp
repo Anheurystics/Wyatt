@@ -178,7 +178,6 @@ void MyParser::parse(std::string code) {
 
     yy_delete_buffer(state);
 
-    std::cout << status << std::endl;
     if(status == 0) {
         for(unsigned int it = 0; it < nodes.size(); it++) {
             Node* root = nodes[it];
