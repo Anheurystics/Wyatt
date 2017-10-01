@@ -11,8 +11,6 @@ CustomGLWidget::CustomGLWidget(QWidget *parent = 0): QOpenGLWidget(parent), prog
 }
 
 void CustomGLWidget::uploadShaders() {
-   	//GLuint newProgram = glCreateProgram();
-
     if(!program) {
         program = glCreateProgram();
         vertShader = glCreateShader(GL_VERTEX_SHADER);
@@ -32,7 +30,7 @@ void CustomGLWidget::uploadShaders() {
     glGetShaderInfoLog(vertShader, 256, 0, log);
     glGetShaderiv(vertShader, GL_COMPILE_STATUS, &success);
     if(success != GL_TRUE) {
-    	std::cout << "vertex shader error\n-------------------\n" << success << " " << log << std::endl;
+        std::cout << "vertex shader error\n-------------------\n" << success << " " << log << std::endl;
         return;
     }
 
@@ -43,7 +41,7 @@ void CustomGLWidget::uploadShaders() {
     glGetShaderInfoLog(fragShader, 256, 0, log);
     glGetShaderiv(fragShader, GL_COMPILE_STATUS, &success);
     if(success != GL_TRUE) {
-    	std::cout << "fragment shader error\n---------------------\n" << log << std::endl;
+        std::cout << "fragment shader error\n---------------------\n" << log << std::endl;
         return;
     }
 
@@ -68,10 +66,15 @@ void CustomGLWidget::updateShaderCode()
     //if(editor->getType().compare("fragment") == 0)
     //    fragmentSource = editor->document()->toPlainText().toStdString();
 
-    parse(editor->document()->toPlainText().toStdString() + '\n');
+    //if(context()) {
+    //    parser.parse(editor->document()->toPlainText().toStdString() + '\n', context()->functions());
+    //    makeCurrent();
+    //    glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+    //    doneCurrent();
+    //}
 
+    code = editor->document()->toPlainText().toStdString() + '\n';
     dirtyShaders = true;
-
     update();
 }
 
@@ -84,7 +87,7 @@ void CustomGLWidget::initializeGL()
 
     GLfloat triangle[] = {
         -1.0f, -1.0f, 0.0f,
-         0.0f,  1.0f, 0.0f,
+        0.0f,  1.0f, 0.0f,
         1.0f, -1.0f, 0.0f
     };
 
@@ -96,13 +99,11 @@ void CustomGLWidget::initializeGL()
     buffers["vbo"] = vbo;
 }
 
-void CustomGLWidget::paintGL()
-{
+void CustomGLWidget::paintGL() {
     glClear(GL_COLOR_BUFFER_BIT);
 
     if(dirtyShaders) {
-        dirtyShaders = false;
-        uploadShaders();
+        parser.parse(code, context()->functions());
     }
 
     glUseProgram(program);

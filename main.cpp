@@ -3,10 +3,10 @@
 #include "mainwindow.h"
 
 int main(int argc, char *argv[]) {
-	QApplication app(argc, argv);
+    QApplication app(argc, argv);
 
-	MainWindow win;
-	win.show();
+    MainWindow win;
+    win.show();
 
-	return app.exec();
+    return app.exec();
 }

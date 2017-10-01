@@ -17,30 +17,34 @@ class CustomGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
     Q_OBJECT
 
-public:
-    explicit CustomGLWidget(QWidget *parent);
-    ~CustomGLWidget();
+    public:
+        explicit CustomGLWidget(QWidget *parent);
+        ~CustomGLWidget();
 
-    void initializeGL();
-    void paintGL();
-    void resizeGL(int, int);
+        void initializeGL();
+        void paintGL();
+        void resizeGL(int, int);
 
-private:
-    void uploadShaders();
-    bool dirtyShaders;
+    private:
+        void uploadShaders();
+        bool dirtyShaders;
 
-public slots:
-    void updateShaderCode();
+        std::string code;
 
-private:
-    GLuint program;
-    GLuint vertShader, fragShader;
-    GLuint vbo;
+        public slots:
+            void updateShaderCode();
 
-    std::map<std::string, GLuint> buffers;
+    private:
+        MyParser parser;
 
-    std::string vertexSource;
-    std::string fragmentSource;
+        GLuint program;
+        GLuint vertShader, fragShader;
+        GLuint vbo;
+
+        std::map<std::string, GLuint> buffers;
+
+        std::string vertexSource;
+        std::string fragmentSource;
 };
 
 #endif // CUSTOMGLWIDGET_H
