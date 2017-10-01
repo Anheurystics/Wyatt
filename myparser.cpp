@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 
+#include "myparser.h"
 #include "parser.h"
 #include "scanner.h"
 
@@ -119,7 +120,7 @@ Expr* eval_expr(Expr* node) {
 			Ident* ident = (Ident*)node;
 			if(variables.find(ident->name) == variables.end()) {
 				std::cout << "ERROR: Variable " << ident->name << " does not exist!\n";
-				exit(1);
+				return 0;
 			} else {
 				return variables[ident->name];
 			}
@@ -176,10 +177,12 @@ void eval_stmt(Stmt* stmt) {
 }
 
 void parse(std::string code) {
-    yy_scan_string(code.c_str());
+    YY_BUFFER_STATE state = yy_scan_string(code.c_str());
 
     std::vector<Node*> nodes;
     int status = yyparse(&nodes);
+	
+    yy_delete_buffer(state);
 
     if(status == 0) {
 		for(unsigned int it = 0; it < nodes.size(); it++) {
