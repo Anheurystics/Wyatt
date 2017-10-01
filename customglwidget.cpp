@@ -7,7 +7,7 @@ CustomGLWidget::CustomGLWidget(QWidget *parent = 0): QOpenGLWidget(parent), prog
     vertexSource = "attribute vec3 pos;\nvoid main()\n{\n\tgl_Position = vec4(pos, 1.0);\n}";
     fragmentSource = "void main()\n{\n\tgl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);\n}";
 
-    dirtyShaders = true;
+    dirtyShaders = false;
 }
 
 void CustomGLWidget::uploadShaders() {
@@ -62,11 +62,13 @@ void CustomGLWidget::updateShaderCode()
     QObject *source = QObject::sender();
     ShaderEditor *editor = qobject_cast<ShaderEditor*>(source);
 
-    if(editor->getType().compare("vertex") == 0)
-    	vertexSource = editor->document()->toPlainText().toStdString();
+    //if(editor->getType().compare("vertex") == 0)
+    //	vertexSource = editor->document()->toPlainText().toStdString();
 
-    if(editor->getType().compare("fragment") == 0)
-        fragmentSource = editor->document()->toPlainText().toStdString();
+    //if(editor->getType().compare("fragment") == 0)
+    //    fragmentSource = editor->document()->toPlainText().toStdString();
+
+    parse(editor->document()->toPlainText().toStdString() + '\n');
 
     dirtyShaders = true;
 
@@ -88,6 +90,10 @@ void CustomGLWidget::initializeGL()
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, 36, triangle, GL_STATIC_DRAW);
+
+    uploadShaders();
+
+    buffers["vbo"] = vbo;
 }
 
 void CustomGLWidget::paintGL()

@@ -3,7 +3,6 @@
 
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
-#include <QOpenGLShaderProgram>
 
 #include "mainwindow.h"
 #include "shadereditor.h"
@@ -12,6 +11,7 @@
 
 #include <iostream>
 #include <cstring>
+#include <map>
 
 class CustomGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
@@ -35,6 +35,8 @@ public slots:
 private:
     GLuint program;
     GLuint vbo;
+
+    std::map<std::string, GLuint> buffers;
 
     std::string vertexSource;
     std::string fragmentSource;
