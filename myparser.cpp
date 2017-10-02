@@ -177,12 +177,12 @@ void MyParser::execute_stmts(Stmts* stmts) {
 }
 
 void MyParser::execute_init() {
-    if(!init && status) return;
+    if(!init || status) return;
     execute_stmts(init);
 }
 
 void MyParser::execute_loop() {
-    if(!loop && status) return;
+    if(!loop || status) return;
     execute_stmts(loop);
 }
 
