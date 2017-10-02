@@ -22,6 +22,7 @@ class MyParser {
     public:
         MyParser();
         std::map<std::string, Expr*> variables;
+        int status = -1;
 
         void parse(std::string);
         void execute_stmts(Stmts*);

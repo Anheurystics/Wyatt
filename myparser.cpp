@@ -177,21 +177,19 @@ void MyParser::execute_stmts(Stmts* stmts) {
 }
 
 void MyParser::execute_init() {
-    if(!init) return;
+    if(!init && status) return;
     execute_stmts(init);
 }
 
 void MyParser::execute_loop() {
-    if(!loop) return;
+    if(!loop && status) return;
     execute_stmts(loop);
 }
 
 void MyParser::parse(std::string code) {
     YY_BUFFER_STATE state = yy_scan_string(code.c_str());
 
-    int status = yyparse(&init, &loop);
-
-    std::cout << init << " " << loop << std::endl;
+    status = yyparse(&init, &loop);
 
     yy_delete_buffer(state);
 
