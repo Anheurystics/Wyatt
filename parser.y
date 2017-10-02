@@ -59,7 +59,7 @@ void yyerror(Stmts** init, Stmts** loop, const char *s);
 %%
 
 program:
-    | INIT block program { *init = $2; }
+    | INIT block LOOP block program { *init = $2; }
 	| expr SEMICOLON program { }
 	| stmt SEMICOLON program { }
 	;

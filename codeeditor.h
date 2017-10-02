@@ -4,11 +4,11 @@
 #include <QPlainTextEdit>
 #include <iostream>
 
-class ShaderEditor: public QPlainTextEdit
+class CodeEditor: public QPlainTextEdit
 {
     Q_OBJECT
 public:
-    explicit ShaderEditor(QWidget *parent);
+    explicit CodeEditor(QWidget *parent);
     void setType(std::string);
     std::string getType();
 private:

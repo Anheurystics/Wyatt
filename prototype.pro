@@ -27,20 +27,20 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     customglwidget.cpp \
-    shadereditor.cpp \
     myparser.cpp \
     scanner.cpp \
-    parser.cpp
+    parser.cpp \
+    codeeditor.cpp
 
 
 HEADERS += \
         mainwindow.h \
     customglwidget.h \
-    shadereditor.h \
 	myparser.h \
     scanner.h \
     parser.h \
-    nodes.h
+    nodes.h \
+    codeeditor.h
 
 FORMS += \
         mainwindow.ui

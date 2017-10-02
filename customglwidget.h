@@ -5,7 +5,7 @@
 #include <QOpenGLFunctions>
 
 #include "mainwindow.h"
-#include "shadereditor.h"
+#include "codeeditor.h"
 
 #include "myparser.h"
 
@@ -32,7 +32,7 @@ class CustomGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
         std::string code;
 
         public slots:
-            void updateShaderCode();
+            void updateCode();
 
     private:
         MyParser parser;

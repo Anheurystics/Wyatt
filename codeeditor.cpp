@@ -1,6 +1,6 @@
-#include "shadereditor.h"
+#include "codeeditor.h"
 
-ShaderEditor::ShaderEditor(QWidget *parent = 0): QPlainTextEdit(parent)
+CodeEditor::CodeEditor(QWidget *parent = 0): QPlainTextEdit(parent)
 {
     type = "";
 
@@ -16,12 +16,12 @@ ShaderEditor::ShaderEditor(QWidget *parent = 0): QPlainTextEdit(parent)
     this->setTabStopWidth(4 * metrics.width(' '));
 }
 
-void ShaderEditor::setType(std::string _type)
+void CodeEditor::setType(std::string _type)
 {
     type = _type;
 }
 
-std::string ShaderEditor::getType()
+std::string CodeEditor::getType()
 {
     return type;
 }

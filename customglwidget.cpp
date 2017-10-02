@@ -55,10 +55,10 @@ void CustomGLWidget::uploadShaders() {
     }
 }
 
-void CustomGLWidget::updateShaderCode()
+void CustomGLWidget::updateCode()
 {
     QObject *source = QObject::sender();
-    ShaderEditor *editor = qobject_cast<ShaderEditor*>(source);
+    CodeEditor *editor = qobject_cast<CodeEditor*>(source);
 
     //if(editor->getType().compare("vertex") == 0)
     //	vertexSource = editor->document()->toPlainText().toStdString();
