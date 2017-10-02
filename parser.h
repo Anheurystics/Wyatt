@@ -76,10 +76,11 @@ void yyerror(Stmts** init, Stmts** loop, const char *s);
     LOOP = 275,
     ALLOCATE = 276,
     UPLOAD = 277,
-    MINUS = 278,
-    MULT = 279,
-    DIV = 280,
-    MOD = 281
+    DRAW = 278,
+    MINUS = 279,
+    MULT = 280,
+    DIV = 281,
+    MOD = 282
   };
 #endif
 
@@ -100,7 +101,7 @@ union YYSTYPE
 
 	UploadList* lval;
 
-#line 104 "parser.h" /* yacc.c:1909  */
+#line 105 "parser.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

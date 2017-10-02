@@ -156,15 +156,20 @@ void MyParser::eval_stmt(Stmt* stmt) {
         case NODE_ALLOC:
             {
                 Alloc* alloc = (Alloc*)stmt;
-                std::cout << "allocate: " << alloc->ident << std::endl;
+                std::cout << "allocate " << alloc->ident->name << std::endl;
                 return;
             }
         case NODE_UPLOAD:
             {
                 Upload* upload = (Upload*)stmt;
-                std::cout << "uploading to " << upload->ident << std::endl;
-                std::cout << "size: " << upload->list->list.size() << " vectors\n";
+                std::cout << "uploading to " << upload->ident->name << std::endl;
+                std::cout << upload->list->list.size() << " vectors\n";
                 return;
+            }
+        case NODE_DRAW:
+            {
+                Draw* draw = (Draw*)stmt;
+                std::cout << "draw " << draw->ident->name << std::endl;
             }
         default: return;
     }

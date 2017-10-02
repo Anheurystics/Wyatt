@@ -21,6 +21,7 @@ void yyerror(const char *s);
 "allocate"     { return ALLOCATE; }
 "init"         { return INIT; }
 "loop"         { return LOOP; }
+"draw"         { return DRAW; }
 [a-zA-Z]+[a-zA-Z0-9]* { yylval.idval = new Ident(strdup(yytext)); return IDENTIFIER; }
 "("            { return OPEN_PAREN; }
 ")"            { return CLOSE_PAREN; }

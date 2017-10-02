@@ -42,7 +42,7 @@ void yyerror(Stmts** init, Stmts** loop, const char *s);
 %token PIPE
 %token PLUS LEFT RIGHT
 %token OPEN_PAREN CLOSE_PAREN LESS_THAN GREATER_THAN COMMA EQUALS
-%token INIT LOOP ALLOCATE UPLOAD
+%token INIT LOOP ALLOCATE UPLOAD DRAW
 
 %left PLUS MINUS
 %left MULT DIV MOD
@@ -71,9 +71,11 @@ expr: scalar { $$ = $1; }
 stmt: IDENTIFIER EQUALS expr { $$ = new Assign($1, $3); }
 	| ALLOCATE IDENTIFIER { $$ = new Alloc($2); }
 	| IDENTIFIER UPLOAD upload_list { $$ = new Upload($1, $3); }
+    | DRAW IDENTIFIER { $$ = new Draw($2); }
 	;
 
-stmts: stmt SEMICOLON { $$ = new Stmts($1); }
+stmts: { $$ = new Stmts(0); }
+    | stmt SEMICOLON { $$ = new Stmts($1); }
     | stmts stmt SEMICOLON { $1->list.insert($1->list.end(), $2); }
     ;
 
