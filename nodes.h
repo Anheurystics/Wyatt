@@ -2,8 +2,8 @@
 #include <vector>
 
 enum NodeType {
-	NODE_EXPR, NODE_BINARY, NODE_INT, NODE_FLOAT, NODE_VECTOR3, NODE_IDENT,
-	NODE_STMT, NODE_ASSIGN, NODE_ALLOC, NODE_UPLOAD, NODE_UPLOADLIST
+	NODE_EXPR, NODE_BINARY, NODE_INT, NODE_FLOAT, NODE_VECTOR3, NODE_IDENT, NODE_UPLOADLIST, 
+	NODE_STMT, NODE_ASSIGN, NODE_ALLOC, NODE_UPLOAD, NODE_STMTS
 };
 
 enum OpType {
@@ -93,6 +93,16 @@ public:
 	Stmt() {
 		type = NODE_STMT;
 	}
+};
+
+class Stmts: public Node {
+public:
+    std::vector<Stmt*> list;
+
+    Stmts(Stmt* init) {
+        list.insert(list.begin(), init);
+        type = NODE_STMTS;
+    }
 };
 
 class Assign: public Stmt {

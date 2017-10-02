@@ -170,49 +170,66 @@ void MyParser::eval_stmt(Stmt* stmt) {
     }
 }
 
+void MyParser::execute_stmts(Stmts* stmts) {
+    for(unsigned int it = 0; it < stmts->list.size(); it++) { 
+        eval_stmt(stmts->list.at(it));
+    }
+}
+
+void MyParser::execute_init() {
+    if(!init) return;
+    execute_stmts(init);
+}
+
+void MyParser::execute_loop() {
+    if(!loop) return;
+    execute_stmts(loop);
+}
+
 void MyParser::parse(std::string code) {
     YY_BUFFER_STATE state = yy_scan_string(code.c_str());
 
-    std::vector<Node*> nodes;
-    int status = yyparse(&nodes);
+    int status = yyparse(&init, &loop);
+
+    std::cout << init << " " << loop << std::endl;
 
     yy_delete_buffer(state);
 
-    if(status == 0) {
-        for(unsigned int it = 0; it < nodes.size(); it++) {
-            Node* root = nodes[it];
-
-            if(root->type >= NODE_EXPR && root->type < NODE_STMT) {
-                Expr* result = eval_expr((Expr*)root);
-                if(result == 0) continue;
-                switch(result->type) {
-                    case NODE_INT:
-                    {
-                        Int* i = (Int*)result;
-                        std::cout << "= " << i->value << std::endl;
-                        break;
-                    }
-
-                    case NODE_FLOAT: 
-                    {
-                        Float* f = (Float*)result;
-                        std::cout << std::fixed << std::setprecision(4) << "= " << f->value << std::endl;
-                        break;
-                    }
-
-                    case NODE_VECTOR3:
-                    {
-                        Vector3* v = (Vector3*)result;
-                        std::cout << std::fixed << std::setprecision(4) << "= <" << resolve_scalar(v->x) << ", " << resolve_scalar(v->y) << ", " << resolve_scalar(v->z) << ">\n";
-                    }
-                    default: return;
-                }
-            }
-
-            if(root->type >= NODE_STMT) {
-                eval_stmt((Stmt*)root);
-            }
-        }
-    }
+//    if(status == 0) {
+//        for(unsigned int it = 0; it < nodes.size(); it++) {
+//            Node* root = nodes[it];
+//
+//            if(root->type >= NODE_EXPR && root->type < NODE_STMT) {
+//                Expr* result = eval_expr((Expr*)root);
+//                if(result == 0) continue;
+//                switch(result->type) {
+//                    case NODE_INT:
+//                    {
+//                        Int* i = (Int*)result;
+//                        std::cout << "= " << i->value << std::endl;
+//                        break;
+//                    }
+//
+//                    case NODE_FLOAT: 
+//                    {
+//                        Float* f = (Float*)result;
+//                        std::cout << std::fixed << std::setprecision(4) << "= " << f->value << std::endl;
+//                        break;
+//                    }
+//
+//                    case NODE_VECTOR3:
+//                    {
+//                        Vector3* v = (Vector3*)result;
+//                        std::cout << std::fixed << std::setprecision(4) << "= <" << resolve_scalar(v->x) << ", " << resolve_scalar(v->y) << ", " << resolve_scalar(v->z) << ">\n";
+//                    }
+//                    default: return;
+//                }
+//            }
+//
+//            if(root->type >= NODE_STMT) {
+//                eval_stmt((Stmt*)root);
+//            }
+//        }
+//    }
 }
 

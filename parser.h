@@ -47,7 +47,7 @@ extern int yydebug;
 #include "nodes.h"
 
 int yylex();
-void yyerror(std::vector<Node*>* nodes, const char *s);
+void yyerror(Stmts** init, Stmts** loop, const char *s);
 
 #line 53 "parser.h" /* yacc.c:1909  */
 
@@ -73,12 +73,13 @@ void yyerror(std::vector<Node*>* nodes, const char *s);
     COMMA = 272,
     EQUALS = 273,
     INIT = 274,
-    ALLOCATE = 275,
-    UPLOAD = 276,
-    MINUS = 277,
-    MULT = 278,
-    DIV = 279,
-    MOD = 280
+    LOOP = 275,
+    ALLOCATE = 276,
+    UPLOAD = 277,
+    MINUS = 278,
+    MULT = 279,
+    DIV = 280,
+    MOD = 281
   };
 #endif
 
@@ -95,8 +96,7 @@ union YYSTYPE
 	Ident* idval;
 	Vector3* vval;
 	Stmt* sval;
-
-    std::vector<Stmt*>* svval;
+    Stmts* svval;
 
 	UploadList* lval;
 
@@ -111,6 +111,6 @@ typedef union YYSTYPE YYSTYPE;
 
 extern YYSTYPE yylval;
 
-int yyparse (std::vector<Node*>* nodes);
+int yyparse (Stmts** init, Stmts** loop);
 
 #endif /* !YY_YY_PARSER_H_INCLUDED  */

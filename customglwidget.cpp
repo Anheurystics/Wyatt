@@ -65,8 +65,8 @@ void CustomGLWidget::updateShaderCode()
 
     //if(editor->getType().compare("fragment") == 0)
     //    fragmentSource = editor->document()->toPlainText().toStdString();
-    
-   code = editor->document()->toPlainText().toStdString() + '\n';
+
+    code = editor->document()->toPlainText().toStdString() + '\n';
     dirtyShaders = true;
     update();
 }
@@ -97,6 +97,8 @@ void CustomGLWidget::paintGL() {
 
     if(dirtyShaders) {
         parser.parse(code);
+        parser.execute_init();
+        //parser.execute_loop();
     }
 
     glUseProgram(program);

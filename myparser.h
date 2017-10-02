@@ -24,7 +24,14 @@ class MyParser {
         std::map<std::string, Expr*> variables;
 
         void parse(std::string);
+        void execute_stmts(Stmts*);
+#include <QOpenGLFunctions>
+        void execute_init();
+        void execute_loop();
     private:
+        Stmts* init = NULL;
+        Stmts* loop = NULL;
+
         Expr* eval_expr(Expr*);
         Expr* eval_binary(Binary*);
         void eval_stmt(Stmt*);

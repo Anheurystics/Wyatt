@@ -11,7 +11,7 @@
 #include "nodes.h"
 
 int yylex();
-void yyerror(std::vector<Node*>* nodes, const char *s);
+void yyerror(Stmts** init, Stmts** loop, const char *s);
 }
 
 %debug
@@ -20,7 +20,7 @@ void yyerror(std::vector<Node*>* nodes, const char *s);
 %output "parser.cpp"
 %error-verbose
 
-%parse-param { std::vector<Node*>* nodes }
+%parse-param { Stmts** init } { Stmts** loop }
 
 %union {
 	Expr* eval;
@@ -29,8 +29,7 @@ void yyerror(std::vector<Node*>* nodes, const char *s);
 	Ident* idval;
 	Vector3* vval;
 	Stmt* sval;
-
-    std::vector<Stmt*>* svval;
+    Stmts* svval;
 
 	UploadList* lval;
 }
@@ -43,7 +42,7 @@ void yyerror(std::vector<Node*>* nodes, const char *s);
 %token PIPE
 %token PLUS LEFT RIGHT
 %token OPEN_PAREN CLOSE_PAREN LESS_THAN GREATER_THAN COMMA EQUALS
-%token INIT ALLOCATE UPLOAD
+%token INIT LOOP ALLOCATE UPLOAD
 
 %left PLUS MINUS
 %left MULT DIV MOD
@@ -53,16 +52,16 @@ void yyerror(std::vector<Node*>* nodes, const char *s);
 %type<vval> vec3
 
 %type<sval> stmt
-%type<svval> stmts block init_block
+%type<svval> stmts block
 %type<lval> upload_list
 
 %start program 
 %%
 
 program:
-    | init block loop block program { }
-	| expr SEMICOLON program { nodes->insert(nodes->begin(), $1); }
-	| stmt SEMICOLON program { nodes->insert(nodes->begin(), $1); }
+    | INIT block program { *init = $2; }
+	| expr SEMICOLON program { }
+	| stmt SEMICOLON program { }
 	;
 
 expr: scalar { $$ = $1; }
@@ -74,8 +73,8 @@ stmt: IDENTIFIER EQUALS expr { $$ = new Assign($1, $3); }
 	| IDENTIFIER UPLOAD upload_list { $$ = new Upload($1, $3); }
 	;
 
-stmts: stmt SEMICOLON { std::vector<Stmt*> list; list.insert(list.begin(), $1); $$ = &list; }
-    | stmts stmt SEMICOLON { $1->insert($1->begin(), $2); }
+stmts: stmt SEMICOLON { $$ = new Stmts($1); }
+    | stmts stmt SEMICOLON { $1->list.insert($1->list.end(), $2); }
     ;
 
 block: OPEN_BRACE stmts CLOSE_BRACE { $$ = $2; }
@@ -144,6 +143,6 @@ v3expr: vec3 { $$ = $1; }
 
 %%
 
-void yyerror(std::vector<Node*>* nodes, const char* s) {
+void yyerror(Stmts** init, Stmts** loop, const char* s) {
 	fprintf(stderr, "Parse error: %s\n", s);
 }
