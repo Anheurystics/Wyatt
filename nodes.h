@@ -2,7 +2,7 @@
 #include <vector>
 
 enum NodeType {
-    NODE_EXPR, NODE_BINARY, NODE_INT, NODE_FLOAT, NODE_VECTOR3, NODE_IDENT, NODE_UPLOADLIST, 
+    NODE_EXPR, NODE_BINARY, NODE_UNARY, NODE_INT, NODE_FLOAT, NODE_VECTOR3, NODE_IDENT, NODE_UPLOADLIST, 
     NODE_STMT, NODE_ASSIGN, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_STMTS
 };
 
@@ -46,6 +46,22 @@ class Binary: public Expr {
 
         ~Binary() {
             delete lhs;
+            delete rhs;
+        }
+};
+
+class Unary: public Expr {
+    public:
+        OpType op;
+        Expr* rhs;
+
+        Unary(OpType op, Expr *rhs) {
+            this->op = op;
+            this->rhs = rhs;
+            type = NODE_UNARY;
+        }
+
+        ~Unary() {
             delete rhs;
         }
 };

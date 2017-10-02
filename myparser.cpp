@@ -136,6 +136,30 @@ Expr* MyParser::eval_expr(Expr* node) {
             return vec3;
         }
 
+        case NODE_UNARY:
+        {
+            Unary* un = (Unary*)node;
+            Expr* rhs = eval_expr(un->rhs);
+
+            if(rhs->type == NODE_INT) {
+                Int* i = (Int*)rhs;
+                i->value *= -1;
+                return i;
+            }
+
+            if(rhs->type == NODE_FLOAT) {
+                Float* fl = (Float*)rhs;
+                fl->value *= -1;
+                return fl;
+            }
+            if(rhs->type == NODE_VECTOR3) {
+                Vector3* vec3 = (Vector3*)rhs;
+
+                //SHAMEFUL HACK
+                return eval_binary(new Binary(vec3, OP_MULT, new Float(-1))); 
+            }
+        }
+
         case NODE_BINARY:
         {
             Binary* bin = (Binary*)(node);
@@ -154,10 +178,11 @@ void MyParser::eval_stmt(Stmt* stmt) {
             {
                 Assign* assign = (Assign*)stmt;
                 Expr* rhs = eval_expr(assign->value);
-                if(rhs)
+                if(rhs) {
                     variables[assign->ident->name] = rhs;
-                else
+                } else {
                     std::cout << "ERROR: Invalid assignment\n";
+                }
 
                 return;
             }

@@ -96,6 +96,7 @@ scalar: INT { $$ = $1; }
 	 | scalar MINUS scalar { $$ = new Binary($1, OP_MINUS, $3); }
 	 | scalar MULT scalar { $$ = new Binary($1, OP_MULT, $3); }
 	 | scalar DIV scalar { $$ = new Binary($1, OP_DIV, $3); }
+     | MINUS scalar { $$ = new Unary(OP_MINUS, $2); }
 	 | vector MULT vector { $$ = new Binary($1, OP_MULT, $3); }
 	 | OPEN_PAREN scalar CLOSE_PAREN { $$ = $2; }
 	 ;
@@ -106,6 +107,7 @@ vector: vec3 { $$ = $1; }
 	| vector MINUS vector { $$ = new Binary($1, OP_MINUS, $3); }
 	| vector MOD vector { $$ = new Binary($1, OP_MOD, $3); }
 	| vector MULT scalar { $$ = new Binary($1, OP_MULT, $3); }
+    | MINUS vector { $$ = new Unary(OP_MULT, $2); }
 	| scalar MULT vector { $$ = new Binary($1, OP_MULT, $3); }
 	| vector DIV scalar { $$ = new Binary($1, OP_DIV, $3); }
 	| OPEN_PAREN vector CLOSE_PAREN { $$ = $2; }
