@@ -97,16 +97,18 @@ void CustomGLWidget::paintGL() {
 
     if(dirtyShaders) {
         parser.parse(code);
+        parser.setFunctions(context()->functions());
         parser.execute_init();
-        //parser.execute_loop();
     }
 
     glUseProgram(program);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, (void*)0);
-    glEnableVertexAttribArray(0);
+    std::cout << parser.status << std::endl;
+    parser.execute_loop();
+    //glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, (void*)0);
+    //glEnableVertexAttribArray(0);
 
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    //glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
 void CustomGLWidget::resizeGL(int width, int height)

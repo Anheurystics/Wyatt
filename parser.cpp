@@ -1306,7 +1306,7 @@ yyreduce:
     {
         case 3:
 #line 62 "parser.y" /* yacc.c:1646  */
-    { *init = (yyvsp[-3].svval); }
+    { *init = (yyvsp[-3].svval); *loop = (yyvsp[-1].svval); }
 #line 1311 "parser.cpp" /* yacc.c:1646  */
     break;
 

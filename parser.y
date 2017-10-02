@@ -59,7 +59,7 @@ void yyerror(Stmts** init, Stmts** loop, const char *s);
 %%
 
 program:
-    | INIT block LOOP block program { *init = $2; }
+    | INIT block LOOP block program { *init = $2; *loop = $4; }
 	| expr SEMICOLON program { }
 	| stmt SEMICOLON program { }
 	;
@@ -85,6 +85,8 @@ upload_list: vec3 { $$ = new UploadList($1); }
 	| upload_list vec3 { $1->list.insert($1->list.end(), $2); } 
     | scalar { $$ = new UploadList($1); }
 	| upload_list scalar { $1->list.insert($1->list.end(), $2); }
+    | IDENTIFIER { $$ = new UploadList($1); }
+    | upload_list IDENTIFIER { $1->list.insert($1->list.end(), $2); }
 	;
 
 scalar: INT { $$ = $1; }

@@ -156,20 +156,59 @@ void MyParser::eval_stmt(Stmt* stmt) {
         case NODE_ALLOC:
             {
                 Alloc* alloc = (Alloc*)stmt;
-                std::cout << "allocate " << alloc->ident->name << std::endl;
+                //std::cout << "allocate " << alloc->ident->name << std::endl;
+
+                Buffer* buf = new Buffer;
+                gl->glGenBuffers(1, &(buf->handle));
+                buffers[alloc->ident->name] = buf;
                 return;
             }
         case NODE_UPLOAD:
             {
                 Upload* upload = (Upload*)stmt;
-                std::cout << "uploading to " << upload->ident->name << std::endl;
-                std::cout << upload->list->list.size() << " vectors\n";
+                //std::cout << "uploading to " << upload->ident->name << std::endl;
+                //std::cout << upload->list->list.size() << " vectors\n";
+
+                std::vector<float>* target = &(buffers[upload->ident->name]->data);
+                for(unsigned int i = 0; i < upload->list->list.size(); i++) {
+                    Expr* expr = eval_expr(upload->list->list[i]);
+                    if(expr->type == NODE_VECTOR3) {
+                        Vector3* vec3 = (Vector3*)expr;
+                        std::cout << resolve_scalar(vec3->x) << " " << resolve_scalar(vec3->y) << " " << resolve_scalar(vec3->z) << std::endl;
+                        target->insert(target->end(), resolve_scalar(vec3->x));
+                        target->insert(target->end(), resolve_scalar(vec3->y));
+                        target->insert(target->end(), resolve_scalar(vec3->z));
+                    }
+
+                    if(expr->type == NODE_FLOAT) {
+                        Float* f = (Float*)expr;
+                        target->insert(target->begin(), resolve_scalar(f));
+                    }
+                }
+
                 return;
             }
         case NODE_DRAW:
             {
                 Draw* draw = (Draw*)stmt;
-                std::cout << "draw " << draw->ident->name << std::endl;
+
+                Buffer* buffer = buffers[draw->ident->name];
+
+                std::cout << "buffer " << buffer << std::endl;
+                if(buffer) {
+                    for(unsigned int i = 0; i < buffer->data.size(); i++)
+                        std::cout << buffer->data[i] << " ";
+                    std::cout << std::endl;
+
+                    gl->glBindBuffer(GL_ARRAY_BUFFER, buffer->handle);
+                    gl->glBufferData(GL_ARRAY_BUFFER, buffer->data.size() * sizeof(float), &(buffer->data)[0], GL_STATIC_DRAW);
+                    gl->glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, (void*)0);
+                    gl->glEnableVertexAttribArray(0);
+
+                    gl->glDrawArrays(GL_TRIANGLES, 0, buffer->data.size() / 3);
+                }
+
+                return;
             }
         default: return;
     }
