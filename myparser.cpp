@@ -143,14 +143,12 @@ Expr* MyParser::eval_expr(Expr* node) {
 
             if(rhs->type == NODE_INT) {
                 Int* i = (Int*)rhs;
-                i->value *= -1;
-                return i;
+                return new Int(-(i->value));
             }
 
             if(rhs->type == NODE_FLOAT) {
                 Float* fl = (Float*)rhs;
-                fl->value *= -1;
-                return fl;
+                return new Float(-(fl->value));
             }
             if(rhs->type == NODE_VECTOR3) {
                 Vector3* vec3 = (Vector3*)rhs;
