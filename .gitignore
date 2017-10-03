@@ -3,3 +3,7 @@ ui_mainwindow.h
 *.o
 prototype
 parsercli
+scanner.cpp
+scanner.h
+parser.cpp
+parser.h
