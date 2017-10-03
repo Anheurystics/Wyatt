@@ -183,7 +183,7 @@ class ShaderSource: public Node {
 
         ShaderSource(std::string name, std::string code, std::string shader_type) {
             this->name = name;
-            this->code = code;
+            this->code = code.substr(1, code.length() - 2);
             this->shader_type = shader_type;
             type = NODE_SSOURCE;
         }

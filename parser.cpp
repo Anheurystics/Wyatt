@@ -1347,7 +1347,7 @@ yyreduce:
 
   case 4:
 #line 65 "parser.y" /* yacc.c:1646  */
-    { std::cout << "frag" << (yyvsp[-1].ssval)->name << " " << (yyvsp[-1].ssval)->code << std::endl; }
+    { std::cout << "frag " << (yyvsp[-1].ssval)->name << " " << (yyvsp[-1].ssval)->code << std::endl; }
 #line 1352 "parser.cpp" /* yacc.c:1646  */
     break;
 
