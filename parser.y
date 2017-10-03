@@ -41,7 +41,7 @@ void yyerror(Stmts** init, Stmts** loop, const char *s);
 %token SEMICOLON OPEN_BRACE CLOSE_BRACE
 %token PIPE
 %token PLUS LEFT RIGHT
-%token OPEN_PAREN CLOSE_PAREN LESS_THAN GREATER_THAN OPEN_BRACKET CLOSE_BRACKET COMMA EQUALS
+%token OPEN_PAREN CLOSE_PAREN LESS_THAN GREATER_THAN OPEN_BRACKET CLOSE_BRACKET COMMA PERIOD EQUALS
 %token INIT LOOP ALLOCATE UPLOAD DRAW
 
 %left PLUS MINUS
@@ -72,6 +72,11 @@ stmt: IDENTIFIER EQUALS expr { $$ = new Assign($1, $3); }
 	| ALLOCATE IDENTIFIER { $$ = new Alloc($2); }
 	| IDENTIFIER UPLOAD upload_list { $$ = new Upload($1, $3); }
     | DRAW IDENTIFIER { $$ = new Draw($2); }
+    | IDENTIFIER PLUS EQUALS expr { $$ = new Assign($1, new Binary($1, OP_PLUS, $4)); }
+    | IDENTIFIER MINUS EQUALS expr { $$ = new Assign($1, new Binary($1, OP_MINUS, $4)); }
+    | IDENTIFIER MULT EQUALS expr { $$ = new Assign($1, new Binary($1, OP_MULT, $4)); }
+    | IDENTIFIER DIV EQUALS expr { $$ = new Assign($1, new Binary($1, OP_DIV, $4)); }
+    | IDENTIFIER MOD EQUALS expr { $$ = new Assign($1, new Binary($1, OP_MOD, $4)); }
 	;
 
 stmts: { $$ = new Stmts(0); }

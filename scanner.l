@@ -31,6 +31,7 @@ void yyerror(const char *s);
 "["            { return OPEN_BRACKET; }
 "]"            { return CLOSE_BRACKET; }
 "="            { return EQUALS; }
+"."            { return PERIOD; }
 ","            { return COMMA; }
 "+"            { return PLUS; }
 "-"		       { return MINUS; }
