@@ -41,7 +41,7 @@ void yyerror(Stmts** init, Stmts** loop, const char *s);
 %token SEMICOLON OPEN_BRACE CLOSE_BRACE
 %token PIPE
 %token PLUS LEFT RIGHT
-%token OPEN_PAREN CLOSE_PAREN LESS_THAN GREATER_THAN COMMA EQUALS
+%token OPEN_PAREN CLOSE_PAREN LESS_THAN GREATER_THAN OPEN_BRACKET CLOSE_BRACKET COMMA EQUALS
 %token INIT LOOP ALLOCATE UPLOAD DRAW
 
 %left PLUS MINUS
@@ -113,7 +113,7 @@ vector: vec3 { $$ = $1; }
 	| OPEN_PAREN vector CLOSE_PAREN { $$ = $2; }
 	;
 
-vec3: LESS_THAN scalar COMMA scalar COMMA scalar GREATER_THAN { $$ = new Vector3($2, $4, $6); }
+vec3: OPEN_BRACKET scalar COMMA scalar COMMA scalar CLOSE_BRACKET { $$ = new Vector3($2, $4, $6); }
 	;
 
 /*

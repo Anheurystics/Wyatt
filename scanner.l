@@ -28,6 +28,8 @@ void yyerror(const char *s);
 "<-"           { return UPLOAD; }
 "<"            { return LESS_THAN; }
 ">"            { return GREATER_THAN; }
+"["            { return OPEN_BRACKET; }
+"]"            { return CLOSE_BRACKET; }
 "="            { return EQUALS; }
 ","            { return COMMA; }
 "+"            { return PLUS; }
