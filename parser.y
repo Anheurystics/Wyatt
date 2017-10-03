@@ -24,6 +24,7 @@ void yyerror(Stmts** init, Stmts** loop, const char *s);
 
 %union {
 	Expr* eval;
+    Bool* bval;
 	Int* ival;
 	Float* fval;
 	Ident* idval;
@@ -35,21 +36,21 @@ void yyerror(Stmts** init, Stmts** loop, const char *s);
 	UploadList* lval;
 }
 
+%token<bval> BOOL
 %token<ival> INT 
 %token<fval> FLOAT
 %token<idval> IDENTIFIER SHADER
 
 %token SEMICOLON OPEN_BRACE CLOSE_BRACE
 %token PIPE
-%token PLUS LEFT RIGHT
-%token OPEN_PAREN CLOSE_PAREN LESS_THAN GREATER_THAN OPEN_BRACKET CLOSE_BRACKET COMMA PERIOD EQUALS
+%token OPEN_PAREN CLOSE_PAREN LESS_THAN GREATER_THAN OPEN_BRACKET CLOSE_BRACKET COMMA PERIOD EQUALS AND OR
 %token INIT LOOP ALLOCATE UPLOAD DRAW VERTEX FRAGMENT
 
 %left PLUS MINUS
 %left MULT DIV MOD
 
 %type<eval> expr
-%type<eval> scalar vector 
+%type<eval> scalar vector bool
 %type<vval> vec3
 
 %type<sval> stmt
@@ -73,6 +74,7 @@ frag_shader: FRAGMENT IDENTIFIER SHADER SEMICOLON { $$ = new ShaderSource($2->na
 
 expr: scalar { $$ = $1; }
 	| vector { $$ = $1; }
+    | bool { $$ = $1; }
 	;
 
 stmt: IDENTIFIER EQUALS expr { $$ = new Assign($1, $3); }
@@ -101,17 +103,23 @@ upload_list: vec3 { $$ = new UploadList($1); }
     | upload_list IDENTIFIER { $1->list.insert($1->list.end(), $2); }
 	;
 
+bool: BOOL { $$ = $1; }
+    | bool AND bool { $$ = new Binary($1, OP_AND, $3); }
+    | bool OR bool { $$ = new Binary($1, OP_OR, $3); }
+    | OPEN_PAREN bool CLOSE_PAREN { $$ = $2; }
+    ;
+
 scalar: INT { $$ = $1; }
-	 | FLOAT { $$ = $1; }
-	 | IDENTIFIER { $$ = $1; }
-	 | scalar PLUS scalar { $$ = new Binary($1, OP_PLUS, $3); }
-	 | scalar MINUS scalar { $$ = new Binary($1, OP_MINUS, $3); }
-	 | scalar MULT scalar { $$ = new Binary($1, OP_MULT, $3); }
-	 | scalar DIV scalar { $$ = new Binary($1, OP_DIV, $3); }
-     | MINUS scalar { $$ = new Unary(OP_MINUS, $2); }
-	 | vector MULT vector { $$ = new Binary($1, OP_MULT, $3); }
-	 | OPEN_PAREN scalar CLOSE_PAREN { $$ = $2; }
-	 ;
+	| FLOAT { $$ = $1; }
+	| IDENTIFIER { $$ = $1; }
+	| scalar PLUS scalar { $$ = new Binary($1, OP_PLUS, $3); }
+	| scalar MINUS scalar { $$ = new Binary($1, OP_MINUS, $3); }
+	| scalar MULT scalar { $$ = new Binary($1, OP_MULT, $3); }
+	| scalar DIV scalar { $$ = new Binary($1, OP_DIV, $3); }
+    | MINUS scalar { $$ = new Unary(OP_MINUS, $2); }
+	| vector MULT vector { $$ = new Binary($1, OP_MULT, $3); }
+	| OPEN_PAREN scalar CLOSE_PAREN { $$ = $2; }
+	;
 
 vector: vec3 { $$ = $1; }
 	| IDENTIFIER { $$ = $1; }

@@ -56,26 +56,26 @@ void yyerror(Stmts** init, Stmts** loop, const char *s);
 # define YYTOKENTYPE
   enum yytokentype
   {
-    INT = 258,
-    FLOAT = 259,
-    IDENTIFIER = 260,
-    SHADER = 261,
-    SEMICOLON = 262,
-    OPEN_BRACE = 263,
-    CLOSE_BRACE = 264,
-    PIPE = 265,
-    PLUS = 266,
-    LEFT = 267,
-    RIGHT = 268,
-    OPEN_PAREN = 269,
-    CLOSE_PAREN = 270,
-    LESS_THAN = 271,
-    GREATER_THAN = 272,
-    OPEN_BRACKET = 273,
-    CLOSE_BRACKET = 274,
-    COMMA = 275,
-    PERIOD = 276,
-    EQUALS = 277,
+    BOOL = 258,
+    INT = 259,
+    FLOAT = 260,
+    IDENTIFIER = 261,
+    SHADER = 262,
+    SEMICOLON = 263,
+    OPEN_BRACE = 264,
+    CLOSE_BRACE = 265,
+    PIPE = 266,
+    OPEN_PAREN = 267,
+    CLOSE_PAREN = 268,
+    LESS_THAN = 269,
+    GREATER_THAN = 270,
+    OPEN_BRACKET = 271,
+    CLOSE_BRACKET = 272,
+    COMMA = 273,
+    PERIOD = 274,
+    EQUALS = 275,
+    AND = 276,
+    OR = 277,
     INIT = 278,
     LOOP = 279,
     ALLOCATE = 280,
@@ -83,10 +83,11 @@ void yyerror(Stmts** init, Stmts** loop, const char *s);
     DRAW = 282,
     VERTEX = 283,
     FRAGMENT = 284,
-    MINUS = 285,
-    MULT = 286,
-    DIV = 287,
-    MOD = 288
+    PLUS = 285,
+    MINUS = 286,
+    MULT = 287,
+    DIV = 288,
+    MOD = 289
   };
 #endif
 
@@ -98,6 +99,7 @@ union YYSTYPE
 #line 25 "parser.y" /* yacc.c:1909  */
 
 	Expr* eval;
+    Bool* bval;
 	Int* ival;
 	Float* fval;
 	Ident* idval;
@@ -108,7 +110,7 @@ union YYSTYPE
 
 	UploadList* lval;
 
-#line 112 "parser.h" /* yacc.c:1909  */
+#line 114 "parser.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

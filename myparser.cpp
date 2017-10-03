@@ -20,7 +20,18 @@ Expr* MyParser::eval_binary(Binary* bin) {
     NodeType ltype = lhs->type;
     NodeType rtype = rhs->type;
 
-    if(ltype  == NODE_INT && rtype == NODE_INT) {
+    if(ltype == NODE_BOOL && rtype == NODE_BOOL) {
+       bool a = ((Bool*)lhs)->value;
+       bool b = ((Bool*)rhs)->value;
+
+       switch(op) {
+           case OP_AND: return new Bool(a && b);
+           case OP_OR: return new Bool(a || b);
+           default: return 0;
+       }
+    }
+
+    if(ltype == NODE_INT && rtype == NODE_INT) {
         int a = resolve_int(lhs);
         int b = resolve_int(rhs);
 
@@ -118,6 +129,9 @@ Expr* MyParser::eval_expr(Expr* node) {
                 return variables[ident->name];
             }
         }
+
+        case NODE_BOOL:
+            return node;
 
         case NODE_INT:
             return node;

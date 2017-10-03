@@ -2,12 +2,12 @@
 #include <vector>
 
 enum NodeType {
-    NODE_EXPR, NODE_BINARY, NODE_UNARY, NODE_INT, NODE_FLOAT, NODE_VECTOR3, NODE_IDENT, NODE_UPLOADLIST, 
+    NODE_EXPR, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_VECTOR3, NODE_IDENT, NODE_UPLOADLIST, 
     NODE_STMT, NODE_ASSIGN, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_STMTS, NODE_SSOURCE
 };
 
 enum OpType {
-    OP_PLUS, OP_MINUS, OP_MULT, OP_DIV, OP_MOD
+    OP_PLUS, OP_MINUS, OP_MULT, OP_DIV, OP_MOD, OP_AND, OP_OR
 };
 
 class Node {
@@ -63,6 +63,16 @@ class Unary: public Expr {
 
         ~Unary() {
             delete rhs;
+        }
+};
+
+class Bool: public Expr {
+    public:
+        bool value;
+
+        Bool(bool value) {
+            this->value = value;
+            type = NODE_BOOL;
         }
 };
 

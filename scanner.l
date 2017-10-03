@@ -24,6 +24,10 @@ void yyerror(const char *s);
 "init"         { return INIT; }
 "loop"         { return LOOP; }
 "draw"         { return DRAW; }
+"and"          { return AND; }
+"or"           { return OR; }
+"true"         { yylval.bval = new Bool(true); return BOOL; }
+"false"        { yylval.bval = new Bool(false); return BOOL; }
 [a-zA-Z]+[a-zA-Z0-9]* { yylval.idval = new Ident(strdup(yytext)); return IDENTIFIER; }
 "("            { return OPEN_PAREN; }
 ")"            { return CLOSE_PAREN; }
