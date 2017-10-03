@@ -24,6 +24,7 @@ void yyerror(const char *s);
 "init"         { return INIT; }
 "loop"         { return LOOP; }
 "draw"         { return DRAW; }
+"if"           { return IF; }
 "and"          { return AND; }
 "or"           { return OR; }
 "true"         { yylval.bval = new Bool(true); return BOOL; }

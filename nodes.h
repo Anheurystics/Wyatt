@@ -3,7 +3,7 @@
 
 enum NodeType {
     NODE_EXPR, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_VECTOR3, NODE_IDENT, NODE_UPLOADLIST, 
-    NODE_STMT, NODE_ASSIGN, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_STMTS, NODE_SSOURCE
+    NODE_STMT, NODE_ASSIGN, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_STMTS, NODE_IF, NODE_SSOURCE
 };
 
 enum OpType {
@@ -128,6 +128,18 @@ class Stmts: public Node {
         Stmts(Stmt* init) {
             if(init) list.insert(list.begin(), init);
             type = NODE_STMTS;
+        }
+};
+
+class If: public Stmt {
+    public:
+        Expr* condition;
+        Stmts* block;
+
+        If(Expr* condition, Stmts* block) {
+            this->condition = condition;
+            this->block = block;
+            type = NODE_IF;
         }
 };
 

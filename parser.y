@@ -43,7 +43,7 @@ void yyerror(Stmts** init, Stmts** loop, const char *s);
 
 %token SEMICOLON OPEN_BRACE CLOSE_BRACE
 %token PIPE
-%token OPEN_PAREN CLOSE_PAREN LESS_THAN GREATER_THAN OPEN_BRACKET CLOSE_BRACKET COMMA PERIOD EQUALS AND OR NOT 
+%token OPEN_PAREN CLOSE_PAREN LESS_THAN GREATER_THAN OPEN_BRACKET CLOSE_BRACKET COMMA PERIOD EQUALS AND OR NOT IF
 %token INIT LOOP ALLOCATE UPLOAD DRAW VERTEX FRAGMENT
 
 %left PLUS MINUS
@@ -53,7 +53,7 @@ void yyerror(Stmts** init, Stmts** loop, const char *s);
 %type<eval> scalar vector bool
 %type<vval> vec3
 
-%type<sval> stmt
+%type<sval> stmt stmt_block
 %type<svval> stmts block
 %type <ssval> vert_shader frag_shader
 %type<lval> upload_list
@@ -88,9 +88,14 @@ stmt: IDENTIFIER EQUALS expr { $$ = new Assign($1, $3); }
     | IDENTIFIER MOD EQUALS expr { $$ = new Assign($1, new Binary($1, OP_MOD, $4)); }
 	;
 
+stmt_block: IF OPEN_PAREN bool CLOSE_PAREN block { $$ = new If($3, $5); }
+    ;
+
 stmts: { $$ = new Stmts(0); }
     | stmt SEMICOLON { $$ = new Stmts($1); }
+    | stmt_block { $$ = new Stmts($1); }
     | stmts stmt SEMICOLON { $1->list.insert($1->list.end(), $2); }
+    | stmts stmt_block { $1->list.insert($1->list.end(), $2); }
     ;
 
 block: OPEN_BRACE stmts CLOSE_BRACE { $$ = $2; }
