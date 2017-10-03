@@ -21,14 +21,14 @@ Expr* MyParser::eval_binary(Binary* bin) {
     NodeType rtype = rhs->type;
 
     if(ltype == NODE_BOOL && rtype == NODE_BOOL) {
-       bool a = ((Bool*)lhs)->value;
-       bool b = ((Bool*)rhs)->value;
+        bool a = ((Bool*)lhs)->value;
+        bool b = ((Bool*)rhs)->value;
 
-       switch(op) {
-           case OP_AND: return new Bool(a && b);
-           case OP_OR: return new Bool(a || b);
-           default: return 0;
-       }
+        switch(op) {
+            case OP_AND: return new Bool(a && b);
+            case OP_OR: return new Bool(a || b);
+            default: return 0;
+        }
     }
 
     if(ltype == NODE_INT && rtype == NODE_INT) {
@@ -120,15 +120,15 @@ Expr* MyParser::eval_binary(Binary* bin) {
 Expr* MyParser::eval_expr(Expr* node) {
     switch(node->type) {
         case NODE_IDENT: 
-        {
-            Ident* ident = (Ident*)node;
-            if(variables.find(ident->name) == variables.end()) {
-                std::cout << "ERROR: Variable " << ident->name << " does not exist!\n";
-                return 0;
-            } else {
-                return variables[ident->name];
+            {
+                Ident* ident = (Ident*)node;
+                if(variables.find(ident->name) == variables.end()) {
+                    std::cout << "ERROR: Variable " << ident->name << " does not exist!\n";
+                    return 0;
+                } else {
+                    return variables[ident->name];
+                }
             }
-        }
 
         case NODE_BOOL:
             return node;
@@ -140,51 +140,51 @@ Expr* MyParser::eval_expr(Expr* node) {
             return node;
 
         case NODE_VECTOR3:
-        {
-            Vector3* vec3 = (Vector3*)(node);
+            {
+                Vector3* vec3 = (Vector3*)(node);
 
-            vec3->x = eval_expr(vec3->x);
-            vec3->y = eval_expr(vec3->y);
-            vec3->z = eval_expr(vec3->z);
+                vec3->x = eval_expr(vec3->x);
+                vec3->y = eval_expr(vec3->y);
+                vec3->z = eval_expr(vec3->z);
 
-            return vec3;
-        }
+                return vec3;
+            }
 
         case NODE_UNARY:
-        {
-            Unary* un = (Unary*)node;
-            Expr* rhs = eval_expr(un->rhs);
+            {
+                Unary* un = (Unary*)node;
+                Expr* rhs = eval_expr(un->rhs);
 
-            if(un->op == OP_MINUS) {
-                if(rhs->type == NODE_INT) {
-                    Int* i = (Int*)rhs;
-                    return new Int(-(i->value));
+                if(un->op == OP_MINUS) {
+                    if(rhs->type == NODE_INT) {
+                        Int* i = (Int*)rhs;
+                        return new Int(-(i->value));
+                    }
+
+                    if(rhs->type == NODE_FLOAT) {
+                        Float* fl = (Float*)rhs;
+                        return new Float(-(fl->value));
+                    }
+                    if(rhs->type == NODE_VECTOR3) {
+                        Vector3* vec3 = (Vector3*)rhs;
+
+                        //SHAMEFUL HACK
+                        return eval_binary(new Binary(vec3, OP_MULT, new Float(-1))); 
+                    }
                 }
-
-                if(rhs->type == NODE_FLOAT) {
-                    Float* fl = (Float*)rhs;
-                    return new Float(-(fl->value));
-                }
-                if(rhs->type == NODE_VECTOR3) {
-                    Vector3* vec3 = (Vector3*)rhs;
-
-                    //SHAMEFUL HACK
-                    return eval_binary(new Binary(vec3, OP_MULT, new Float(-1))); 
+                if(un->op == OP_NOT) {
+                    if(rhs->type == NODE_BOOL) {
+                        Bool* b = (Bool*)rhs;
+                        return new Bool(!(b->value));
+                    }
                 }
             }
-            if(un->op == OP_NOT) {
-                if(rhs->type == NODE_BOOL) {
-                    Bool* b = (Bool*)rhs;
-                    return new Bool(!(b->value));
-                }
-            }
-        }
 
         case NODE_BINARY:
-        {
-            Binary* bin = (Binary*)(node);
-            return eval_binary(bin);
-        }
+            {
+                Binary* bin = (Binary*)(node);
+                return eval_binary(bin);
+            }
 
         default: return 0;
     }
@@ -295,42 +295,5 @@ void MyParser::parse(std::string code) {
     status = yyparse(&init, &loop);
 
     yy_delete_buffer(state);
-
-//    if(status == 0) {
-//        for(unsigned int it = 0; it < nodes.size(); it++) {
-//            Node* root = nodes[it];
-//
-//            if(root->type >= NODE_EXPR && root->type < NODE_STMT) {
-//                Expr* result = eval_expr((Expr*)root);
-//                if(result == 0) continue;
-//                switch(result->type) {
-//                    case NODE_INT:
-//                    {
-//                        Int* i = (Int*)result;
-//                        std::cout << "= " << i->value << std::endl;
-//                        break;
-//                    }
-//
-//                    case NODE_FLOAT: 
-//                    {
-//                        Float* f = (Float*)result;
-//                        std::cout << std::fixed << std::setprecision(4) << "= " << f->value << std::endl;
-//                        break;
-//                    }
-//
-//                    case NODE_VECTOR3:
-//                    {
-//                        Vector3* v = (Vector3*)result;
-//                        std::cout << std::fixed << std::setprecision(4) << "= <" << resolve_scalar(v->x) << ", " << resolve_scalar(v->y) << ", " << resolve_scalar(v->z) << ">\n";
-//                    }
-//                    default: return;
-//                }
-//            }
-//
-//            if(root->type >= NODE_STMT) {
-//                eval_stmt((Stmt*)root);
-//            }
-//        }
-//    }
 }
 
