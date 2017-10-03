@@ -59,31 +59,34 @@ void yyerror(Stmts** init, Stmts** loop, const char *s);
     INT = 258,
     FLOAT = 259,
     IDENTIFIER = 260,
-    SEMICOLON = 261,
-    OPEN_BRACE = 262,
-    CLOSE_BRACE = 263,
-    PIPE = 264,
-    PLUS = 265,
-    LEFT = 266,
-    RIGHT = 267,
-    OPEN_PAREN = 268,
-    CLOSE_PAREN = 269,
-    LESS_THAN = 270,
-    GREATER_THAN = 271,
-    OPEN_BRACKET = 272,
-    CLOSE_BRACKET = 273,
-    COMMA = 274,
-    PERIOD = 275,
-    EQUALS = 276,
-    INIT = 277,
-    LOOP = 278,
-    ALLOCATE = 279,
-    UPLOAD = 280,
-    DRAW = 281,
-    MINUS = 282,
-    MULT = 283,
-    DIV = 284,
-    MOD = 285
+    SHADER = 261,
+    SEMICOLON = 262,
+    OPEN_BRACE = 263,
+    CLOSE_BRACE = 264,
+    PIPE = 265,
+    PLUS = 266,
+    LEFT = 267,
+    RIGHT = 268,
+    OPEN_PAREN = 269,
+    CLOSE_PAREN = 270,
+    LESS_THAN = 271,
+    GREATER_THAN = 272,
+    OPEN_BRACKET = 273,
+    CLOSE_BRACKET = 274,
+    COMMA = 275,
+    PERIOD = 276,
+    EQUALS = 277,
+    INIT = 278,
+    LOOP = 279,
+    ALLOCATE = 280,
+    UPLOAD = 281,
+    DRAW = 282,
+    VERTEX = 283,
+    FRAGMENT = 284,
+    MINUS = 285,
+    MULT = 286,
+    DIV = 287,
+    MOD = 288
   };
 #endif
 
@@ -101,10 +104,11 @@ union YYSTYPE
 	Vector3* vval;
 	Stmt* sval;
     Stmts* svval;
+    ShaderSource* ssval;
 
 	UploadList* lval;
 
-#line 108 "parser.h" /* yacc.c:1909  */
+#line 112 "parser.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

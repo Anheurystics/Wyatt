@@ -14,7 +14,9 @@ void yyerror(const char *s);
 %option nounput
 
 %%
-
+"vert"         { return VERTEX; }
+"frag"         { return FRAGMENT; }
+"`"(\\.|[^`])*"`" { yylval.idval = new Ident(strdup(yytext));  return SHADER; }
 [ \t\n]          ;
 [0-9]+\.[0-9]+ { yylval.fval = new Float(float(atof(yytext))); return FLOAT; }
 [0-9]+         { yylval.ival = new Int(atoi(yytext)); return INT; }

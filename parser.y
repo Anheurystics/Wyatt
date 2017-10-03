@@ -30,19 +30,20 @@ void yyerror(Stmts** init, Stmts** loop, const char *s);
 	Vector3* vval;
 	Stmt* sval;
     Stmts* svval;
+    ShaderSource* ssval;
 
 	UploadList* lval;
 }
 
 %token<ival> INT 
 %token<fval> FLOAT
-%token<idval> IDENTIFIER
+%token<idval> IDENTIFIER SHADER
 
 %token SEMICOLON OPEN_BRACE CLOSE_BRACE
 %token PIPE
 %token PLUS LEFT RIGHT
 %token OPEN_PAREN CLOSE_PAREN LESS_THAN GREATER_THAN OPEN_BRACKET CLOSE_BRACKET COMMA PERIOD EQUALS
-%token INIT LOOP ALLOCATE UPLOAD DRAW
+%token INIT LOOP ALLOCATE UPLOAD DRAW VERTEX FRAGMENT
 
 %left PLUS MINUS
 %left MULT DIV MOD
@@ -53,16 +54,22 @@ void yyerror(Stmts** init, Stmts** loop, const char *s);
 
 %type<sval> stmt
 %type<svval> stmts block
+%type <ssval> vert_shader frag_shader
 %type<lval> upload_list
 
 %start program 
 %%
 
-program:
-    | INIT block LOOP block program { *init = $2; *loop = $4; }
-	| expr SEMICOLON program { }
-	| stmt SEMICOLON program { }
+program: INIT block LOOP block { *init = $2; *loop = $4; }
+    | vert_shader program { std::cout << "vert " << $1->name << " " << $1->code << std::endl; }
+    | frag_shader program { std::cout << "frag " << $1->name << " " << $1->code << std::endl; }
 	;
+
+vert_shader: VERTEX IDENTIFIER SHADER SEMICOLON { $$ = new ShaderSource($2->name, $3->name, "vert"); }
+    ;
+
+frag_shader: FRAGMENT IDENTIFIER SHADER SEMICOLON { $$ = new ShaderSource($2->name, $3->name, "frag"); }
+    ;
 
 expr: scalar { $$ = $1; }
 	| vector { $$ = $1; }

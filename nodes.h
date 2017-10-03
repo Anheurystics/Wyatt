@@ -3,7 +3,7 @@
 
 enum NodeType {
     NODE_EXPR, NODE_BINARY, NODE_UNARY, NODE_INT, NODE_FLOAT, NODE_VECTOR3, NODE_IDENT, NODE_UPLOADLIST, 
-    NODE_STMT, NODE_ASSIGN, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_STMTS
+    NODE_STMT, NODE_ASSIGN, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_STMTS, NODE_SSOURCE
 };
 
 enum OpType {
@@ -174,3 +174,18 @@ class Draw: public Stmt {
             type = NODE_DRAW;
         }
 };
+
+class ShaderSource: public Node {
+    public:
+        std::string name;
+        std::string code;
+        std::string shader_type;
+
+        ShaderSource(std::string name, std::string code, std::string shader_type) {
+            this->name = name;
+            this->code = code;
+            this->shader_type = shader_type;
+            type = NODE_SSOURCE;
+        }
+};
+
