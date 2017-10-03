@@ -43,7 +43,7 @@ void yyerror(Stmts** init, Stmts** loop, const char *s);
 
 %token SEMICOLON OPEN_BRACE CLOSE_BRACE
 %token PIPE
-%token OPEN_PAREN CLOSE_PAREN LESS_THAN GREATER_THAN OPEN_BRACKET CLOSE_BRACKET COMMA PERIOD EQUALS AND OR
+%token OPEN_PAREN CLOSE_PAREN LESS_THAN GREATER_THAN OPEN_BRACKET CLOSE_BRACKET COMMA PERIOD EQUALS AND OR NOT 
 %token INIT LOOP ALLOCATE UPLOAD DRAW VERTEX FRAGMENT
 
 %left PLUS MINUS
@@ -104,8 +104,10 @@ upload_list: vec3 { $$ = new UploadList($1); }
 	;
 
 bool: BOOL { $$ = $1; }
+    | IDENTIFIER { $$ = $1; }
     | bool AND bool { $$ = new Binary($1, OP_AND, $3); }
     | bool OR bool { $$ = new Binary($1, OP_OR, $3); }
+    | NOT bool { $$ = new Unary(OP_NOT, $2); }
     | OPEN_PAREN bool CLOSE_PAREN { $$ = $2; }
     ;
 

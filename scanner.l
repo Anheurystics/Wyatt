@@ -42,6 +42,7 @@ void yyerror(const char *s);
 "+"            { return PLUS; }
 "-"		       { return MINUS; }
 "*"            { return MULT; }
+"!"            { return NOT; }
 "/"            { return DIV; }
 "|"			   { return PIPE; }
 ";"            { return SEMICOLON; }

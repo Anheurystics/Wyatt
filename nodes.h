@@ -7,7 +7,7 @@ enum NodeType {
 };
 
 enum OpType {
-    OP_PLUS, OP_MINUS, OP_MULT, OP_DIV, OP_MOD, OP_AND, OP_OR
+    OP_PLUS, OP_MINUS, OP_MULT, OP_DIV, OP_MOD, OP_AND, OP_OR, OP_NOT
 };
 
 class Node {

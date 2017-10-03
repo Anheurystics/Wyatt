@@ -155,20 +155,28 @@ Expr* MyParser::eval_expr(Expr* node) {
             Unary* un = (Unary*)node;
             Expr* rhs = eval_expr(un->rhs);
 
-            if(rhs->type == NODE_INT) {
-                Int* i = (Int*)rhs;
-                return new Int(-(i->value));
-            }
+            if(un->op == OP_MINUS) {
+                if(rhs->type == NODE_INT) {
+                    Int* i = (Int*)rhs;
+                    return new Int(-(i->value));
+                }
 
-            if(rhs->type == NODE_FLOAT) {
-                Float* fl = (Float*)rhs;
-                return new Float(-(fl->value));
-            }
-            if(rhs->type == NODE_VECTOR3) {
-                Vector3* vec3 = (Vector3*)rhs;
+                if(rhs->type == NODE_FLOAT) {
+                    Float* fl = (Float*)rhs;
+                    return new Float(-(fl->value));
+                }
+                if(rhs->type == NODE_VECTOR3) {
+                    Vector3* vec3 = (Vector3*)rhs;
 
-                //SHAMEFUL HACK
-                return eval_binary(new Binary(vec3, OP_MULT, new Float(-1))); 
+                    //SHAMEFUL HACK
+                    return eval_binary(new Binary(vec3, OP_MULT, new Float(-1))); 
+                }
+            }
+            if(un->op == OP_NOT) {
+                if(rhs->type == NODE_BOOL) {
+                    Bool* b = (Bool*)rhs;
+                    return new Bool(!(b->value));
+                }
             }
         }
 
