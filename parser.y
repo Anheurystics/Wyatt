@@ -43,7 +43,7 @@ void yyerror(Stmts** init, Stmts** loop, const char *s);
 
 %token SEMICOLON OPEN_BRACE CLOSE_BRACE
 %token PIPE
-%token OPEN_PAREN CLOSE_PAREN LESS_THAN GREATER_THAN OPEN_BRACKET CLOSE_BRACKET COMMA PERIOD EQUALS AND OR NOT IF
+%token OPEN_PAREN CLOSE_PAREN LESS_THAN GREATER_THAN OPEN_BRACKET CLOSE_BRACKET COMMA PERIOD EQUALS AND OR NOT IF WHILE EQUAL NEQUAL GEQUAL LEQUAL
 %token INIT LOOP ALLOCATE UPLOAD DRAW VERTEX FRAGMENT
 
 %left PLUS MINUS
@@ -89,6 +89,7 @@ stmt: IDENTIFIER EQUALS expr { $$ = new Assign($1, $3); }
 	;
 
 stmt_block: IF OPEN_PAREN bool CLOSE_PAREN block { $$ = new If($3, $5); }
+    | WHILE OPEN_PAREN bool CLOSE_PAREN block { $$ = new While($3, $5); }
     ;
 
 stmts: { $$ = new Stmts(0); }
@@ -113,6 +114,12 @@ bool: BOOL { $$ = $1; }
     | bool AND bool { $$ = new Binary($1, OP_AND, $3); }
     | bool OR bool { $$ = new Binary($1, OP_OR, $3); }
     | NOT bool { $$ = new Unary(OP_NOT, $2); }
+    | scalar EQUAL scalar { $$ = new Binary($1, OP_EQUAL, $3); }
+    | scalar LESS_THAN scalar { $$ = new Binary($1, OP_LESSTHAN, $3); }
+    | scalar GREATER_THAN scalar { $$ = new Binary($1, OP_GREATERTHAN, $3); }
+    | scalar NEQUAL scalar { $$ = new Binary($1, OP_NEQUAL, $3); }
+    | scalar LEQUAL scalar { $$ = new Binary($1, OP_LEQUAL, $3); }
+    | scalar GEQUAL scalar { $$ = new Binary($1, OP_GEQUAL, $3); }
     | OPEN_PAREN bool CLOSE_PAREN { $$ = $2; }
     ;
 
@@ -142,37 +149,6 @@ vector: vec3 { $$ = $1; }
 
 vec3: OPEN_BRACKET scalar COMMA scalar COMMA scalar CLOSE_BRACKET { $$ = new Vector3($2, $4, $6); }
 	;
-
-/*
-iexpr: INT { $$ = $1; }
-	| iexpr PLUS iexpr { $$ = new Binary($1, OP_PLUS, $3); }
-	| iexpr MINUS iexpr { $$ = new Binary($1, OP_MINUS, $3); }
-	| iexpr MULT iexpr { $$ = new Binary($1, OP_MULT, $3); }
-	| OPEN_PAREN iexpr CLOSE_PAREN { $$ = $2; }
-	;
-
-fexpr: FLOAT { $$ = $1; }
-	| fexpr PLUS fexpr { $$ = new Binary($1, OP_PLUS, $3); }
-	| fexpr MINUS fexpr { $$ = new Binary($1, OP_MINUS, $3); }
-	| fexpr MULT fexpr { $$ = new Binary($1, OP_MULT, $3); }
-	| fexpr DIV fexpr { $$ = new Binary($1, OP_DIV, $3); }
-	| iexpr DIV iexpr { $$ = new Binary($1, OP_DIV, $3); }
-	| v3expr MULT v3expr { $$ = new Binary($1, OP_MULT, $3); }
-	| OPEN_PAREN fexpr CLOSE_PAREN { $$ = $2; }
-	;
-
-v3expr: vec3 { $$ = $1; }
-	| v3expr PLUS v3expr { $$ = new Binary($1, OP_PLUS, $3); }
-	| v3expr MINUS v3expr { $$ = new Binary($1, OP_MINUS, $3); }
-	| v3expr MULT fexpr { $$ = new Binary($1, OP_MULT, $3); }
-	| fexpr MULT v3expr { $$ = new Binary($1, OP_MULT, $3); }
-	| iexpr MULT v3expr { $$ = new Binary($1, OP_MULT, $3); }
-	| v3expr MULT iexpr { $$ = new Binary($1, OP_MULT, $3); }
-	| v3expr MOD v3expr { $$ = new Binary($1, OP_MOD, $3); }
-	| v3expr DIV fexpr { $$ = new Binary($1, OP_DIV, $3); }
-	| OPEN_PAREN v3expr CLOSE_PAREN { $$ = $2; }
-	;
-*/
 
 %%
 

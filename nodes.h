@@ -3,11 +3,11 @@
 
 enum NodeType {
     NODE_EXPR, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_VECTOR3, NODE_IDENT, NODE_UPLOADLIST, 
-    NODE_STMT, NODE_ASSIGN, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_STMTS, NODE_IF, NODE_SSOURCE
+    NODE_STMT, NODE_ASSIGN, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_SSOURCE
 };
 
 enum OpType {
-    OP_PLUS, OP_MINUS, OP_MULT, OP_DIV, OP_MOD, OP_AND, OP_OR, OP_NOT
+    OP_PLUS, OP_MINUS, OP_MULT, OP_DIV, OP_MOD, OP_AND, OP_OR, OP_NOT, OP_EQUAL, OP_LESSTHAN, OP_GREATERTHAN, OP_NEQUAL, OP_LEQUAL, OP_GEQUAL
 };
 
 class Node {
@@ -140,6 +140,18 @@ class If: public Stmt {
             this->condition = condition;
             this->block = block;
             type = NODE_IF;
+        }
+};
+
+class While: public Stmt {
+    public:
+        Expr* condition;
+        Stmts* block;
+
+        While(Expr* condition, Stmts* block) {
+            this->condition = condition;
+            this->block = block;
+            type = NODE_WHILE;
         }
 };
 

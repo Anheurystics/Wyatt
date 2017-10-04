@@ -25,6 +25,7 @@ void yyerror(const char *s);
 "loop"         { return LOOP; }
 "draw"         { return DRAW; }
 "if"           { return IF; }
+"while"        { return WHILE; }
 "and"          { return AND; }
 "or"           { return OR; }
 "true"         { yylval.bval = new Bool(true); return BOOL; }
@@ -35,6 +36,9 @@ void yyerror(const char *s);
 "<-"           { return UPLOAD; }
 "<"            { return LESS_THAN; }
 ">"            { return GREATER_THAN; }
+">="           { return GEQUAL; }
+"<="           { return LEQUAL; }
+"=="           { return EQUAL; }
 "["            { return OPEN_BRACKET; }
 "]"            { return CLOSE_BRACKET; }
 "="            { return EQUALS; }

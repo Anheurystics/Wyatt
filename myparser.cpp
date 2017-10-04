@@ -40,6 +40,12 @@ Expr* MyParser::eval_binary(Binary* bin) {
             case OP_MINUS: return new Int(a - b);
             case OP_MULT: return new Int(a * b);
             case OP_DIV: return new Float(a / (float)b);
+            case OP_EQUAL: return new Bool(a == b);
+            case OP_LESSTHAN: return new Bool(a < b);
+            case OP_GREATERTHAN: return new Bool(a > b);
+            case OP_NEQUAL: return new Bool(a != b);
+            case OP_LEQUAL: return new Bool(a <= b);
+            case OP_GEQUAL: return new Bool(a >= b);
             default: return 0;
         }
     }
@@ -53,6 +59,12 @@ Expr* MyParser::eval_binary(Binary* bin) {
             case OP_MINUS: return new Float(a - b);
             case OP_MULT: return new Float(a * b);
             case OP_DIV: return new Float(a / b);
+            case OP_EQUAL: return new Bool(a == b);
+            case OP_LESSTHAN: return new Bool(a < b);
+            case OP_GREATERTHAN: return new Bool(a > b);
+            case OP_NEQUAL: return new Bool(a != b);
+            case OP_LEQUAL: return new Bool(a <= b);
+            case OP_GEQUAL: return new Bool(a >= b);
             default: return 0;
         }
     }
@@ -66,6 +78,12 @@ Expr* MyParser::eval_binary(Binary* bin) {
             case OP_MINUS: return new Float(a - b);
             case OP_MULT: return new Float(a * b);
             case OP_DIV: return new Float(a / b);
+            case OP_EQUAL: return new Bool(a == b);
+            case OP_LESSTHAN: return new Bool(a < b);
+            case OP_GREATERTHAN: return new Bool(a > b);
+            case OP_NEQUAL: return new Bool(a != b);
+            case OP_LEQUAL: return new Bool(a <= b);
+            case OP_GEQUAL: return new Bool(a >= b);
             default: return 0;
         }
     }
@@ -265,6 +283,33 @@ void MyParser::eval_stmt(Stmt* stmt) {
                 }
 
                 return;
+            }
+        case NODE_IF:
+            {
+                If* ifstmt = (If*)stmt;
+                Expr* condition = eval_expr(ifstmt->condition);
+                if(!condition) return;
+                if(condition->type == NODE_BOOL) {
+                    bool b = ((Bool*)condition)->value;
+                    if(b) {
+                        execute_stmts(ifstmt->block);
+                    }
+                }
+                return;
+            }
+        case NODE_WHILE:
+            {
+                While* whilestmt = (While*)stmt;
+                Expr* condition = eval_expr(whilestmt->condition);
+                if(!condition) return;
+                if(condition->type == NODE_BOOL) {
+                    while(true) {
+                        bool b = ((Bool*)condition)->value;
+                        if(!b) break;
+
+                        execute_stmts(whilestmt->block);
+                    }
+                }
             }
         default: return;
     }
