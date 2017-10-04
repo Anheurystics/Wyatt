@@ -167,6 +167,8 @@ Expr* MyParser::eval_expr(Expr* node) {
                 vec3->y = eval_expr(vec3->y);
                 vec3->z = eval_expr(vec3->z);
 
+                if(vec3->x == 0 || vec3->y == 0 || vec3->z == 0) return 0;
+
                 return vec3;
             }
 
@@ -174,6 +176,8 @@ Expr* MyParser::eval_expr(Expr* node) {
             {
                 Unary* un = (Unary*)node;
                 Expr* rhs = eval_expr(un->rhs);
+
+                if(!rhs) return 0;
 
                 if(un->op == OP_MINUS) {
                     if(rhs->type == NODE_INT) {
@@ -218,7 +222,6 @@ void MyParser::eval_stmt(Stmt* stmt) {
             {
                 Assign* assign = (Assign*)stmt;
                 Expr* rhs = eval_expr(assign->value);
-                if(!rhs) return;
                 if(rhs) {
                     variables[assign->ident->name] = rhs;
                 } else {
@@ -313,13 +316,14 @@ void MyParser::eval_stmt(Stmt* stmt) {
                         if(!b) break;
 
                         execute_stmts(whilestmt->block);
-
                         std::time_t now = std::time(nullptr);
                         
                         int diff = std::difftime(now, start);
                         if(diff > LOOP_TIMEOUT) { break; }
                     }
                 }
+
+                return;
             }
         case NODE_PRINT:
             {
