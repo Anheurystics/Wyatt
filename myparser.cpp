@@ -4,6 +4,8 @@
 #define resolve_float(n) ((Float*)n)->value
 #define resolve_scalar(n) ((n->type == NODE_INT)? (float)(resolve_int(n)) : resolve_float(n))
 
+#define LOOP_TIMEOUT 5
+
 MyParser::MyParser() {
 
 }
@@ -216,6 +218,7 @@ void MyParser::eval_stmt(Stmt* stmt) {
             {
                 Assign* assign = (Assign*)stmt;
                 Expr* rhs = eval_expr(assign->value);
+                if(!rhs) return;
                 if(rhs) {
                     variables[assign->ident->name] = rhs;
                 } else {
@@ -303,11 +306,18 @@ void MyParser::eval_stmt(Stmt* stmt) {
                 Expr* condition = eval_expr(whilestmt->condition);
                 if(!condition) return;
                 if(condition->type == NODE_BOOL) {
+                    std::time_t start = std::time(nullptr);
                     while(true) {
+                        condition = eval_expr(whilestmt->condition);
                         bool b = ((Bool*)condition)->value;
                         if(!b) break;
 
                         execute_stmts(whilestmt->block);
+
+                        std::time_t now = std::time(nullptr);
+                        
+                        int diff = std::difftime(now, start);
+                        if(diff > LOOP_TIMEOUT) { break; }
                     }
                 }
             }

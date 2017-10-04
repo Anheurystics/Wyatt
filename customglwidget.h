@@ -39,9 +39,6 @@ class CustomGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 
         GLuint program;
         GLuint vertShader, fragShader;
-        GLuint vbo;
-
-        std::map<std::string, GLuint> buffers;
 
         std::string vertexSource;
         std::string fragmentSource;

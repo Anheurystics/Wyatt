@@ -76,20 +76,7 @@ void CustomGLWidget::initializeGL()
     initializeOpenGLFunctions();
     glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 
-    glGenBuffers(1, &vbo);
-
-    GLfloat triangle[] = {
-        -1.0f, -1.0f, 0.0f,
-        0.0f,  1.0f, 0.0f,
-        1.0f, -1.0f, 0.0f
-    };
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, 36, triangle, GL_STATIC_DRAW);
-
     uploadShaders();
-
-    buffers["vbo"] = vbo;
 }
 
 void CustomGLWidget::paintGL() {
@@ -99,16 +86,14 @@ void CustomGLWidget::paintGL() {
         parser.parse(code);
         parser.setFunctions(context()->functions());
         parser.execute_init();
+
+        dirtyShaders = false;
     }
 
     glUseProgram(program);
 
-    std::cout << "parser " << (parser.status? "OK" : "ERROR") << std::endl;
+    std::cout << "parser " << (!parser.status? "OK" : "ERROR") << std::endl;
     parser.execute_loop();
-    //glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, (void*)0);
-    //glEnableVertexAttribArray(0);
-
-    //glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
 void CustomGLWidget::resizeGL(int width, int height)
