@@ -3,7 +3,7 @@
 
 enum NodeType {
     NODE_EXPR, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_VECTOR3, NODE_IDENT, NODE_UPLOADLIST, 
-    NODE_STMT, NODE_ASSIGN, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_SSOURCE
+    NODE_STMT, NODE_ASSIGN, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_SSOURCE, NODE_PRINT
 };
 
 enum OpType {
@@ -223,3 +223,12 @@ class ShaderSource: public Node {
         }
 };
 
+class Print: public Stmt {
+    public:
+        Expr* expr;
+
+        Print(Expr* expr) {
+            this->expr = expr;
+            type = NODE_PRINT;
+        }
+};

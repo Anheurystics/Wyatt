@@ -44,7 +44,7 @@ void yyerror(Stmts** init, Stmts** loop, const char *s);
 %token SEMICOLON OPEN_BRACE CLOSE_BRACE
 %token PIPE
 %token OPEN_PAREN CLOSE_PAREN LESS_THAN GREATER_THAN OPEN_BRACKET CLOSE_BRACKET COMMA PERIOD EQUALS AND OR NOT IF WHILE EQUAL NEQUAL GEQUAL LEQUAL
-%token INIT LOOP ALLOCATE UPLOAD DRAW VERTEX FRAGMENT
+%token INIT LOOP ALLOCATE UPLOAD DRAW VERTEX FRAGMENT PRINT
 
 %left PLUS MINUS
 %left MULT DIV MOD
@@ -81,6 +81,7 @@ stmt: IDENTIFIER EQUALS expr { $$ = new Assign($1, $3); }
 	| ALLOCATE IDENTIFIER { $$ = new Alloc($2); }
 	| IDENTIFIER UPLOAD upload_list { $$ = new Upload($1, $3); }
     | DRAW IDENTIFIER { $$ = new Draw($2); }
+    | PRINT expr { $$ = new Print($2); }
     | IDENTIFIER PLUS EQUALS expr { $$ = new Assign($1, new Binary($1, OP_PLUS, $4)); }
     | IDENTIFIER MINUS EQUALS expr { $$ = new Assign($1, new Binary($1, OP_MINUS, $4)); }
     | IDENTIFIER MULT EQUALS expr { $$ = new Assign($1, new Binary($1, OP_MULT, $4)); }

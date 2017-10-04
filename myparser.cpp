@@ -311,6 +311,30 @@ void MyParser::eval_stmt(Stmt* stmt) {
                     }
                 }
             }
+        case NODE_PRINT:
+            {
+                Print* print = (Print*)stmt;
+                Expr* output = eval_expr(print->expr);
+                switch(output->type) {
+                    case NODE_INT:
+                        std::cout << resolve_int(output) << std::endl;
+                        break;
+                    case NODE_FLOAT:
+                        std::cout << resolve_float(output) << std::endl;
+                        break;
+                    case NODE_BOOL:
+                        std::cout << (((Bool*)output)->value? "true" : "false") << std::endl;
+                        break;
+                    case NODE_VECTOR3:
+                        {
+                            Vector3* vec3 = (Vector3*)output;
+                            std::cout << "[" <<  resolve_scalar(vec3->x) << ", " << resolve_scalar(vec3->y) << ", " << resolve_scalar(vec3->z) << "]\n";
+                            break;
+                        }
+                    default: break;
+                }
+                return;
+            }
         default: return;
     }
 }

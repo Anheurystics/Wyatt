@@ -20,6 +20,7 @@ void yyerror(const char *s);
 [ \t\n]          ;
 [0-9]+\.[0-9]+ { yylval.fval = new Float(float(atof(yytext))); return FLOAT; }
 [0-9]+         { yylval.ival = new Int(atoi(yytext)); return INT; }
+"print"        { return PRINT; }
 "allocate"     { return ALLOCATE; }
 "init"         { return INIT; }
 "loop"         { return LOOP; }

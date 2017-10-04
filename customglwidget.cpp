@@ -103,7 +103,7 @@ void CustomGLWidget::paintGL() {
 
     glUseProgram(program);
 
-    std::cout << parser.status << std::endl;
+    std::cout << "parser " << (parser.status? "OK" : "ERROR") << std::endl;
     parser.execute_loop();
     //glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, (void*)0);
     //glEnableVertexAttribArray(0);
