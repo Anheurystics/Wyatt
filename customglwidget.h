@@ -36,12 +36,6 @@ class CustomGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 
     private:
         MyParser parser;
-
-        GLuint program;
-        GLuint vertShader, fragShader;
-
-        std::string vertexSource;
-        std::string fragmentSource;
 };
 
 #endif // CUSTOMGLWIDGET_H

@@ -11,7 +11,7 @@
 #include "nodes.h"
 
 int yylex();
-void yyerror(Stmts** init, Stmts** loop, const char *s);
+void yyerror(ShaderSource** vert, ShaderSource** frag, Stmts** init, Stmts** loop, const char *s);
 }
 
 %debug
@@ -20,7 +20,7 @@ void yyerror(Stmts** init, Stmts** loop, const char *s);
 %output "parser.cpp"
 %error-verbose
 
-%parse-param { Stmts** init } { Stmts** loop }
+%parse-param { ShaderSource** vert } { ShaderSource ** frag}  { Stmts** init } { Stmts** loop }
 
 %union {
 	Expr* eval;
@@ -43,7 +43,7 @@ void yyerror(Stmts** init, Stmts** loop, const char *s);
 
 %token SEMICOLON OPEN_BRACE CLOSE_BRACE
 %token PIPE
-%token OPEN_PAREN CLOSE_PAREN LESS_THAN GREATER_THAN OPEN_BRACKET CLOSE_BRACKET COMMA PERIOD EQUALS AND OR NOT IF WHILE EQUAL NEQUAL GEQUAL LEQUAL
+%token OPEN_PAREN CLOSE_PAREN LESS_THAN GREATER_THAN OPEN_BRACKET CLOSE_BRACKET COMMA PERIOD EQUALS AND OR NOT IF WHILE EQUAL NEQUAL GEQUAL LEQUAL COMP_PLUS COMP_MINUS COMP_MULT COMP_DIV COMP_MOD
 %token INIT LOOP ALLOCATE UPLOAD DRAW VERTEX FRAGMENT PRINT
 
 %left PLUS MINUS
@@ -62,8 +62,8 @@ void yyerror(Stmts** init, Stmts** loop, const char *s);
 %%
 
 program: INIT block LOOP block { *init = $2; *loop = $4; }
-    | vert_shader program { std::cout << "vert " << $1->name << " " << $1->code << std::endl; }
-    | frag_shader program { std::cout << "frag " << $1->name << " " << $1->code << std::endl; }
+    | vert_shader program { *vert = $1; }
+    | frag_shader program { *frag = $1; }
 	;
 
 vert_shader: VERTEX IDENTIFIER SHADER SEMICOLON { $$ = new ShaderSource($2->name, $3->name, "vert"); }
@@ -82,11 +82,11 @@ stmt: IDENTIFIER EQUALS expr { $$ = new Assign($1, $3); }
 	| IDENTIFIER UPLOAD upload_list { $$ = new Upload($1, $3); }
     | DRAW IDENTIFIER { $$ = new Draw($2); }
     | PRINT expr { $$ = new Print($2); }
-    | IDENTIFIER PLUS EQUALS expr { $$ = new Assign($1, new Binary($1, OP_PLUS, $4)); }
-    | IDENTIFIER MINUS EQUALS expr { $$ = new Assign($1, new Binary($1, OP_MINUS, $4)); }
-    | IDENTIFIER MULT EQUALS expr { $$ = new Assign($1, new Binary($1, OP_MULT, $4)); }
-    | IDENTIFIER DIV EQUALS expr { $$ = new Assign($1, new Binary($1, OP_DIV, $4)); }
-    | IDENTIFIER MOD EQUALS expr { $$ = new Assign($1, new Binary($1, OP_MOD, $4)); }
+    | IDENTIFIER COMP_PLUS expr { $$ = new Assign($1, new Binary($1, OP_PLUS, $3)); }
+    | IDENTIFIER COMP_MINUS expr { $$ = new Assign($1, new Binary($1, OP_MINUS, $3)); }
+    | IDENTIFIER COMP_MULT expr { $$ = new Assign($1, new Binary($1, OP_MULT, $3)); }
+    | IDENTIFIER COMP_DIV expr { $$ = new Assign($1, new Binary($1, OP_DIV, $3)); }
+    | IDENTIFIER COMP_MOD expr { $$ = new Assign($1, new Binary($1, OP_MOD, $3)); }
 	;
 
 stmt_block: IF OPEN_PAREN bool CLOSE_PAREN block { $$ = new If($3, $5); }
@@ -131,6 +131,7 @@ scalar: INT { $$ = $1; }
 	| scalar MINUS scalar { $$ = new Binary($1, OP_MINUS, $3); }
 	| scalar MULT scalar { $$ = new Binary($1, OP_MULT, $3); }
 	| scalar DIV scalar { $$ = new Binary($1, OP_DIV, $3); }
+    | scalar MOD scalar { $$ = new Binary($1, OP_MOD, $3); }
     | MINUS scalar { $$ = new Unary(OP_MINUS, $2); }
 	| vector MULT vector { $$ = new Binary($1, OP_MULT, $3); }
 	| OPEN_PAREN scalar CLOSE_PAREN { $$ = $2; }
@@ -153,6 +154,6 @@ vec3: OPEN_BRACKET scalar COMMA scalar COMMA scalar CLOSE_BRACKET { $$ = new Vec
 
 %%
 
-void yyerror(Stmts** init, Stmts** loop, const char* s) {
+void yyerror(ShaderSource** vert, ShaderSource** frag, Stmts** init, Stmts** loop, const char* s) {
 	fprintf(stderr, "Parse error: %s\n", s);
 }

@@ -46,15 +46,20 @@ void yyerror(const char *s);
 "."            { return PERIOD; }
 ","            { return COMMA; }
 "+"            { return PLUS; }
+"+="           { return COMP_PLUS; }
 "-"		       { return MINUS; }
+"-="           { return COMP_MINUS; }
 "*"            { return MULT; }
+"*="           { return COMP_MULT; }
 "!"            { return NOT; }
 "/"            { return DIV; }
+"/="           { return COMP_DIV; }
 "|"			   { return PIPE; }
 ";"            { return SEMICOLON; }
 "{"            { return OPEN_BRACE; }
 "}"            { return CLOSE_BRACE; }
 "%"            { return MOD; }
+"%="           { return COMP_MOD; }
 .			   { printf("Illegal token!\n"); }
 %%
 

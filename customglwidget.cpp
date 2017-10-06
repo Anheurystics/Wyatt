@@ -1,16 +1,14 @@
 #include "customglwidget.h"
 
-CustomGLWidget::CustomGLWidget(QWidget *parent = 0): QOpenGLWidget(parent), program(0)
-{
+CustomGLWidget::CustomGLWidget(QWidget *parent = 0): QOpenGLWidget(parent) {
+
     MainWindow* window = qobject_cast<MainWindow*>(this->parent());
 
-    vertexSource = "attribute vec3 pos;\nvoid main()\n{\n\tgl_Position = vec4(pos, 1.0);\n}";
-    fragmentSource = "void main()\n{\n\tgl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);\n}";
-
-    dirtyShaders = false;
+    dirtyShaders = true;
 }
 
 void CustomGLWidget::uploadShaders() {
+    /*
     if(!program) {
         program = glCreateProgram();
         vertShader = glCreateShader(GL_VERTEX_SHADER);
@@ -53,18 +51,13 @@ void CustomGLWidget::uploadShaders() {
         std::cout << "program error\n-------------\n" << log << std::endl;
         return;
     }
+    */
 }
 
 void CustomGLWidget::updateCode()
 {
     QObject *source = QObject::sender();
     CodeEditor *editor = qobject_cast<CodeEditor*>(source);
-
-    //if(editor->getType().compare("vertex") == 0)
-    //	vertexSource = editor->document()->toPlainText().toStdString();
-
-    //if(editor->getType().compare("fragment") == 0)
-    //    fragmentSource = editor->document()->toPlainText().toStdString();
 
     code = editor->document()->toPlainText().toStdString() + '\n';
     dirtyShaders = true;
@@ -85,12 +78,11 @@ void CustomGLWidget::paintGL() {
     if(dirtyShaders) {
         parser.parse(code);
         parser.setFunctions(context()->functions());
+        parser.compile_program();
         parser.execute_init();
 
         dirtyShaders = false;
     }
-
-    glUseProgram(program);
 
     std::cout << "parser " << (!parser.status? "OK" : "ERROR") << std::endl;
     parser.execute_loop();

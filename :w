@@ -360,63 +360,16 @@ void MyParser::execute_stmts(Stmts* stmts) {
     }
 }
 
-void MyParser::compile_shader(GLuint* handle, ShaderSource* source) {
-    const char* src = source->code.c_str();
-    gl->glShaderSource(*handle, 1, &src, NULL);
-    gl->glCompileShader(*handle);
-
-    GLint success;
-    char log[256];
-
-    gl->glGetShaderInfoLog(*handle, 256, 0, log);
-    gl->glGetShaderiv(*handle, GL_COMPILE_STATUS, &success);
-    if(success != GL_TRUE) {
-        std::cout << source->name << " shader error\n" << success << " " << log << std::endl;
-    }
-}
-
-void MyParser::compile_program() {
-    if(program == NULL) {
-        program = new Program;
-        program->handle = gl->glCreateProgram();
-        program->vert = gl->glCreateShader(GL_VERTEX_SHADER);
-        program->frag = gl->glCreateShader(GL_FRAGMENT_SHADER);
-
-        gl->glAttachShader(program->handle, program->vert);
-        gl->glAttachShader(program->handle, program->frag);
-    }
-
-    if(vertSource == NULL || fragSource == NULL) {
-        std::cout << "ERROR: Missing shaders!\n";
-        return;
-    }
-
-    compile_shader(&(program->vert), vertSource);
-    compile_shader(&(program->frag), fragSource);
-
-    GLint success;
-    char log[256];
-    gl->glLinkProgram(program->handle);
-    gl->glGetProgramiv(program->handle, GL_LINK_STATUS, &success);
-    gl->glGetProgramInfoLog(program->handle, 256, 0, log);
-    if(success != GL_TRUE) {
-        std::cout << "program error\n" << log << std::endl;
-    }
-}
-
 void MyParser::execute_init() {
     if(!init || status) return;
     buffers.clear();
     variables.clear();
 
-    if(program->handle) gl->glUseProgram(program->handle);
     execute_stmts(init);
 }
 
 void MyParser::execute_loop() {
     if(!loop || status) return;
-
-    if(program->handle) gl->glUseProgram(program->handle);
     execute_stmts(loop);
 }
 
