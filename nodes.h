@@ -1,5 +1,6 @@
 #include <string>
 #include <vector>
+#include <map>
 
 enum NodeType {
     NODE_EXPR, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_VECTOR3, NODE_IDENT, NODE_UPLOADLIST, 
@@ -214,6 +215,9 @@ class ShaderSource: public Node {
         std::string name;
         std::string code;
         std::string shader_type;
+
+        std::map<std::string, std::vector<std::string>> inputs;
+        std::map<std::string, std::vector<std::string>> outputs;
 
         ShaderSource(std::string name, std::string code, std::string shader_type) {
             this->name = name;

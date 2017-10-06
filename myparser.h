@@ -8,6 +8,7 @@
 #include <vector>
 #include <string>
 #include <ctime>
+#include <regex>
 
 #include <QOpenGLFunctions>
 
@@ -18,12 +19,22 @@ class MyParser {
     public:
         struct Buffer {
             GLuint handle;
-            std::vector<float> data;
+            //std::vector<float> data;
+            std::map<std::string, std::vector<float>> data;
+
+            Layout* layout;
+        };
+
+        struct Layout {
+            std::map<std::string, int> attributes;
         };
 
         struct Program {
             GLuint handle;
             GLuint vert, frag;
+
+            ShaderSource* vertSource;
+            ShaderSource* fragSource;
         };
 
         MyParser();

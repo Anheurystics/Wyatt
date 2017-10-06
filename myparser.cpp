@@ -394,6 +394,9 @@ void MyParser::compile_program() {
     compile_shader(&(program->vert), vertSource);
     compile_shader(&(program->frag), fragSource);
 
+    program->vertSource = vertSource;
+    program->fragSource = fragSource;
+
     GLint success;
     char log[256];
     gl->glLinkProgram(program->handle);
