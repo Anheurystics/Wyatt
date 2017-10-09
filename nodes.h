@@ -154,7 +154,7 @@ class While: public Stmt {
             this->block = block;
             type = NODE_WHILE;
         }
-};
+}; 
 
 class Assign: public Stmt {
     public:
@@ -191,11 +191,13 @@ class UploadList: public Expr {
 class Upload: public Stmt {
     public:
         Ident* ident;
+        Ident* attrib;
         UploadList *list;
 
-        Upload(Ident* ident, UploadList *list) {
+        Upload(Ident* ident, Ident* attrib, UploadList *list) {
             type = NODE_UPLOAD;
             this->ident = ident;
+            this->attrib = attrib;
             this->list = list;
         }
 };

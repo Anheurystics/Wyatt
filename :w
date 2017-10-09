@@ -237,8 +237,6 @@ void MyParser::eval_stmt(Stmt* stmt) {
 
                 if(!buffers[alloc->ident->name]) {
                     Buffer* buf = new Buffer;
-                    buf->layout = new Layout;
-
                     gl->glGenBuffers(1, &(buf->handle));
                     buffers[alloc->ident->name] = buf;
                 } else {
@@ -251,15 +249,10 @@ void MyParser::eval_stmt(Stmt* stmt) {
             {
                 Upload* upload = (Upload*)stmt;
 
-                Buffer* buffer = buffers[upload->ident->name];
-                Layout* layout = buffer->layout;
+                Layout* layout = buffers[upload->ident->name];
 
-                if(layout->attributes.find(upload->attrib->name) == layout->attributes.end()) {
-                    layout->attributes[upload->attrib->name] = 3;
-                    layout->list.push_back(upload->attrib->name);
-                }
-
-                std::vector<float>* target = &(buffer->data[upload->attrib->name]);
+                std::vector<float>* target = &(buffers[upload->ident->name]->data[upload->attrib->name]);
+                //std::vector<float>* target = &(buffers[upload->ident->name]->data);
                 for(unsigned int i = 0; i < upload->list->list.size(); i++) {
                     Expr* expr = eval_expr(upload->list->list[i]);
                     if(!expr) {
@@ -280,8 +273,6 @@ void MyParser::eval_stmt(Stmt* stmt) {
                     }
                 }
 
-                buffer->sizes[upload->attrib->name] = target->size() / buffer->layout->attributes[upload->attrib->name];
-
                 return;
             }
         case NODE_DRAW:
@@ -289,40 +280,19 @@ void MyParser::eval_stmt(Stmt* stmt) {
                 Draw* draw = (Draw*)stmt;
 
                 Buffer* buffer = buffers[draw->ident->name];
+
                 if(buffer) {
-                    Layout* layout = buffer->layout;
-                    std::vector<float> final_vector;
 
-                    std::map<std::string, int> attributes = layout->attributes;
-
-                    gl->glBindBuffer(GL_ARRAY_BUFFER, buffer->handle);
-                    for(unsigned int i = 0; i < buffer->sizes[layout->list[0]]; i++) {
-                        for(unsigned int j = 0; j < layout->list.size(); j++) {
-                            std::string attrib = layout->list[j];
-                            for(unsigned int k = 0; k < layout->attributes[attrib]; k++) {
-                                final_vector.insert(final_vector.end(), buffer->data[attrib][(i * layout->attributes[attrib]) + k]);
-                            }
-                        }
+                    for(std::map<std::string, std::vector<float>>::iterator it = buffer->data.begin(); it != buffer->data.end(); ++it) {
+                        std::cout << it->first << std::endl;
                     }
 
-                    gl->glBufferData(GL_ARRAY_BUFFER, final_vector.size() * sizeof(float), &final_vector[0], GL_STATIC_DRAW);
+                    //gl->glBindBuffer(GL_ARRAY_BUFFER, buffer->handle);
+                    //gl->glBufferData(GL_ARRAY_BUFFER, buffer->data.size() * sizeof(float), &(buffer->data)[0], GL_STATIC_DRAW);
+                    //gl->glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, (void*)0);
+                    //gl->glEnableVertexAttribArray(0);
 
-                    int total_size = 0;
-                    for(std::map<std::string, int>::iterator it = layout->attributes.begin(); it != layout->attributes.end(); ++it) {
-                        total_size += it->second;
-                    }
-
-                    int cumulative_size = 0;
-                    for(unsigned int i = 0; i < layout->list.size(); i++) {
-                        std::string attrib = layout->list[i];
-                        GLint location = gl->glGetAttribLocation(program->handle, attrib.c_str());
-                        gl->glVertexAttribPointer(location, layout->attributes[attrib], GL_FLOAT, false, total_size * sizeof(float), (void*)(cumulative_size * sizeof(float)));
-                        gl->glEnableVertexAttribArray(location);
-
-                        cumulative_size += layout->attributes[attrib];
-                    }
-
-                    gl->glDrawArrays(GL_TRIANGLES, 0, final_vector.size() / total_size);
+                    //gl->glDrawArrays(GL_TRIANGLES, 0, buffer->data.size() / 3);
                 } else {
                     std::cout << "ERROR: Can't draw non-existent buffer " << draw->ident->name << std::endl;
                 }

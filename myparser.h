@@ -17,16 +17,17 @@
 
 class MyParser {
     public:
-        struct Buffer {
-            GLuint handle;
-            //std::vector<float> data;
-            std::map<std::string, std::vector<float>> data;
-
-            Layout* layout;
-        };
-
         struct Layout {
             std::map<std::string, int> attributes;
+            std::vector<std::string> list;
+        };
+
+        struct Buffer {
+            GLuint handle;
+            std::map<std::string, std::vector<float>> data;
+            std::map<std::string, int> sizes;
+
+            Layout* layout = NULL;
         };
 
         struct Program {
