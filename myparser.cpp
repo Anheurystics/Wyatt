@@ -298,7 +298,7 @@ void MyParser::eval_stmt(Stmt* stmt) {
                     Layout* layout = buffer->layout;
                     std::vector<float> final_vector;
 
-                    std::map<std::string, int> attributes = layout->attributes;
+                    std::map<std::string, unsigned int> attributes = layout->attributes;
 
                     gl->glBindBuffer(GL_ARRAY_BUFFER, buffer->handle);
                     for(unsigned int i = 0; i < buffer->sizes[layout->list[0]]; i++) {
@@ -313,7 +313,7 @@ void MyParser::eval_stmt(Stmt* stmt) {
                     gl->glBufferData(GL_ARRAY_BUFFER, final_vector.size() * sizeof(float), &final_vector[0], GL_STATIC_DRAW);
 
                     int total_size = 0;
-                    for(std::map<std::string, int>::iterator it = layout->attributes.begin(); it != layout->attributes.end(); ++it) {
+                    for(std::map<std::string, unsigned int>::iterator it = layout->attributes.begin(); it != layout->attributes.end(); ++it) {
                         total_size += it->second;
                     }
 

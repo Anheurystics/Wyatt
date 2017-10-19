@@ -18,14 +18,14 @@
 class MyParser {
     public:
         struct Layout {
-            std::map<std::string, int> attributes;
+            std::map<std::string, unsigned int> attributes;
             std::vector<std::string> list;
         };
 
         struct Buffer {
             GLuint handle;
             std::map<std::string, std::vector<float>> data;
-            std::map<std::string, int> sizes;
+            std::map<std::string, unsigned int> sizes;
 
             Layout* layout = NULL;
         };
