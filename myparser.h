@@ -41,8 +41,11 @@ class MyParser {
         MyParser();
         std::map<std::string, Expr*> variables;
         std::map<std::string, Buffer*> buffers;
+        std::map<std::string, Program*> programs;
+        std::map<std::string, ShaderPair*> shaders;
 
-        Program* program = NULL;
+        std::string current_program_name;
+        Program* current_program = NULL;
 
         int status = -1;
 
@@ -58,8 +61,6 @@ class MyParser {
     private:
         Stmts* init = NULL;
         Stmts* loop = NULL;
-        ShaderSource* vertSource = NULL;
-        ShaderSource* fragSource = NULL;
         QOpenGLFunctions* gl;
 
         Expr* eval_expr(Expr*);

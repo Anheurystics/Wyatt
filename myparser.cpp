@@ -288,6 +288,11 @@ void MyParser::eval_stmt(Stmt* stmt) {
             {
                 Draw* draw = (Draw*)stmt;
 
+                if(current_program == NULL) {
+                    std::cout << "ERROR: Cannot bind program with name " << current_program_name << std::endl;
+                    return;
+                }
+
                 Buffer* buffer = buffers[draw->ident->name];
                 if(buffer) {
                     Layout* layout = buffer->layout;
@@ -315,7 +320,7 @@ void MyParser::eval_stmt(Stmt* stmt) {
                     int cumulative_size = 0;
                     for(unsigned int i = 0; i < layout->list.size(); i++) {
                         std::string attrib = layout->list[i];
-                        GLint location = gl->glGetAttribLocation(program->handle, attrib.c_str());
+                        GLint location = gl->glGetAttribLocation(current_program->handle, attrib.c_str());
                         gl->glVertexAttribPointer(location, layout->attributes[attrib], GL_FLOAT, false, total_size * sizeof(float), (void*)(cumulative_size * sizeof(float)));
                         gl->glEnableVertexAttribArray(location);
 
@@ -327,6 +332,20 @@ void MyParser::eval_stmt(Stmt* stmt) {
                     std::cout << "ERROR: Can't draw non-existent buffer " << draw->ident->name << std::endl;
                 }
 
+                return;
+            }
+        case NODE_USE:
+            {
+                Use* use = (Use*)stmt;
+                current_program_name = use->ident->name;
+                current_program = programs[current_program_name];
+
+                if(current_program == NULL) {
+                    std::cout << "ERROR: No valid vertex/fragment pair for program name " << current_program_name << std::endl;
+                    return;
+                }
+
+                gl->glUseProgram(current_program->handle);
                 return;
             }
         case NODE_IF:
@@ -414,34 +433,42 @@ void MyParser::compile_shader(GLuint* handle, ShaderSource* source) {
 }
 
 void MyParser::compile_program() {
-    if(program == NULL) {
-        program = new Program;
+    programs.clear();
+    for(std::map<std::string, ShaderPair*>::iterator it = shaders.begin(); it != shaders.end(); ++it) {
+        Program* program = new Program;
         program->handle = gl->glCreateProgram();
         program->vert = gl->glCreateShader(GL_VERTEX_SHADER);
         program->frag = gl->glCreateShader(GL_FRAGMENT_SHADER);
 
         gl->glAttachShader(program->handle, program->vert);
         gl->glAttachShader(program->handle, program->frag);
-    }
 
-    if(vertSource == NULL || fragSource == NULL) {
-        std::cout << "ERROR: Missing shaders!\n";
-        return;
-    }
+        program->vertSource = it->second->vertex;
+        program->fragSource = it->second->fragment;
 
-    compile_shader(&(program->vert), vertSource);
-    compile_shader(&(program->frag), fragSource);
+        if(program->vertSource == NULL) {
+            std::cout << "ERROR: Missing vertex shader source for program " << it->first << std::endl;
+            continue;
+        }
 
-    program->vertSource = vertSource;
-    program->fragSource = fragSource;
+        if(program->fragSource == NULL) {
+            std::cout << "ERROR: Missing fragment shader source for program " << it->first << std::endl;
+            continue;
+        }
 
-    GLint success;
-    char log[256];
-    gl->glLinkProgram(program->handle);
-    gl->glGetProgramiv(program->handle, GL_LINK_STATUS, &success);
-    gl->glGetProgramInfoLog(program->handle, 256, 0, log);
-    if(success != GL_TRUE) {
-        std::cout << "program error\n" << log << std::endl;
+        compile_shader(&(program->vert), program->vertSource);
+        compile_shader(&(program->frag), program->fragSource);
+
+        GLint success;
+        char log[256];
+        gl->glLinkProgram(program->handle);
+        gl->glGetProgramiv(program->handle, GL_LINK_STATUS, &success);
+        gl->glGetProgramInfoLog(program->handle, 256, 0, log);
+        if(success != GL_TRUE) {
+            std::cout << "program error\n" << log << std::endl;
+        }
+
+        programs[it->first] = program;
     }
 }
 
@@ -450,21 +477,20 @@ void MyParser::execute_init() {
     buffers.clear();
     variables.clear();
 
-    if(program->handle) gl->glUseProgram(program->handle);
     execute_stmts(init);
 }
 
 void MyParser::execute_loop() {
     if(!loop || status) return;
 
-    if(program->handle) gl->glUseProgram(program->handle);
     execute_stmts(loop);
 }
 
 void MyParser::parse(std::string code) {
     YY_BUFFER_STATE state = yy_scan_string(code.c_str());
 
-    status = yyparse(&vertSource, &fragSource, &init, &loop);
+    shaders.clear();
+    status = yyparse(&shaders, &init, &loop);
 
     yy_delete_buffer(state);
 }

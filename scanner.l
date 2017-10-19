@@ -25,6 +25,7 @@ void yyerror(const char *s);
 "init"         { return INIT; }
 "loop"         { return LOOP; }
 "draw"         { return DRAW; }
+"use"          { return USE; }
 "if"           { return IF; }
 "while"        { return WHILE; }
 "and"          { return AND; }

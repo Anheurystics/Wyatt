@@ -11,16 +11,17 @@
 #include "nodes.h"
 
 int yylex();
-void yyerror(ShaderSource** vert, ShaderSource** frag, Stmts** init, Stmts** loop, const char *s);
+void yyerror( std::map<std::string, ShaderPair*> *shaders, Stmts** init, Stmts** loop, const char *s);
 }
 
 %debug
 
 %defines "parser.h"
 %output "parser.cpp"
-%error-verbose
+%define parse.lac full
+%define parse.error verbose
 
-%parse-param { ShaderSource** vert } { ShaderSource ** frag}  { Stmts** init } { Stmts** loop }
+%parse-param { std::map<std::string, ShaderPair*> *shaders } { Stmts** init } { Stmts** loop }
 
 %union {
 	Expr* eval;
@@ -44,7 +45,7 @@ void yyerror(ShaderSource** vert, ShaderSource** frag, Stmts** init, Stmts** loo
 %token SEMICOLON OPEN_BRACE CLOSE_BRACE
 %token PIPE
 %token OPEN_PAREN CLOSE_PAREN LESS_THAN GREATER_THAN OPEN_BRACKET CLOSE_BRACKET COMMA PERIOD EQUALS AND OR NOT IF WHILE EQUAL NEQUAL GEQUAL LEQUAL COMP_PLUS COMP_MINUS COMP_MULT COMP_DIV COMP_MOD
-%token INIT LOOP ALLOCATE UPLOAD DRAW VERTEX FRAGMENT PRINT
+%token INIT LOOP ALLOCATE UPLOAD DRAW VERTEX FRAGMENT PRINT USE
 
 %left PLUS MINUS
 %left MULT DIV MOD
@@ -62,8 +63,28 @@ void yyerror(ShaderSource** vert, ShaderSource** frag, Stmts** init, Stmts** loo
 %%
 
 program: INIT block LOOP block { *init = $2; *loop = $4; }
-    | vert_shader program { *vert = $1; }
-    | frag_shader program { *frag = $1; }
+    | vert_shader program { 
+        if(shaders->find($1->name) == shaders->end()) {
+            ShaderPair* pair = new ShaderPair;
+            pair->name = $1->name;
+            pair->vertex = $1;
+
+            shaders->insert(std::pair<std::string, ShaderPair*>($1->name, pair));
+        } else {
+            (*shaders)[$1->name]->vertex = $1;
+        }
+    }
+    | frag_shader program { 
+        if(shaders->find($1->name) == shaders->end()) {
+            ShaderPair* pair = new ShaderPair;
+            pair->name = $1->name;
+            pair->fragment = $1;
+
+            shaders->insert(std::pair<std::string, ShaderPair*>($1->name, pair));
+        } else {
+            (*shaders)[$1->name]->fragment = $1;
+        }
+    }
 	;
 
 vert_shader: VERTEX IDENTIFIER SHADER SEMICOLON { $$ = new ShaderSource($2->name, $3->name, "vert"); }
@@ -81,6 +102,7 @@ stmt: IDENTIFIER EQUALS expr { $$ = new Assign($1, $3); }
 	| ALLOCATE IDENTIFIER { $$ = new Alloc($2); }
 	| IDENTIFIER OPEN_BRACKET IDENTIFIER CLOSE_BRACKET UPLOAD upload_list { $$ = new Upload($1, $3, $6); }
     | DRAW IDENTIFIER { $$ = new Draw($2); }
+    | USE IDENTIFIER { $$ = new Use($2); }
     | PRINT expr { $$ = new Print($2); }
     | IDENTIFIER COMP_PLUS expr { $$ = new Assign($1, new Binary($1, OP_PLUS, $3)); }
     | IDENTIFIER COMP_MINUS expr { $$ = new Assign($1, new Binary($1, OP_MINUS, $3)); }
@@ -154,6 +176,6 @@ vec3: OPEN_BRACKET scalar COMMA scalar COMMA scalar CLOSE_BRACKET { $$ = new Vec
 
 %%
 
-void yyerror(ShaderSource** vert, ShaderSource** frag, Stmts** init, Stmts** loop, const char* s) {
+void yyerror(std::map<std::string, ShaderPair*> *shaders, Stmts** init, Stmts** loop, const char* s) {
 	fprintf(stderr, "Parse error: %s\n", s);
 }
