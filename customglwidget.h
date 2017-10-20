@@ -26,7 +26,6 @@ class CustomGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
         void resizeGL(int, int);
 
     private:
-        void uploadShaders();
         bool dirtyShaders;
 
         std::string code;

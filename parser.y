@@ -177,5 +177,6 @@ vec3: OPEN_BRACKET scalar COMMA scalar COMMA scalar CLOSE_BRACKET { $$ = new Vec
 %%
 
 void yyerror(std::map<std::string, ShaderPair*> *shaders, Stmts** init, Stmts** loop, const char* s) {
+    std::cerr << "shaders: " << shaders << "\ninit: " << *init << "\nloop: " << *loop << std::endl;
 	fprintf(stderr, "Parse error: %s\n", s);
 }
