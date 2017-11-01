@@ -1,9 +1,12 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <regex>
+
+using namespace std;
 
 enum NodeType {
-    NODE_EXPR, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_VECTOR3, NODE_IDENT, NODE_UPLOADLIST, 
+    NODE_EXPR, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_VECTOR3, NODE_IDENT, NODE_UNIFORM, NODE_UPLOADLIST, 
     NODE_STMT, NODE_ASSIGN, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_USE, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_SSOURCE, NODE_PRINT
 };
 
@@ -25,11 +28,21 @@ class Expr: public Node {
 
 class Ident: public Expr {
     public:
-        std::string name;
+        string name;
 
-        Ident(std::string name) {
+        Ident(string name) {
             this->name = name;
             type = NODE_IDENT;
+        }
+};
+
+class Uniform: public Ident {
+    public:
+        string shader;
+
+        Uniform(Ident* name, Ident* shader): Ident(name->name) {
+            this->shader = shader->name;
+            type = NODE_UNIFORM;
         }
 };
 
@@ -124,7 +137,7 @@ class Stmt: public Node {
 
 class Stmts: public Node {
     public:
-        std::vector<Stmt*> list;
+        vector<Stmt*> list;
 
         Stmts(Stmt* init) {
             if(init) list.insert(list.begin(), init);
@@ -180,7 +193,7 @@ class Alloc: public Stmt {
 
 class UploadList: public Expr {
     public:
-        std::vector<Expr*> list;
+        vector<Expr*> list;
 
         UploadList(Expr* init) {
             list.insert(list.begin(), init);
@@ -224,25 +237,44 @@ class Use: public Stmt {
 
 class ShaderSource: public Node {
     public:
-        std::string name;
-        std::string code;
-        std::string shader_type;
+        string name;
+        string code;
+        string shader_type;
 
-        std::map<std::string, std::vector<std::string>> inputs;
-        std::map<std::string, std::vector<std::string>> outputs;
+        map<string, vector<string>> inputs;
+        map<string, vector<string>> outputs;
 
-        ShaderSource(std::string name, std::string code, std::string shader_type) {
+        map<string, string> uniforms;
+
+        regex uniform_regex = regex("uniform\\s(\\w+)\\s(.*);");
+        regex sub_regex = regex("(\\w+)");
+
+        ShaderSource(string name, string code, string shader_type) {
             this->name = name;
             this->code = code.substr(1, code.length() - 2);
             this->shader_type = shader_type;
             type = NODE_SSOURCE;
-        }
-};
 
-struct ShaderPair {
-    std::string name;
-    ShaderSource* vertex = NULL;
-    ShaderSource* fragment = NULL;
+            sregex_iterator uniform_begin = sregex_iterator(this->code.begin(), this->code.end(), uniform_regex), uniform_end = sregex_iterator();
+
+            for(sregex_iterator i = uniform_begin; i != uniform_end; ++i) {
+                smatch match = *i;
+                string type = "";
+                for(unsigned int j = 0; j < match.size(); j++) {
+                    string group = match[j];
+                    if(j == 1) {
+                        type = group;
+                    }
+                    if(j == 2) {
+                        sregex_iterator sub_begin = sregex_iterator(group.begin(), group.end(), sub_regex), sub_end = sregex_iterator();
+
+                        for(sregex_iterator k = sub_begin; k != sub_end; ++k) {
+                            uniforms[(*k)[0]] = type;
+                        }
+                    }
+                }
+            }
+        }
 };
 
 class Print: public Stmt {

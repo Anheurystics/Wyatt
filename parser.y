@@ -52,7 +52,7 @@ void yyerror( std::map<std::string, ShaderPair*> *shaders, Stmts** init, Stmts**
 %left AND OR
 %left UNARY
 
-%type<eval> expr
+%type<eval> expr uniform
 %type<eval> scalar bool
 %type<vval> vec3
 
@@ -99,6 +99,7 @@ expr: scalar { $$ = $1; }
 	| vec3 { $$ = $1; }
     | bool { $$ = $1; }
     | IDENTIFIER { $$ = $1; }
+    | uniform { $$ = $1; }
 	| expr PLUS expr { $$ = new Binary($1, OP_PLUS, $3); }
 	| expr MINUS expr { $$ = new Binary($1, OP_MINUS, $3); }
 	| expr MULT expr { $$ = new Binary($1, OP_MULT, $3); }
@@ -107,6 +108,9 @@ expr: scalar { $$ = $1; }
     | MINUS expr { $$ = new Unary(OP_MINUS, $2); } %prec UNARY
     | OPEN_PAREN expr OPEN_PAREN { $$ = $2; }
 	;
+
+uniform: IDENTIFIER PERIOD IDENTIFIER { $$ = new Uniform($1, $3); }
+    ;
 
 stmt: IDENTIFIER EQUALS expr { $$ = new Assign($1, $3); }
 	| ALLOCATE IDENTIFIER { $$ = new Alloc($2); }
