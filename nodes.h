@@ -173,6 +173,8 @@ class Matrix2: public Expr {
             this->m10 = m10; this->m11 = m11;
         }
 
+        Matrix2(Vector2* v0, Vector2* v1): m00(v0->x), m01(v0->y), m10(v1->x), m11(v1->y) { }
+
         ~Matrix2() {
             delete m00; delete m10;
             delete m01; delete m11;
@@ -190,6 +192,8 @@ class Matrix3: public Expr {
             this->m10 = m10; this->m11 = m11; this->m12 = m12;
             this->m20 = m20; this->m21 = m21; this->m22 = m22;
         }
+
+        Matrix3(Vector3* v0, Vector3* v1, Vector3* v2): m00(v0->x), m01(v0->y), m02(v0->z), m10(v1->x), m11(v1->y), m12(v1->z), m20(v2->x), m21(v2->y), m22(v2->z) { }
 
         ~Matrix3() {
             delete m00; delete m01; delete m02;
@@ -211,6 +215,8 @@ class Matrix4: public Expr {
             this->m20 = m20; this->m21 = m21; this->m22 = m22; this->m23 = m23;
             this->m30 = m30; this->m31 = m31; this->m32 = m32; this->m33 = m33;
         }
+
+        Matrix4(Vector4* v0, Vector4* v1, Vector4* v2, Vector4* v3): m00(v0->x), m01(v0->y), m02(v0->z), m03(v0->w), m10(v1->x), m11(v1->y), m12(v1->z), m13(v1->w), m20(v2->x), m21(v2->y), m22(v2->z), m23(v2->w), m30(v3->x), m31(v3->y), m32(v3->z), m33(v3->w) { }
 
         ~Matrix4() {
             delete m00; delete m01; delete m02; delete m03;
