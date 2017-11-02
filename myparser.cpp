@@ -164,14 +164,20 @@ Expr* MyParser::eval_expr(Expr* node) {
         case NODE_VECTOR3:
             {
                 Vector3* vec3 = (Vector3*)(node);
+                Expr* x = eval_expr(vec3->x);
+                Expr* y = eval_expr(vec3->y);
+                Expr* z = eval_expr(vec3->z);
+                
+                if((x->type == NODE_INT || x->type == NODE_FLOAT) && (y->type == NODE_INT || y->type == NODE_FLOAT) || (z->type == NODE_INT || z->type == NODE_FLOAT)) {
+                    vec3->x = x; vec3->y = y; vec3->z = z;
+                    return vec3;
+                }
 
-                vec3->x = eval_expr(vec3->x);
-                vec3->y = eval_expr(vec3->y);
-                vec3->z = eval_expr(vec3->z);
+                if(x->type == NODE_VECTOR3 && y->type == NODE_VECTOR3 && z->type == NODE_VECTOR3) {
+                    return new Matrix3((Vector3*)x, (Vector3*)y, (Vector3*)z);
+                }
 
-                if(vec3->x == 0 || vec3->y == 0 || vec3->z == 0) return 0;
-
-                return vec3;
+                return 0;
             }
 
         case NODE_UNARY:
