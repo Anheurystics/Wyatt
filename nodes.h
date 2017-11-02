@@ -165,64 +165,46 @@ class Vector4: public Expr {
 
 class Matrix2: public Expr {
     public:
-        Expr *m00, *m01;
-        Expr *m10, *m11;
+        Vector2* v0;
+        Vector2* v1;
 
-        Matrix2(Expr *m00, Expr *m01, Expr *m10, Expr *m11) {
-            this->m00 = m00; this->m01 = m01;
-            this->m10 = m10; this->m11 = m11;
-        }
-
-        Matrix2(Vector2* v0, Vector2* v1): m00(v0->x), m01(v0->y), m10(v1->x), m11(v1->y) { }
+        Matrix2(Vector2* v0, Vector2* v1): v0(v0), v1(v1) { type = NODE_MATRIX2; }
 
         ~Matrix2() {
-            delete m00; delete m10;
-            delete m01; delete m11;
+            delete v0;
+            delete v1;
         }
 };
 
 class Matrix3: public Expr {
     public:
-        Expr *m00, *m01, *m02;
-        Expr *m10, *m11, *m12;
-        Expr *m20, *m21, *m22;
+        Vector3* v0;
+        Vector3* v1;
+        Vector3* v2;
 
-        Matrix3(Expr *m00, Expr *m01, Expr *m02, Expr *m10, Expr *m11, Expr *m12, Expr *m20, Expr *m21, Expr *m22) {
-            this->m00 = m00; this->m01 = m01; this->m02 = m02;
-            this->m10 = m10; this->m11 = m11; this->m12 = m12;
-            this->m20 = m20; this->m21 = m21; this->m22 = m22;
-        }
-
-        Matrix3(Vector3* v0, Vector3* v1, Vector3* v2): m00(v0->x), m01(v0->y), m02(v0->z), m10(v1->x), m11(v1->y), m12(v1->z), m20(v2->x), m21(v2->y), m22(v2->z) { }
+        Matrix3(Vector3* v0, Vector3* v1, Vector3* v2): v0(v0), v1(v1), v2(v2) { type = NODE_MATRIX3; }
 
         ~Matrix3() {
-            delete m00; delete m01; delete m02;
-            delete m10; delete m11; delete m12;
-            delete m20; delete m21; delete m22;
+            delete v0;
+            delete v1;
+            delete v2;
         }
 };
 
 class Matrix4: public Expr {
     public:
-        Expr *m00, *m01, *m02, *m03;
-        Expr *m10, *m11, *m12, *m13;
-        Expr *m20, *m21, *m22, *m23;
-        Expr *m30, *m31, *m32, *m33;
+        Vector4* v0;
+        Vector4* v1;
+        Vector4* v2;
+        Vector4* v3;
 
-        Matrix4(Expr *m00, Expr *m01, Expr *m02, Expr *m03, Expr *m10, Expr *m11, Expr *m12, Expr* m13, Expr *m20, Expr *m21, Expr *m22, Expr *m23, Expr *m30, Expr *m31, Expr *m32, Expr *m33) {
-            this->m00 = m00; this->m01 = m01; this->m02 = m02; this->m03 = m03;
-            this->m10 = m10; this->m11 = m11; this->m12 = m12; this->m13 = m13;
-            this->m20 = m20; this->m21 = m21; this->m22 = m22; this->m23 = m23;
-            this->m30 = m30; this->m31 = m31; this->m32 = m32; this->m33 = m33;
-        }
-
-        Matrix4(Vector4* v0, Vector4* v1, Vector4* v2, Vector4* v3): m00(v0->x), m01(v0->y), m02(v0->z), m03(v0->w), m10(v1->x), m11(v1->y), m12(v1->z), m13(v1->w), m20(v2->x), m21(v2->y), m22(v2->z), m23(v2->w), m30(v3->x), m31(v3->y), m32(v3->z), m33(v3->w) { }
+        Matrix4(Vector4* v0, Vector4* v1, Vector4* v2, Vector4* v3): v0(v0), v1(v1), v2(v2), v3(v3) { type = NODE_MATRIX4; }
 
         ~Matrix4() {
-            delete m00; delete m01; delete m02; delete m03;
-            delete m10; delete m11; delete m12; delete m13;
-            delete m20; delete m21; delete m22; delete m23;
-            delete m30; delete m31; delete m32; delete m33;
+            delete v0;
+            delete v1;
+            delete v2;
+            delete v3;
         }
 };
 
