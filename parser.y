@@ -52,9 +52,10 @@ void yyerror( std::map<std::string, ShaderPair*> *shaders, Stmts** init, Stmts**
 %left AND OR
 %left UNARY
 
-%type<eval> expr uniform
+%type<eval> expr 
 %type<eval> scalar bool
 %type<vval> vec3
+%type<idval> uniform;
 
 %type<sval> stmt stmt_block
 %type<svval> stmts block
@@ -113,6 +114,7 @@ uniform: IDENTIFIER PERIOD IDENTIFIER { $$ = new Uniform($1, $3); }
     ;
 
 stmt: IDENTIFIER EQUALS expr { $$ = new Assign($1, $3); }
+    | uniform EQUALS expr { $$ = new Assign($1, $3); }
 	| ALLOCATE IDENTIFIER { $$ = new Alloc($2); }
 	| IDENTIFIER OPEN_BRACKET IDENTIFIER CLOSE_BRACKET UPLOAD upload_list { $$ = new Upload($1, $3, $6); }
     | DRAW IDENTIFIER { $$ = new Draw($2); }

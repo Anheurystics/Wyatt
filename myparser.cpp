@@ -3,6 +3,7 @@
 #define resolve_int(n) ((Int*)n)->value
 #define resolve_float(n) ((Float*)n)->value
 #define resolve_scalar(n) ((n->type == NODE_INT)? (float)(resolve_int(n)) : resolve_float(n))
+#define resolve_vec3(v) resolve_scalar(v->x), resolve_scalar(v->y), resolve_scalar(v->z)
 
 #define LOOP_TIMEOUT 5
 
@@ -224,7 +225,38 @@ void MyParser::eval_stmt(Stmt* stmt) {
                 Assign* assign = (Assign*)stmt;
                 Expr* rhs = eval_expr(assign->value);
                 if(rhs) {
-                    variables[assign->ident->name] = rhs;
+                    Ident* ident = assign->ident;
+                    if(ident->type == NODE_IDENT) {
+                        variables[assign->ident->name] = rhs;
+                    } else if(ident->type == NODE_UNIFORM) {
+                        Uniform* uniform = (Uniform*)ident;
+                        if(current_program->vertSource->name == uniform->shader) {
+                            ShaderSource* src = current_program->vertSource;
+                            std::string type = "";
+                            if(src->uniforms.find(uniform->name) != src->uniforms.end()) {
+                                type = src->uniforms[uniform->name];
+                            } else {
+                                src = current_program->fragSource;
+                                if(src->uniforms.find(uniform->name) != src->uniforms.end()) {
+                                    type = src->uniforms[uniform->name];
+                                } else {
+                                    std::cout << "Uniform does not exist!\n";
+                                    return;
+                                }
+                            }
+
+                            if(type == "vec3") {
+                                if(rhs->type == NODE_VECTOR3) {
+                                    Vector3* vec3 = (Vector3*)rhs;
+                                    gl->glUniform3f(gl->glGetUniformLocation(current_program->handle, uniform->name.c_str()), resolve_vec3(vec3));
+                                } else {
+                                    std::cout << "Uniform uploadm mismatch: vec3 required\n"; 
+                                }
+                            } else if(type == "mat4") {
+                            }
+
+                        }
+                    }
                 } else {
                     std::cout << "ERROR: Invalid assignment\n";
                 }
@@ -400,7 +432,7 @@ void MyParser::eval_stmt(Stmt* stmt) {
                     case NODE_VECTOR3:
                         {
                             Vector3* vec3 = (Vector3*)output;
-                            std::cout << "[" <<  resolve_scalar(vec3->x) << ", " << resolve_scalar(vec3->y) << ", " << resolve_scalar(vec3->z) << "]\n";
+                            std::cout << "[" << resolve_scalar(vec3->x) << ", " << resolve_scalar(vec3->y) << ", " << resolve_scalar(vec3->z) << "]\n";
                             break;
                         }
                     default: break;

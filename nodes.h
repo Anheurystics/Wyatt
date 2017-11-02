@@ -40,7 +40,7 @@ class Uniform: public Ident {
     public:
         string shader;
 
-        Uniform(Ident* name, Ident* shader): Ident(name->name) {
+        Uniform(Ident* shader, Ident* name): Ident(name->name) {
             this->shader = shader->name;
             type = NODE_UNIFORM;
         }
@@ -275,6 +275,12 @@ class ShaderSource: public Node {
                 }
             }
         }
+};
+
+struct ShaderPair {
+    std::string name;
+    ShaderSource* vertex = NULL;
+    ShaderSource* fragment = NULL;
 };
 
 class Print: public Stmt {
