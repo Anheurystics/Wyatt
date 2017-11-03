@@ -136,6 +136,43 @@ Expr* MyParser::eval_binary(Binary* bin) {
         }
     }
 
+    if(ltype == NODE_MATRIX3 && (rtype == NODE_INT || rtype == NODE_FLOAT)) {
+        Matrix3* a = (Matrix3*)eval_expr(lhs);
+
+        if(op != OP_MULT && op != OP_DIV) return 0;
+
+        Vector3* v0 = (Vector3*)eval_binary(new Binary(a->v0, op, rhs));
+        Vector3* v1 = (Vector3*)eval_binary(new Binary(a->v1, op, rhs));
+        Vector3* v2 = (Vector3*)eval_binary(new Binary(a->v2, op, rhs));
+
+        return new Matrix3(v0, v1, v2);
+    }
+
+    if((ltype == NODE_INT || ltype == NODE_FLOAT) && (rtype == NODE_MATRIX3)) {
+        Matrix3* a = (Matrix3*)eval_expr(rhs);
+
+        if(op != OP_MULT && op != OP_DIV) return 0;
+
+        Vector3* v0 = (Vector3*)eval_binary(new Binary(a->v0, op, lhs));
+        Vector3* v1 = (Vector3*)eval_binary(new Binary(a->v1, op, lhs));
+        Vector3* v2 = (Vector3*)eval_binary(new Binary(a->v2, op, lhs));
+
+        return new Matrix3(v0, v1, v2);
+    }
+
+    if(ltype == NODE_MATRIX3 && rtype == NODE_MATRIX3) {
+        Matrix3* a = (Matrix3*)eval_expr(lhs);
+        Matrix3* b = (Matrix3*)eval_expr(rhs);
+        
+        if(op != OP_MULT) return 0;
+
+        Vector3* r0 = (Vector3*)eval_expr(new Vector3(new Binary(a->v0, OP_MULT, b->c0), new Binary(a->v0, OP_MULT, b->c1), new Binary(a->v0, OP_MULT, b->c2)));
+        Vector3* r1 = (Vector3*)eval_expr(new Vector3(new Binary(a->v1, OP_MULT, b->c0), new Binary(a->v1, OP_MULT, b->c1), new Binary(a->v1, OP_MULT, b->c2)));
+        Vector3* r2 = (Vector3*)eval_expr(new Vector3(new Binary(a->v2, OP_MULT, b->c0), new Binary(a->v2, OP_MULT, b->c1), new Binary(a->v2, OP_MULT, b->c2)));
+
+        return new Matrix3(r0, r1, r2);
+    }
+
     return 0;
 }
 
@@ -168,7 +205,7 @@ Expr* MyParser::eval_expr(Expr* node) {
                 Expr* y = eval_expr(vec3->y);
                 Expr* z = eval_expr(vec3->z);
                 
-                if((x->type == NODE_INT || x->type == NODE_FLOAT) && (y->type == NODE_INT || y->type == NODE_FLOAT) || (z->type == NODE_INT || z->type == NODE_FLOAT)) {
+                if((x->type == NODE_INT || x->type == NODE_FLOAT) && (y->type == NODE_INT || y->type == NODE_FLOAT) && (z->type == NODE_INT || z->type == NODE_FLOAT)) {
                     vec3->x = x; vec3->y = y; vec3->z = z;
                     return vec3;
                 }
@@ -178,6 +215,15 @@ Expr* MyParser::eval_expr(Expr* node) {
                 }
 
                 return 0;
+            }
+
+        case NODE_MATRIX3:
+            {
+                Matrix3* mat3 = (Matrix3*)node;
+                mat3->v0 = (Vector3*)eval_expr(mat3->v0);
+                mat3->v1 = (Vector3*)eval_expr(mat3->v1);
+                mat3->v2 = (Vector3*)eval_expr(mat3->v2);
+                return mat3;
             }
 
         case NODE_UNARY:
@@ -439,6 +485,14 @@ void MyParser::eval_stmt(Stmt* stmt) {
                         {
                             Vector3* vec3 = (Vector3*)output;
                             std::cout << "[" << resolve_scalar(vec3->x) << ", " << resolve_scalar(vec3->y) << ", " << resolve_scalar(vec3->z) << "]\n";
+                            break;
+                        }
+                    case NODE_MATRIX3:
+                        {
+                            Matrix3* mat3 = (Matrix3*)output;
+                            std::cout << "|" << resolve_scalar(mat3->v0->x) << ", " << resolve_scalar(mat3->v0->y) << ", " << resolve_scalar(mat3->v0->z) << "|\n";
+                            std::cout << "|" << resolve_scalar(mat3->v1->x) << ", " << resolve_scalar(mat3->v1->y) << ", " << resolve_scalar(mat3->v1->z) << "|\n";
+                            std::cout << "|" << resolve_scalar(mat3->v2->x) << ", " << resolve_scalar(mat3->v2->y) << ", " << resolve_scalar(mat3->v2->z) << "|\n";
                             break;
                         }
                     default: break;

@@ -2,6 +2,7 @@
 #include <vector>
 #include <map>
 #include <regex>
+#include <iostream>
 
 using namespace std;
 
@@ -63,6 +64,7 @@ class Binary: public Expr {
             delete rhs;
         }
 };
+int Binary::objectCount = 0;
 
 class Unary: public Expr {
     public:
@@ -168,7 +170,9 @@ class Matrix2: public Expr {
         Vector2* v0;
         Vector2* v1;
 
-        Matrix2(Vector2* v0, Vector2* v1): v0(v0), v1(v1) { type = NODE_MATRIX2; }
+        Matrix2(Vector2* v0, Vector2* v1): v0(v0), v1(v1) {
+            type = NODE_MATRIX2;
+        }
 
         ~Matrix2() {
             delete v0;
@@ -178,16 +182,25 @@ class Matrix2: public Expr {
 
 class Matrix3: public Expr {
     public:
-        Vector3* v0;
-        Vector3* v1;
-        Vector3* v2;
+        Vector3 *v0, *v1, *v2;
+        Vector3 *c0, *c1, *c2;
 
-        Matrix3(Vector3* v0, Vector3* v1, Vector3* v2): v0(v0), v1(v1), v2(v2) { type = NODE_MATRIX3; }
+        Matrix3(Vector3* v0, Vector3* v1, Vector3* v2): v0(v0), v1(v1), v2(v2) {
+            type = NODE_MATRIX3;
+
+            c0 = new Vector3(v0->x, v1->x, v2->x);
+            c1 = new Vector3(v0->y, v1->y, v2->y);
+            c2 = new Vector3(v0->z, v1->z, v2->z);
+        }
 
         ~Matrix3() {
             delete v0;
             delete v1;
             delete v2;
+
+            c0 = NULL;
+            c1 = NULL;
+            c2 = NULL;
         }
 };
 
