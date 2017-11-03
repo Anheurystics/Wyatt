@@ -166,11 +166,20 @@ Expr* MyParser::eval_binary(Binary* bin) {
         
         if(op != OP_MULT) return 0;
 
-        Vector3* r0 = (Vector3*)eval_expr(new Vector3(new Binary(a->v0, OP_MULT, b->c0), new Binary(a->v0, OP_MULT, b->c1), new Binary(a->v0, OP_MULT, b->c2)));
-        Vector3* r1 = (Vector3*)eval_expr(new Vector3(new Binary(a->v1, OP_MULT, b->c0), new Binary(a->v1, OP_MULT, b->c1), new Binary(a->v1, OP_MULT, b->c2)));
-        Vector3* r2 = (Vector3*)eval_expr(new Vector3(new Binary(a->v2, OP_MULT, b->c0), new Binary(a->v2, OP_MULT, b->c1), new Binary(a->v2, OP_MULT, b->c2)));
+        Vector3* r0 = new Vector3(new Binary(a->v0, OP_MULT, b->c0), new Binary(a->v0, OP_MULT, b->c1), new Binary(a->v0, OP_MULT, b->c2));
+        Vector3* r1 = new Vector3(new Binary(a->v1, OP_MULT, b->c0), new Binary(a->v1, OP_MULT, b->c1), new Binary(a->v1, OP_MULT, b->c2));
+        Vector3* r2 = new Vector3(new Binary(a->v2, OP_MULT, b->c0), new Binary(a->v2, OP_MULT, b->c1), new Binary(a->v2, OP_MULT, b->c2));
 
-        return new Matrix3(r0, r1, r2);
+        return eval_expr(new Matrix3(r0, r1, r2));
+    }
+
+    if(ltype == NODE_VECTOR3 && rtype == NODE_MATRIX3) {
+        Vector3* a = (Vector3*)eval_expr(lhs);
+        Matrix3* b = (Matrix3*)eval_expr(rhs);
+
+        if(op != OP_MULT) return 0;
+
+        return eval_expr(new Vector3(new Binary(a, OP_MULT, b->c0), new Binary(a, OP_MULT, b->c1), new Binary(a, OP_MULT, b->c2)));
     }
 
     return 0;

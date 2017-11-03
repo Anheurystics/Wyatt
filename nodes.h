@@ -64,7 +64,6 @@ class Binary: public Expr {
             delete rhs;
         }
 };
-int Binary::objectCount = 0;
 
 class Unary: public Expr {
     public:
