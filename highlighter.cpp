@@ -14,6 +14,12 @@ Highlighter::Highlighter(QTextDocument *parent): QSyntaxHighlighter(parent)
         rule.format = keywordFormat;
         highlightingRules.append(rule);
     }
+
+    singleLineCommentFormat.setForeground(Qt::darkGray);
+    singleLineCommentFormat.setFontItalic(true);
+    rule.pattern = QRegularExpression("//.*");
+    rule.format = singleLineCommentFormat;
+    highlightingRules.append(rule);
 }
 
 void Highlighter::highlightBlock(const QString &text) {
