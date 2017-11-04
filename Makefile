@@ -57,9 +57,11 @@ SOURCES       = main.cpp \
 		myparser.cpp \
 		scanner.cpp \
 		parser.cpp \
-		codeeditor.cpp moc_mainwindow.cpp \
+		codeeditor.cpp \
+		highlighter.cpp moc_mainwindow.cpp \
 		moc_customglwidget.cpp \
-		moc_codeeditor.cpp
+		moc_codeeditor.cpp \
+		moc_highlighter.cpp
 OBJECTS       = main.o \
 		mainwindow.o \
 		customglwidget.o \
@@ -67,9 +69,11 @@ OBJECTS       = main.o \
 		scanner.o \
 		parser.o \
 		codeeditor.o \
+		highlighter.o \
 		moc_mainwindow.o \
 		moc_customglwidget.o \
-		moc_codeeditor.o
+		moc_codeeditor.o \
+		moc_highlighter.o
 DIST          = parser.y \
 		scanner.l \
 		../../Qt5.9.0/5.9/gcc_64/mkspecs/features/spec_pre.prf \
@@ -257,13 +261,15 @@ DIST          = parser.y \
 		scanner.h \
 		parser.h \
 		nodes.h \
-		codeeditor.h main.cpp \
+		codeeditor.h \
+		highlighter.h main.cpp \
 		mainwindow.cpp \
 		customglwidget.cpp \
 		myparser.cpp \
 		scanner.cpp \
 		parser.cpp \
-		codeeditor.cpp
+		codeeditor.cpp \
+		highlighter.cpp
 QMAKE_TARGET  = prototype
 DESTDIR       = 
 TARGET        = prototype
@@ -657,8 +663,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents ../../Qt5.9.0/5.9/gcc_64/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents mainwindow.h customglwidget.h myparser.h scanner.h parser.h nodes.h codeeditor.h $(DISTDIR)/
-	$(COPY_FILE) --parents main.cpp mainwindow.cpp customglwidget.cpp myparser.cpp scanner.cpp parser.cpp codeeditor.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents mainwindow.h customglwidget.h myparser.h scanner.h parser.h nodes.h codeeditor.h highlighter.h $(DISTDIR)/
+	$(COPY_FILE) --parents main.cpp mainwindow.cpp customglwidget.cpp myparser.cpp scanner.cpp parser.cpp codeeditor.cpp highlighter.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents mainwindow.ui $(DISTDIR)/
 
 
@@ -691,9 +697,9 @@ compiler_moc_predefs_clean:
 moc_predefs.h: ../../Qt5.9.0/5.9/gcc_64/mkspecs/features/data/dummy.cpp
 	g++ -pipe -O2 -std=gnu++11 -Wall -W -dM -E -o moc_predefs.h ../../Qt5.9.0/5.9/gcc_64/mkspecs/features/data/dummy.cpp
 
-compiler_moc_header_make_all: moc_mainwindow.cpp moc_customglwidget.cpp moc_codeeditor.cpp
+compiler_moc_header_make_all: moc_mainwindow.cpp moc_customglwidget.cpp moc_codeeditor.cpp moc_highlighter.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_mainwindow.cpp moc_customglwidget.cpp moc_codeeditor.cpp
+	-$(DEL_FILE) moc_mainwindow.cpp moc_customglwidget.cpp moc_codeeditor.cpp moc_highlighter.cpp
 moc_mainwindow.cpp: ../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QMainWindow \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qmainwindow.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qtwidgetsglobal.h \
@@ -1064,6 +1070,11 @@ moc_codeeditor.cpp: ../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QPlainTextEdit \
 		moc_predefs.h \
 		../../Qt5.9.0/5.9/gcc_64/bin/moc
 	/home/willard/Qt5.9.0/5.9/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/willard/Qt5.9.0/5.9/gcc_64/mkspecs/linux-g++ -I/home/willard/Development/prototype -I/home/willard/Qt5.9.0/5.9/gcc_64/include -I/home/willard/Qt5.9.0/5.9/gcc_64/include/QtWidgets -I/home/willard/Qt5.9.0/5.9/gcc_64/include/QtGui -I/home/willard/Qt5.9.0/5.9/gcc_64/include/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include codeeditor.h -o moc_codeeditor.cpp
+
+moc_highlighter.cpp: highlighter.h \
+		moc_predefs.h \
+		../../Qt5.9.0/5.9/gcc_64/bin/moc
+	/home/willard/Qt5.9.0/5.9/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/willard/Qt5.9.0/5.9/gcc_64/mkspecs/linux-g++ -I/home/willard/Development/prototype -I/home/willard/Qt5.9.0/5.9/gcc_64/include -I/home/willard/Qt5.9.0/5.9/gcc_64/include/QtWidgets -I/home/willard/Qt5.9.0/5.9/gcc_64/include/QtGui -I/home/willard/Qt5.9.0/5.9/gcc_64/include/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include highlighter.h -o moc_highlighter.cpp
 
 compiler_moc_source_make_all:
 compiler_moc_source_clean:
@@ -1979,6 +1990,9 @@ codeeditor.o: codeeditor.cpp codeeditor.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfontdatabase.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o codeeditor.o codeeditor.cpp
 
+highlighter.o: highlighter.cpp highlighter.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o highlighter.o highlighter.cpp
+
 moc_mainwindow.o: moc_mainwindow.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_mainwindow.o moc_mainwindow.cpp
 
@@ -1987,6 +2001,9 @@ moc_customglwidget.o: moc_customglwidget.cpp
 
 moc_codeeditor.o: moc_codeeditor.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_codeeditor.o moc_codeeditor.cpp
+
+moc_highlighter.o: moc_highlighter.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_highlighter.o moc_highlighter.cpp
 
 ####### Install
 

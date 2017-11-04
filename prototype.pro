@@ -30,7 +30,8 @@ SOURCES += \
     myparser.cpp \
     scanner.cpp \
     parser.cpp \
-    codeeditor.cpp
+    codeeditor.cpp \
+    highlighter.cpp
 
 
 HEADERS += \
@@ -40,7 +41,8 @@ HEADERS += \
     scanner.h \
     parser.h \
     nodes.h \
-    codeeditor.h
+    codeeditor.h \
+    highlighter.h
 
 FORMS += \
         mainwindow.ui

@@ -18,6 +18,8 @@ MainWindow::MainWindow(QWidget *parent) :
     cursor.movePosition(QTextCursor::End);
     vEditor->setCurrentCharFormat(deffmt);
     vEditor->setType("vertex");
+
+    highlighter = new Highlighter(vEditor->document());
 }
 
 MainWindow::~MainWindow()
