@@ -8,7 +8,7 @@
 #define LOOP_TIMEOUT 5
 
 Interpreter::Interpreter() {
-
+    globalScope = new Scope("global");
 }
 
 Expr* Interpreter::eval_binary(Binary* bin) {
@@ -190,12 +190,20 @@ Expr* Interpreter::eval_expr(Expr* node) {
         case NODE_IDENT: 
             {
                 Ident* ident = (Ident*)node;
-                if(variables.find(ident->name) == variables.end()) {
-                    std::cout << "ERROR: Variable " << ident->name << " does not exist!\n";
-                    return 0;
-                } else {
-                    return variables[ident->name];
+                Expr* value = NULL;
+                if(!functionScopeStack.empty()) {
+                    value = functionScopeStack.top()->get(ident->name);
+                    if(value != NULL) {
+                        return value;
+                    }
                 }
+
+                value = globalScope->get(ident->name);
+                if(value == NULL) {
+                    cout << "ERROR: Undefined variable " << ident->name << endl;
+                }
+
+                return value;
             }
 
         case NODE_BOOL:
@@ -284,12 +292,14 @@ void Interpreter::eval_stmt(Stmt* stmt) {
         case NODE_FUNCSTMT:
             {
                 FuncStmt* func = (FuncStmt*)stmt;
-                std::string funcName = func->invoke->ident->name;
+                string funcName = func->invoke->ident->name;
                 if(functions.find(funcName) != functions.end()) {
                     FuncDef* def = functions[funcName];
+                    functionScopeStack.push(new Scope(funcName));
                     execute_stmts(def->stmts);
+                    functionScopeStack.pop();
                 } else {
-                    std::cout << "ERROR: Call to undefined function " << funcName << std::endl;
+                    cout << "ERROR: Call to undefined function " << funcName << endl;
                 }
                 return;
             }
@@ -300,12 +310,16 @@ void Interpreter::eval_stmt(Stmt* stmt) {
                 if(rhs) {
                     Ident* ident = assign->ident;
                     if(ident->type == NODE_IDENT) {
-                        variables[assign->ident->name] = rhs;
+                        Scope* scope = globalScope;
+                        if(!functionScopeStack.empty()) {
+                            scope = functionScopeStack.top();
+                        }
+                        scope->declare(assign->ident->name, rhs);
                     } else if(ident->type == NODE_UNIFORM) {
                         Uniform* uniform = (Uniform*)ident;
                         if(current_program->vertSource->name == uniform->shader) {
                             ShaderSource* src = current_program->vertSource;
-                            std::string type = "";
+                            string type = "";
                             if(src->uniforms.find(uniform->name) != src->uniforms.end()) {
                                 type = src->uniforms[uniform->name];
                             } else {
@@ -313,7 +327,7 @@ void Interpreter::eval_stmt(Stmt* stmt) {
                                 if(src->uniforms.find(uniform->name) != src->uniforms.end()) {
                                     type = src->uniforms[uniform->name];
                                 } else {
-                                    std::cout << "Uniform does not exist!\n";
+                                    cout << "Uniform does not exist!\n";
                                     return;
                                 }
                             }
@@ -323,7 +337,7 @@ void Interpreter::eval_stmt(Stmt* stmt) {
                                     Vector3* vec3 = (Vector3*)rhs;
                                     gl->glUniform3f(gl->glGetUniformLocation(current_program->handle, uniform->name.c_str()), resolve_vec3(vec3));
                                 } else {
-                                    std::cout << "Uniform uploadm mismatch: vec3 required\n"; 
+                                    cout << "Uniform uploadm mismatch: vec3 required\n";
                                 }
                             } else if(type == "mat4") {
                             }
@@ -331,7 +345,7 @@ void Interpreter::eval_stmt(Stmt* stmt) {
                         }
                     }
                 } else {
-                    std::cout << "ERROR: Invalid assignment\n";
+                    cout << "ERROR: Invalid assignment\n";
                 }
 
                 return;
@@ -347,7 +361,7 @@ void Interpreter::eval_stmt(Stmt* stmt) {
                     gl->glGenBuffers(1, &(buf->handle));
                     buffers[alloc->ident->name] = buf;
                 } else {
-                    std::cout << "ERROR: Can't allocate to " << alloc->ident->name << ": buffer already exists!\n";
+                    cout << "ERROR: Can't allocate to " << alloc->ident->name << ": buffer already exists!\n";
                 }
 
                 return;
@@ -364,11 +378,11 @@ void Interpreter::eval_stmt(Stmt* stmt) {
                     layout->list.push_back(upload->attrib->name);
                 }
 
-                std::vector<float>* target = &(buffer->data[upload->attrib->name]);
+                vector<float>* target = &(buffer->data[upload->attrib->name]);
                 for(unsigned int i = 0; i < upload->list->list.size(); i++) {
                     Expr* expr = eval_expr(upload->list->list[i]);
                     if(!expr) {
-                        std::cout << "ERROR: Can't upload illegal value into buffer\n";
+                        cout << "ERROR: Can't upload illegal value into buffer\n";
                         break;
                     }
 
@@ -394,21 +408,21 @@ void Interpreter::eval_stmt(Stmt* stmt) {
                 Draw* draw = (Draw*)stmt;
 
                 if(current_program == NULL) {
-                    std::cout << "ERROR: Cannot bind program with name " << current_program_name << std::endl;
+                    cout << "ERROR: Cannot bind program with name " << current_program_name << endl;
                     return;
                 }
 
                 Buffer* buffer = buffers[draw->ident->name];
                 if(buffer) {
                     Layout* layout = buffer->layout;
-                    std::vector<float> final_vector;
+                    vector<float> final_vector;
 
-                    std::map<std::string, unsigned int> attributes = layout->attributes;
+                    map<string, unsigned int> attributes = layout->attributes;
 
                     gl->glBindBuffer(GL_ARRAY_BUFFER, buffer->handle);
                     for(unsigned int i = 0; i < buffer->sizes[layout->list[0]]; i++) {
                         for(unsigned int j = 0; j < layout->list.size(); j++) {
-                            std::string attrib = layout->list[j];
+                            string attrib = layout->list[j];
                             for(unsigned int k = 0; k < layout->attributes[attrib]; k++) {
                                 final_vector.insert(final_vector.end(), buffer->data[attrib][(i * layout->attributes[attrib]) + k]);
                             }
@@ -418,13 +432,13 @@ void Interpreter::eval_stmt(Stmt* stmt) {
                     gl->glBufferData(GL_ARRAY_BUFFER, final_vector.size() * sizeof(float), &final_vector[0], GL_STATIC_DRAW);
 
                     int total_size = 0;
-                    for(std::map<std::string, unsigned int>::iterator it = layout->attributes.begin(); it != layout->attributes.end(); ++it) {
+                    for(map<string, unsigned int>::iterator it = layout->attributes.begin(); it != layout->attributes.end(); ++it) {
                         total_size += it->second;
                     }
 
                     int cumulative_size = 0;
                     for(unsigned int i = 0; i < layout->list.size(); i++) {
-                        std::string attrib = layout->list[i];
+                        string attrib = layout->list[i];
                         GLint location = gl->glGetAttribLocation(current_program->handle, attrib.c_str());
                         gl->glVertexAttribPointer(location, layout->attributes[attrib], GL_FLOAT, false, total_size * sizeof(float), (void*)(cumulative_size * sizeof(float)));
                         gl->glEnableVertexAttribArray(location);
@@ -434,7 +448,7 @@ void Interpreter::eval_stmt(Stmt* stmt) {
 
                     gl->glDrawArrays(GL_TRIANGLES, 0, final_vector.size() / total_size);
                 } else {
-                    std::cout << "ERROR: Can't draw non-existent buffer " << draw->ident->name << std::endl;
+                    cout << "ERROR: Can't draw non-existent buffer " << draw->ident->name << endl;
                 }
 
                 return;
@@ -446,7 +460,7 @@ void Interpreter::eval_stmt(Stmt* stmt) {
                 current_program = programs[current_program_name];
 
                 if(current_program == NULL) {
-                    std::cout << "ERROR: No valid vertex/fragment pair for program name " << current_program_name << std::endl;
+                    cout << "ERROR: No valid vertex/fragment pair for program name " << current_program_name << endl;
                     return;
                 }
 
@@ -472,16 +486,16 @@ void Interpreter::eval_stmt(Stmt* stmt) {
                 Expr* condition = eval_expr(whilestmt->condition);
                 if(!condition) return;
                 if(condition->type == NODE_BOOL) {
-                    std::time_t start = std::time(nullptr);
+                    time_t start = time(nullptr);
                     while(true) {
                         condition = eval_expr(whilestmt->condition);
                         bool b = ((Bool*)condition)->value;
                         if(!b) break;
 
                         execute_stmts(whilestmt->block);
-                        std::time_t now = std::time(nullptr);
+                        time_t now = time(nullptr);
                         
-                        int diff = std::difftime(now, start);
+                        int diff = difftime(now, start);
                         if(diff > LOOP_TIMEOUT) { break; }
                     }
                 }
@@ -492,28 +506,31 @@ void Interpreter::eval_stmt(Stmt* stmt) {
             {
                 Print* print = (Print*)stmt;
                 Expr* output = eval_expr(print->expr);
+                if(output == NULL)
+                    return;
+
                 switch(output->type) {
                     case NODE_INT:
-                        std::cout << resolve_int(output) << std::endl;
+                        cout << resolve_int(output) << endl;
                         break;
                     case NODE_FLOAT:
-                        std::cout << resolve_float(output) << std::endl;
+                        cout << resolve_float(output) << endl;
                         break;
                     case NODE_BOOL:
-                        std::cout << (((Bool*)output)->value? "true" : "false") << std::endl;
+                        cout << (((Bool*)output)->value? "true" : "false") << endl;
                         break;
                     case NODE_VECTOR3:
                         {
                             Vector3* vec3 = (Vector3*)output;
-                            std::cout << "[" << resolve_scalar(vec3->x) << ", " << resolve_scalar(vec3->y) << ", " << resolve_scalar(vec3->z) << "]\n";
+                            cout << "[" << resolve_scalar(vec3->x) << ", " << resolve_scalar(vec3->y) << ", " << resolve_scalar(vec3->z) << "]\n";
                             break;
                         }
                     case NODE_MATRIX3:
                         {
                             Matrix3* mat3 = (Matrix3*)output;
-                            std::cout << "|" << resolve_scalar(mat3->v0->x) << ", " << resolve_scalar(mat3->v0->y) << ", " << resolve_scalar(mat3->v0->z) << "|\n";
-                            std::cout << "|" << resolve_scalar(mat3->v1->x) << ", " << resolve_scalar(mat3->v1->y) << ", " << resolve_scalar(mat3->v1->z) << "|\n";
-                            std::cout << "|" << resolve_scalar(mat3->v2->x) << ", " << resolve_scalar(mat3->v2->y) << ", " << resolve_scalar(mat3->v2->z) << "|\n";
+                            cout << "|" << resolve_scalar(mat3->v0->x) << ", " << resolve_scalar(mat3->v0->y) << ", " << resolve_scalar(mat3->v0->z) << "|\n";
+                            cout << "|" << resolve_scalar(mat3->v1->x) << ", " << resolve_scalar(mat3->v1->y) << ", " << resolve_scalar(mat3->v1->z) << "|\n";
+                            cout << "|" << resolve_scalar(mat3->v2->x) << ", " << resolve_scalar(mat3->v2->y) << ", " << resolve_scalar(mat3->v2->z) << "|\n";
                             break;
                         }
                     default: break;
@@ -541,13 +558,13 @@ void Interpreter::compile_shader(GLuint* handle, ShaderSource* source) {
     gl->glGetShaderInfoLog(*handle, 256, 0, log);
     gl->glGetShaderiv(*handle, GL_COMPILE_STATUS, &success);
     if(success != GL_TRUE) {
-        std::cout << source->name << " shader error\n" << success << " " << log << std::endl;
+        cout << source->name << " shader error\n" << success << " " << log << endl;
     }
 }
 
 void Interpreter::compile_program() {
     programs.clear();
-    for(std::map<std::string, ShaderPair*>::iterator it = shaders.begin(); it != shaders.end(); ++it) {
+    for(map<string, ShaderPair*>::iterator it = shaders.begin(); it != shaders.end(); ++it) {
         Program* program = new Program;
         program->handle = gl->glCreateProgram();
         program->vert = gl->glCreateShader(GL_VERTEX_SHADER);
@@ -560,12 +577,12 @@ void Interpreter::compile_program() {
         program->fragSource = it->second->fragment;
 
         if(program->vertSource == NULL) {
-            std::cout << "ERROR: Missing vertex shader source for program " << it->first << std::endl;
+            cout << "ERROR: Missing vertex shader source for program " << it->first << endl;
             continue;
         }
 
         if(program->fragSource == NULL) {
-            std::cout << "ERROR: Missing fragment shader source for program " << it->first << std::endl;
+            cout << "ERROR: Missing fragment shader source for program " << it->first << endl;
             continue;
         }
 
@@ -578,7 +595,7 @@ void Interpreter::compile_program() {
         gl->glGetProgramiv(program->handle, GL_LINK_STATUS, &success);
         gl->glGetProgramInfoLog(program->handle, 256, 0, log);
         if(success != GL_TRUE) {
-            std::cout << "program error\n" << log << std::endl;
+            cout << "program error\n" << log << endl;
         }
 
         programs[it->first] = program;
@@ -588,7 +605,7 @@ void Interpreter::compile_program() {
 void Interpreter::execute_init() {
     if(!init || status) return;
     buffers.clear();
-    variables.clear();
+    globalScope->clear();
 
     execute_stmts(init->stmts);
 }
@@ -599,7 +616,7 @@ void Interpreter::execute_loop() {
     execute_stmts(loop->stmts);
 }
 
-void Interpreter::parse(std::string code) {
+void Interpreter::parse(string code) {
     YY_BUFFER_STATE state = yy_scan_string(code.c_str());
 
     shaders.clear();
@@ -608,12 +625,12 @@ void Interpreter::parse(std::string code) {
 
     init = functions["init"];
     if(init == NULL) {
-        std::cout << "ERROR: init function required!\n";
+        cout << "ERROR: init function required!\n";
     }
 
     loop = functions["loop"];
     if(loop == NULL) {
-        std::cout << "ERROR: loop function required!\n";
+        cout << "ERROR: loop function required!\n";
     }
 
     yy_delete_buffer(state);

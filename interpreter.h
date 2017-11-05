@@ -5,6 +5,7 @@
 #include <iostream>
 #include <iomanip>
 #include <map>
+#include <stack>
 #include <vector>
 #include <string>
 #include <ctime>
@@ -15,17 +16,34 @@
 #include "parser.h"
 #include "scanner.h"
 
+using namespace std;
+
 class Interpreter {
     public:
+        Interpreter();
+
+        int status = -1;
+
+        void parse(string);
+        void execute_stmts(Stmts*);
+        void execute_init();
+        void execute_loop();
+        void compile_program();
+        void compile_shader(GLuint*, ShaderSource*);
+        void setFunctions(QOpenGLFunctions* gl) {
+            this->gl = gl;
+        }
+
+    private:
         struct Layout {
-            std::map<std::string, unsigned int> attributes;
-            std::vector<std::string> list;
+            map<string, unsigned int> attributes;
+            vector<string> list;
         };
 
         struct Buffer {
             GLuint handle;
-            std::map<std::string, std::vector<float>> data;
-            std::map<std::string, unsigned int> sizes;
+            map<string, vector<float>> data;
+            map<string, unsigned int> sizes;
 
             Layout* layout = NULL;
         };
@@ -38,28 +56,44 @@ class Interpreter {
             ShaderSource* fragSource;
         };
 
-        Interpreter();
-        std::map<std::string, Expr*> variables;
-        std::map<std::string, Buffer*> buffers;
-        std::map<std::string, Program*> programs;
-        std::map<std::string, ShaderPair*> shaders;
-        std::map<std::string, FuncDef*> functions;
+        class Scope {
+            public:
+           		string name;
 
-        std::string current_program_name;
+            	Scope(string name) {
+                    this->name = name;
+                }
+
+                void clear() {
+                    variables.clear();
+                }
+
+                void declare(string name, Expr* value) {
+                    variables[name] = value;
+                }
+
+                Expr* get(string name) {
+                    if(variables.find(name) != variables.end()) {
+                        return variables[name];
+                    }
+
+                    return NULL;
+                }
+
+            private:
+            	map<string, Expr*> variables;
+        };
+
+        Scope* globalScope;
+        stack<Scope*> functionScopeStack;
+        map<string, Buffer*> buffers;
+        map<string, Program*> programs;
+        map<string, ShaderPair*> shaders;
+        map<string, FuncDef*> functions;
+
+        string current_program_name;
         Program* current_program = NULL;
 
-        int status = -1;
-
-        void parse(std::string);
-        void execute_stmts(Stmts*);
-        void execute_init();
-        void execute_loop();
-        void compile_program();
-        void compile_shader(GLuint*, ShaderSource*);
-        void setFunctions(QOpenGLFunctions* gl) {
-            this->gl = gl;
-        }
-    private:
         FuncDef* init = NULL;
         FuncDef* loop = NULL;
         QOpenGLFunctions* gl;
