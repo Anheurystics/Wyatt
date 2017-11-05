@@ -25,7 +25,7 @@ class Interpreter {
         int status = -1;
 
         void parse(string);
-        void execute_stmts(Stmts*);
+        Expr* execute_stmts(Stmts*);
         void execute_init();
         void execute_loop();
         void compile_program();

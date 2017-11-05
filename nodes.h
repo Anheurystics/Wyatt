@@ -10,7 +10,7 @@ enum NodeType {
     NODE_INVOKE,
     NODE_EXPR, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_VECTOR2, NODE_VECTOR3, NODE_VECTOR4, NODE_MATRIX2, NODE_MATRIX3, NODE_MATRIX4, NODE_IDENT, NODE_UNIFORM,
     NODE_UPLOADLIST, NODE_FUNCEXPR, NODE_ARGLIST,
-    NODE_STMT, NODE_ASSIGN, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_USE, NODE_FUNCSTMT, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_SSOURCE, NODE_PRINT, NODE_FUNCDEF
+    NODE_STMT, NODE_ASSIGN, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_USE, NODE_FUNCSTMT, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_SSOURCE, NODE_PRINT, NODE_FUNCDEF, NODE_RETURN
 };
 
 enum OpType {
@@ -261,6 +261,20 @@ class ArgList: public Node {
         }
 };
 
+class Return: public Stmt {
+    public:
+        Expr* value;
+
+        Return(Expr* value) {
+            this->value = value;
+            type = NODE_RETURN;
+        }
+
+        ~Return() {
+            delete value;
+        }
+};
+
 class FuncDef: public Stmt {
     public:
         Ident* ident;
@@ -271,6 +285,7 @@ class FuncDef: public Stmt {
             this->ident = ident;
             this->args = args;
             this->stmts = stmts;
+            type = NODE_FUNCDEF;
         }
 
         ~FuncDef() {

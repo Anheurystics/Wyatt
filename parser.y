@@ -48,7 +48,7 @@ void yyerror( std::map<std::string, ShaderPair*> *shaders, std::map<std::string,
 %token SEMICOLON OPEN_BRACE CLOSE_BRACE
 %token PIPE
 %token OPEN_PAREN CLOSE_PAREN LESS_THAN GREATER_THAN OPEN_BRACKET CLOSE_BRACKET COMMA PERIOD EQUALS EQUAL NEQUAL GEQUAL LEQUAL COMP_PLUS COMP_MINUS COMP_MULT COMP_DIV COMP_MOD
-%token FUNC AND OR NOT IF WHILE ALLOCATE UPLOAD DRAW VERTEX FRAGMENT PRINT USE
+%token FUNC AND OR NOT IF WHILE ALLOCATE UPLOAD DRAW VERTEX FRAGMENT PRINT USE RETURN
 
 %left PLUS MINUS
 %left MULT DIV MOD
@@ -141,6 +141,7 @@ stmt: IDENTIFIER EQUALS expr { $$ = new Assign($1, $3); }
     | DRAW IDENTIFIER { $$ = new Draw($2); }
     | USE IDENTIFIER { $$ = new Use($2); }
     | PRINT expr { $$ = new Print($2); }
+    | RETURN expr { $$ = new Return($2); }
     | invoke { $$ = new FuncStmt($1) ; }
     | IDENTIFIER COMP_PLUS expr { $$ = new Assign($1, new Binary($1, OP_PLUS, $3)); }
     | IDENTIFIER COMP_MINUS expr { $$ = new Assign($1, new Binary($1, OP_MINUS, $3)); }

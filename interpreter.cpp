@@ -281,6 +281,22 @@ Expr* Interpreter::eval_expr(Expr* node) {
                 return eval_binary(bin);
             }
 
+        case NODE_FUNCEXPR:
+            {
+                FuncExpr* func = (FuncExpr*)node;
+                string funcName = func->invoke->ident->name;
+                if(functions.find(funcName) != functions.end()) {
+                    FuncDef* def = functions[funcName];
+                    functionScopeStack.push(new Scope(funcName));
+                    Expr* retValue = execute_stmts(def->stmts);
+                    functionScopeStack.pop();
+                    return retValue;
+                } else {
+                    cout << "ERROR: Call to undefined function " << funcName << endl;
+                }
+                return NULL;
+            }
+
         default: return 0;
     }
 
@@ -537,13 +553,28 @@ void Interpreter::eval_stmt(Stmt* stmt) {
                 }
                 return;
             }
+
         default: return;
     }
 }
 
-void Interpreter::execute_stmts(Stmts* stmts) {
+Expr* Interpreter::execute_stmts(Stmts* stmts) {
+    Expr* returnValue;
     for(unsigned int it = 0; it < stmts->list.size(); it++) { 
-        eval_stmt(stmts->list.at(it));
+        Stmt* stmt = stmts->list.at(it);
+        if(stmt->type == NODE_RETURN) {
+            Return* ret = (Return*)stmt;
+            returnValue = ret->value;
+            break;
+        }
+
+        eval_stmt(stmt);
+    }
+
+    if(returnValue != NULL) {
+        return eval_expr(returnValue);
+    } else {
+        return NULL;
     }
 }
 

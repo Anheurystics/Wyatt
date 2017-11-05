@@ -24,6 +24,7 @@ void yyerror(const char *s);
 "print"        { return PRINT; }
 "allocate"     { return ALLOCATE; }
 "func"         { return FUNC; }
+"return"       { return RETURN; }
 "draw"         { return DRAW; }
 "use"          { return USE; }
 "if"           { return IF; }
