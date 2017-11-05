@@ -281,6 +281,18 @@ Expr* MyParser::eval_expr(Expr* node) {
 
 void MyParser::eval_stmt(Stmt* stmt) {
     switch(stmt->type) {
+        case NODE_FUNCSTMT:
+            {
+                FuncStmt* func = (FuncStmt*)stmt;
+                std::string funcName = func->invoke->ident->name;
+                if(functions.find(funcName) != functions.end()) {
+                    FuncDef* def = functions[funcName];
+                    execute_stmts(def->stmts);
+                } else {
+                    std::cout << "ERROR: Call to undefined function " << funcName << std::endl;
+                }
+                return;
+            }
         case NODE_ASSIGN:
             {
                 Assign* assign = (Assign*)stmt;
