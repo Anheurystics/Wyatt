@@ -33,7 +33,7 @@ void yyerror(const char *s);
 "or"           { return OR; }
 "true"         { yylval.bval = new Bool(true); return BOOL; }
 "false"        { yylval.bval = new Bool(false); return BOOL; }
-[a-zA-Z]+[a-zA-Z0-9]* { yylval.idval = new Ident(strdup(yytext)); return IDENTIFIER; }
+[a-zA-Z]+[a-zA-Z0-9_]* { yylval.idval = new Ident(strdup(yytext)); return IDENTIFIER; }
 "("            { return OPEN_PAREN; }
 ")"            { return CLOSE_PAREN; }
 "<-"           { return UPLOAD; }
