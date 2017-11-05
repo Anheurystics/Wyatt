@@ -7,7 +7,7 @@
 #include "mainwindow.h"
 #include "codeeditor.h"
 
-#include "myparser.h"
+#include "interpreter.h"
 
 #include <iostream>
 #include <cstring>
@@ -34,7 +34,7 @@ class CustomGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
             void updateCode();
 
     private:
-        MyParser parser;
+        Interpreter interpreter;
 };
 
 #endif // CUSTOMGLWIDGET_H

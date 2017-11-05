@@ -54,7 +54,7 @@ OBJECTS_DIR   = ./
 SOURCES       = main.cpp \
 		mainwindow.cpp \
 		customglwidget.cpp \
-		myparser.cpp \
+		interpreter.cpp \
 		scanner.cpp \
 		parser.cpp \
 		codeeditor.cpp \
@@ -65,7 +65,7 @@ SOURCES       = main.cpp \
 OBJECTS       = main.o \
 		mainwindow.o \
 		customglwidget.o \
-		myparser.o \
+		interpreter.o \
 		scanner.o \
 		parser.o \
 		codeeditor.o \
@@ -257,7 +257,7 @@ DIST          = parser.y \
 		../../Qt5.9.0/5.9/gcc_64/mkspecs/features/lex.prf \
 		prototype.pro mainwindow.h \
 		customglwidget.h \
-		myparser.h \
+		interpreter.h \
 		scanner.h \
 		parser.h \
 		nodes.h \
@@ -265,7 +265,7 @@ DIST          = parser.y \
 		highlighter.h main.cpp \
 		mainwindow.cpp \
 		customglwidget.cpp \
-		myparser.cpp \
+		interpreter.cpp \
 		scanner.cpp \
 		parser.cpp \
 		codeeditor.cpp \
@@ -663,8 +663,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents ../../Qt5.9.0/5.9/gcc_64/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents mainwindow.h customglwidget.h myparser.h scanner.h parser.h nodes.h codeeditor.h highlighter.h $(DISTDIR)/
-	$(COPY_FILE) --parents main.cpp mainwindow.cpp customglwidget.cpp myparser.cpp scanner.cpp parser.cpp codeeditor.cpp highlighter.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents mainwindow.h customglwidget.h interpreter.h scanner.h parser.h nodes.h codeeditor.h highlighter.h $(DISTDIR)/
+	$(COPY_FILE) --parents main.cpp mainwindow.cpp customglwidget.cpp interpreter.cpp scanner.cpp parser.cpp codeeditor.cpp highlighter.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents mainwindow.ui $(DISTDIR)/
 
 
@@ -803,6 +803,21 @@ moc_mainwindow.cpp: ../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QMainWindow \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtouchdevice.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qtabwidget.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qicon.h \
+		highlighter.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QSyntaxHighlighter \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qsyntaxhighlighter.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextobject.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextformat.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qpen.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextoption.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextlayout.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qglyphrun.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qrawfont.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfontdatabase.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextcursor.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QTextCharFormat \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/QRegularExpression \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qregularexpression.h \
 		mainwindow.h \
 		moc_predefs.h \
 		../../Qt5.9.0/5.9/gcc_64/bin/moc
@@ -927,6 +942,21 @@ moc_customglwidget.cpp: ../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QOpenGLWidget
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qmainwindow.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qtabwidget.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qicon.h \
+		highlighter.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QSyntaxHighlighter \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qsyntaxhighlighter.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextobject.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextformat.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qpen.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextoption.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextlayout.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qglyphrun.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qrawfont.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfontdatabase.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextcursor.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QTextCharFormat \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/QRegularExpression \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qregularexpression.h \
 		codeeditor.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QPlainTextEdit \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qplaintextedit.h \
@@ -934,16 +964,8 @@ moc_customglwidget.cpp: ../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QOpenGLWidget
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qabstractscrollarea.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qframe.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextdocument.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextoption.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextcursor.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextformat.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qpen.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qabstracttextdocumentlayout.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextlayout.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qglyphrun.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qrawfont.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfontdatabase.h \
-		myparser.h \
+		interpreter.h \
 		parser.h \
 		nodes.h \
 		scanner.h \
@@ -1071,7 +1093,112 @@ moc_codeeditor.cpp: ../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QPlainTextEdit \
 		../../Qt5.9.0/5.9/gcc_64/bin/moc
 	/home/willard/Qt5.9.0/5.9/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/willard/Qt5.9.0/5.9/gcc_64/mkspecs/linux-g++ -I/home/willard/Development/prototype -I/home/willard/Qt5.9.0/5.9/gcc_64/include -I/home/willard/Qt5.9.0/5.9/gcc_64/include/QtWidgets -I/home/willard/Qt5.9.0/5.9/gcc_64/include/QtGui -I/home/willard/Qt5.9.0/5.9/gcc_64/include/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include codeeditor.h -o moc_codeeditor.cpp
 
-moc_highlighter.cpp: highlighter.h \
+moc_highlighter.cpp: ../../Qt5.9.0/5.9/gcc_64/include/QtGui/QSyntaxHighlighter \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qsyntaxhighlighter.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtguiglobal.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qglobal.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qconfig-bootstrapped.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qconfig.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qtcore-config.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qsystemdetection.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qprocessordetection.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qcompilerdetection.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qtypeinfo.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qsysinfo.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qlogging.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qflags.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qatomic.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qbasicatomic.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qatomic_bootstrap.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qgenericatomic.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qatomic_cxx11.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qatomic_msvc.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qglobalstatic.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qmutex.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qnumeric.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qversiontagging.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtgui-config.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qobject.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qobjectdefs.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qnamespace.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qobjectdefs_impl.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qstring.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qchar.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qbytearray.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qrefcount.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qarraydata.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qstringbuilder.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qlist.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qalgorithms.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qiterator.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qhashfunctions.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qpair.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qbytearraylist.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qstringlist.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qregexp.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qstringmatcher.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qcoreevent.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qscopedpointer.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qmetatype.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qvarlengtharray.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qcontainerfwd.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qobject_impl.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextobject.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextformat.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qcolor.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qrgb.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qrgba64.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfont.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qwindowdefs.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qwindowdefs_win.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qsharedpointer.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qshareddata.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qhash.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qsharedpointer_impl.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qvector.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qpoint.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qvariant.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qmap.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qdebug.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qtextstream.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qiodevice.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qlocale.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qset.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qcontiguouscache.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qpen.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qbrush.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qmatrix.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qpolygon.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qrect.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qmargins.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qsize.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qregion.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qdatastream.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qline.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtransform.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qpainterpath.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qimage.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qpaintdevice.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qpixelformat.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qpixmap.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextoption.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextlayout.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qevent.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qkeysequence.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qurl.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qurlquery.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qfile.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qfiledevice.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qvector2d.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtouchdevice.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qglyphrun.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qrawfont.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfontdatabase.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextcursor.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QTextCharFormat \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/QRegularExpression \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qregularexpression.h \
+		highlighter.h \
 		moc_predefs.h \
 		../../Qt5.9.0/5.9/gcc_64/bin/moc
 	/home/willard/Qt5.9.0/5.9/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/willard/Qt5.9.0/5.9/gcc_64/mkspecs/linux-g++ -I/home/willard/Development/prototype -I/home/willard/Qt5.9.0/5.9/gcc_64/include -I/home/willard/Qt5.9.0/5.9/gcc_64/include/QtWidgets -I/home/willard/Qt5.9.0/5.9/gcc_64/include/QtGui -I/home/willard/Qt5.9.0/5.9/gcc_64/include/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include highlighter.h -o moc_highlighter.cpp
@@ -1204,6 +1331,21 @@ ui_mainwindow.h: mainwindow.ui \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qmainwindow.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qtabwidget.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qicon.h \
+		highlighter.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QSyntaxHighlighter \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qsyntaxhighlighter.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextobject.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextformat.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qpen.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextoption.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextlayout.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qglyphrun.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qrawfont.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfontdatabase.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextcursor.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QTextCharFormat \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/QRegularExpression \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qregularexpression.h \
 		codeeditor.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QPlainTextEdit \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qplaintextedit.h \
@@ -1211,16 +1353,8 @@ ui_mainwindow.h: mainwindow.ui \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qabstractscrollarea.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qframe.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextdocument.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextoption.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextcursor.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextformat.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qpen.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qabstracttextdocumentlayout.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextlayout.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qglyphrun.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qrawfont.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfontdatabase.h \
-		myparser.h \
+		interpreter.h \
 		parser.h \
 		nodes.h \
 		scanner.h \
@@ -1460,7 +1594,22 @@ main.o: main.cpp ../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QApplication \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QMainWindow \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qmainwindow.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qtabwidget.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qicon.h
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qicon.h \
+		highlighter.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QSyntaxHighlighter \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qsyntaxhighlighter.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextobject.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextformat.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qpen.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextoption.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextlayout.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qglyphrun.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qrawfont.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfontdatabase.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextcursor.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QTextCharFormat \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/QRegularExpression \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qregularexpression.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o main.cpp
 
 mainwindow.o: mainwindow.cpp mainwindow.h \
@@ -1567,6 +1716,21 @@ mainwindow.o: mainwindow.cpp mainwindow.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtouchdevice.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qtabwidget.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qicon.h \
+		highlighter.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QSyntaxHighlighter \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qsyntaxhighlighter.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextobject.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextformat.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qpen.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextoption.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextlayout.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qglyphrun.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qrawfont.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfontdatabase.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextcursor.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QTextCharFormat \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/QRegularExpression \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qregularexpression.h \
 		ui_mainwindow.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/QVariant \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QAction \
@@ -1592,7 +1756,6 @@ mainwindow.o: mainwindow.cpp mainwindow.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qstyleoption.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qabstractspinbox.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qvalidator.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qregularexpression.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qslider.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qabstractslider.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qstyle.h \
@@ -1614,15 +1777,7 @@ mainwindow.o: mainwindow.cpp mainwindow.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qplaintextedit.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qtextedit.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextdocument.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextoption.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextcursor.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextformat.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qpen.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qabstracttextdocumentlayout.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextlayout.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qglyphrun.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qrawfont.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfontdatabase.h \
 		customglwidget.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QOpenGLWidget \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qopenglwidget.h \
@@ -1638,7 +1793,7 @@ mainwindow.o: mainwindow.cpp mainwindow.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/QObject \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/QScopedPointer \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qopenglversionfunctions.h \
-		myparser.h \
+		interpreter.h \
 		parser.h \
 		nodes.h \
 		scanner.h
@@ -1764,6 +1919,21 @@ customglwidget.o: customglwidget.cpp customglwidget.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qmainwindow.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qtabwidget.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qicon.h \
+		highlighter.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QSyntaxHighlighter \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qsyntaxhighlighter.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextobject.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextformat.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qpen.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextoption.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextlayout.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qglyphrun.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qrawfont.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfontdatabase.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextcursor.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QTextCharFormat \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/QRegularExpression \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qregularexpression.h \
 		codeeditor.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QPlainTextEdit \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qplaintextedit.h \
@@ -1771,22 +1941,14 @@ customglwidget.o: customglwidget.cpp customglwidget.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qabstractscrollarea.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qframe.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextdocument.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextoption.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextcursor.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextformat.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qpen.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qabstracttextdocumentlayout.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextlayout.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qglyphrun.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qrawfont.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfontdatabase.h \
-		myparser.h \
+		interpreter.h \
 		parser.h \
 		nodes.h \
 		scanner.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o customglwidget.o customglwidget.cpp
 
-myparser.o: myparser.cpp myparser.h \
+interpreter.o: interpreter.cpp interpreter.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QOpenGLFunctions \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qopenglfunctions.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtguiglobal.h \
@@ -1864,7 +2026,7 @@ myparser.o: myparser.cpp myparser.h \
 		parser.h \
 		nodes.h \
 		scanner.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o myparser.o myparser.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o interpreter.o interpreter.cpp
 
 scanner.o: scanner.cpp parser.h \
 		nodes.h
@@ -1990,7 +2152,112 @@ codeeditor.o: codeeditor.cpp codeeditor.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfontdatabase.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o codeeditor.o codeeditor.cpp
 
-highlighter.o: highlighter.cpp highlighter.h
+highlighter.o: highlighter.cpp highlighter.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QSyntaxHighlighter \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qsyntaxhighlighter.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtguiglobal.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qglobal.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qconfig-bootstrapped.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qconfig.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qtcore-config.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qsystemdetection.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qprocessordetection.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qcompilerdetection.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qtypeinfo.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qsysinfo.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qlogging.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qflags.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qatomic.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qbasicatomic.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qatomic_bootstrap.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qgenericatomic.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qatomic_cxx11.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qatomic_msvc.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qglobalstatic.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qmutex.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qnumeric.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qversiontagging.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtgui-config.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qobject.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qobjectdefs.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qnamespace.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qobjectdefs_impl.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qstring.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qchar.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qbytearray.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qrefcount.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qarraydata.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qstringbuilder.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qlist.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qalgorithms.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qiterator.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qhashfunctions.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qpair.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qbytearraylist.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qstringlist.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qregexp.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qstringmatcher.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qcoreevent.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qscopedpointer.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qmetatype.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qvarlengtharray.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qcontainerfwd.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qobject_impl.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextobject.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextformat.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qcolor.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qrgb.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qrgba64.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfont.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qwindowdefs.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qwindowdefs_win.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qsharedpointer.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qshareddata.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qhash.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qsharedpointer_impl.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qvector.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qpoint.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qvariant.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qmap.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qdebug.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qtextstream.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qiodevice.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qlocale.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qset.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qcontiguouscache.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qpen.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qbrush.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qmatrix.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qpolygon.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qrect.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qmargins.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qsize.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qregion.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qdatastream.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qline.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtransform.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qpainterpath.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qimage.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qpaintdevice.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qpixelformat.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qpixmap.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextoption.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextlayout.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qevent.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qkeysequence.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qurl.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qurlquery.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qfile.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qfiledevice.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qvector2d.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtouchdevice.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qglyphrun.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qrawfont.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfontdatabase.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextcursor.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QTextCharFormat \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/QRegularExpression \
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qregularexpression.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o highlighter.o highlighter.cpp
 
 moc_mainwindow.o: moc_mainwindow.cpp 

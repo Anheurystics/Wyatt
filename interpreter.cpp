@@ -1,4 +1,4 @@
-#include "myparser.h"
+#include "interpreter.h"
 
 #define resolve_int(n) ((Int*)n)->value
 #define resolve_float(n) ((Float*)n)->value
@@ -7,11 +7,11 @@
 
 #define LOOP_TIMEOUT 5
 
-MyParser::MyParser() {
+Interpreter::Interpreter() {
 
 }
 
-Expr* MyParser::eval_binary(Binary* bin) {
+Expr* Interpreter::eval_binary(Binary* bin) {
     Expr* lhs = eval_expr(bin->lhs);
     if(!lhs) return 0;
 
@@ -185,7 +185,7 @@ Expr* MyParser::eval_binary(Binary* bin) {
     return 0;
 }
 
-Expr* MyParser::eval_expr(Expr* node) {
+Expr* Interpreter::eval_expr(Expr* node) {
     switch(node->type) {
         case NODE_IDENT: 
             {
@@ -279,7 +279,7 @@ Expr* MyParser::eval_expr(Expr* node) {
     return 0;
 }
 
-void MyParser::eval_stmt(Stmt* stmt) {
+void Interpreter::eval_stmt(Stmt* stmt) {
     switch(stmt->type) {
         case NODE_FUNCSTMT:
             {
@@ -524,13 +524,13 @@ void MyParser::eval_stmt(Stmt* stmt) {
     }
 }
 
-void MyParser::execute_stmts(Stmts* stmts) {
+void Interpreter::execute_stmts(Stmts* stmts) {
     for(unsigned int it = 0; it < stmts->list.size(); it++) { 
         eval_stmt(stmts->list.at(it));
     }
 }
 
-void MyParser::compile_shader(GLuint* handle, ShaderSource* source) {
+void Interpreter::compile_shader(GLuint* handle, ShaderSource* source) {
     const char* src = source->code.c_str();
     gl->glShaderSource(*handle, 1, &src, NULL);
     gl->glCompileShader(*handle);
@@ -545,7 +545,7 @@ void MyParser::compile_shader(GLuint* handle, ShaderSource* source) {
     }
 }
 
-void MyParser::compile_program() {
+void Interpreter::compile_program() {
     programs.clear();
     for(std::map<std::string, ShaderPair*>::iterator it = shaders.begin(); it != shaders.end(); ++it) {
         Program* program = new Program;
@@ -585,7 +585,7 @@ void MyParser::compile_program() {
     }
 }
 
-void MyParser::execute_init() {
+void Interpreter::execute_init() {
     if(!init || status) return;
     buffers.clear();
     variables.clear();
@@ -593,13 +593,13 @@ void MyParser::execute_init() {
     execute_stmts(init->stmts);
 }
 
-void MyParser::execute_loop() {
+void Interpreter::execute_loop() {
     if(!loop || status) return;
 
     execute_stmts(loop->stmts);
 }
 
-void MyParser::parse(std::string code) {
+void Interpreter::parse(std::string code) {
     YY_BUFFER_STATE state = yy_scan_string(code.c_str());
 
     shaders.clear();

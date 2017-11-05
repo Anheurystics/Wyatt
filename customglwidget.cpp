@@ -26,16 +26,16 @@ void CustomGLWidget::paintGL() {
     glClear(GL_COLOR_BUFFER_BIT);
 
     if(dirtyShaders) {
-        parser.parse(code);
-        parser.setFunctions(context()->functions());
-        parser.compile_program();
-        parser.execute_init();
+        interpreter.parse(code);
+        interpreter.setFunctions(context()->functions());
+        interpreter.compile_program();
+        interpreter.execute_init();
 
         dirtyShaders = false;
     }
 
-    std::cout << "parser " << (!parser.status? "OK" : "ERROR") << std::endl;
-    parser.execute_loop();
+    std::cout << "interpreter " << (!interpreter.status? "OK" : "ERROR") << std::endl;
+    interpreter.execute_loop();
 }
 
 void CustomGLWidget::resizeGL(int width, int height)

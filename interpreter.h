@@ -15,7 +15,7 @@
 #include "parser.h"
 #include "scanner.h"
 
-class MyParser {
+class Interpreter {
     public:
         struct Layout {
             std::map<std::string, unsigned int> attributes;
@@ -38,7 +38,7 @@ class MyParser {
             ShaderSource* fragSource;
         };
 
-        MyParser();
+        Interpreter();
         std::map<std::string, Expr*> variables;
         std::map<std::string, Buffer*> buffers;
         std::map<std::string, Program*> programs;

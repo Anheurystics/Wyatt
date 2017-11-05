@@ -27,7 +27,7 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     customglwidget.cpp \
-    myparser.cpp \
+    interpreter.cpp \
     scanner.cpp \
     parser.cpp \
     codeeditor.cpp \
@@ -37,7 +37,7 @@ SOURCES += \
 HEADERS += \
         mainwindow.h \
     customglwidget.h \
-	myparser.h \
+	interpreter.h \
     scanner.h \
     parser.h \
     nodes.h \
