@@ -9,7 +9,7 @@ using namespace std;
 enum NodeType {
     NODE_INVOKE,
     NODE_EXPR, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_VECTOR2, NODE_VECTOR3, NODE_VECTOR4, NODE_MATRIX2, NODE_MATRIX3, NODE_MATRIX4, NODE_IDENT, NODE_UNIFORM,
-    NODE_UPLOADLIST, NODE_FUNCEXPR, NODE_ARGLIST,
+    NODE_UPLOADLIST, NODE_FUNCEXPR, NODE_ARGLIST, NODE_PARAMLIST,
     NODE_STMT, NODE_ASSIGN, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_USE, NODE_FUNCSTMT, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_SSOURCE, NODE_PRINT, NODE_FUNCDEF, NODE_RETURN
 };
 
@@ -261,6 +261,22 @@ class ArgList: public Node {
         }
 };
 
+class ParamList: public Node {
+    public:
+        vector<Ident*> list;
+
+        ParamList(Ident* init) {
+            if(init) list.push_back(init);
+            type = NODE_PARAMLIST;
+        }
+
+        ~ParamList() {
+            for(unsigned int i = 0; i < list.size(); i++) {
+                delete list[i];
+            }
+        }
+};
+
 class Return: public Stmt {
     public:
         Expr* value;
@@ -278,19 +294,19 @@ class Return: public Stmt {
 class FuncDef: public Stmt {
     public:
         Ident* ident;
-        ArgList* args;
+        ParamList* params;
         Stmts* stmts;
 
-        FuncDef(Ident* ident, ArgList* args, Stmts* stmts) {
+        FuncDef(Ident* ident, ParamList* params, Stmts* stmts) {
             this->ident = ident;
-            this->args = args;
+            this->params = params;
             this->stmts = stmts;
             type = NODE_FUNCDEF;
         }
 
         ~FuncDef() {
             delete ident;
-            delete args;
+            delete params;
             delete stmts;
         }
 };

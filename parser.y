@@ -37,6 +37,7 @@ void yyerror( std::map<std::string, ShaderPair*> *shaders, std::map<std::string,
 
 	UploadList* ulval;
     ArgList* alval;
+    ParamList* pmval;
     FuncDef* fdval;
 }
 
@@ -68,6 +69,7 @@ void yyerror( std::map<std::string, ShaderPair*> *shaders, std::map<std::string,
 %type<ssval> vert_shader frag_shader
 %type<ulval> upload_list
 %type<alval> arg_list
+%type<pmval> param_list
 
 %start program 
 %%
@@ -113,7 +115,7 @@ vert_shader: VERTEX IDENTIFIER SHADER SEMICOLON { $$ = new ShaderSource($2->name
 frag_shader: FRAGMENT IDENTIFIER SHADER SEMICOLON { $$ = new ShaderSource($2->name, $3->name, "frag"); }
     ;
 
-function: FUNC IDENTIFIER OPEN_PAREN arg_list CLOSE_PAREN block { $$ = new FuncDef($2, $4, $6); }
+function: FUNC IDENTIFIER OPEN_PAREN param_list CLOSE_PAREN block { $$ = new FuncDef($2, $4, $6); }
     ;
 
 expr: scalar { $$ = $1; }
@@ -151,7 +153,13 @@ stmt: IDENTIFIER EQUALS expr { $$ = new Assign($1, $3); }
 	;
 
 arg_list: { $$ = new ArgList(0); }
-    | arg_list COMMA expr { $1->list.insert($1->list.end(), $3); }
+    | expr { $$ = new ArgList($1); }
+    | arg_list COMMA expr { $1->list.push_back($3); }
+    ;
+
+param_list: { $$ = new ParamList(0); }
+    | IDENTIFIER { $$ = new ParamList($1); }
+    | param_list COMMA IDENTIFIER { $1->list.push_back($3); }
     ;
 
 invoke: IDENTIFIER OPEN_PAREN arg_list CLOSE_PAREN { $$ = new Invoke($1, $3); }

@@ -185,6 +185,32 @@ Expr* Interpreter::eval_binary(Binary* bin) {
     return 0;
 }
 
+Expr* Interpreter::invoke(Invoke* invoke) {
+    string name = invoke->ident->name;
+    if(functions.find(name) != functions.end()) {
+        FuncDef* def = functions[name];
+        Scope* localScope = new Scope(name);
+        functionScopeStack.push(localScope);
+        int nParams = def->params->list.size();
+        int nArgs = invoke->args->list.size();
+        if(nParams != nArgs) {
+            cout << "ERROR: Function " << name << " expects " << nParams << " arguments, got " << nArgs << endl;
+            return NULL;
+        }
+        if(nParams > 0) {
+            for(unsigned int i = 0; i < nParams; i++) {
+                localScope->declare(def->params->list[i]->name, eval_expr(invoke->args->list[i]));
+            }
+        }
+        Expr* retValue = execute_stmts(def->stmts);
+        functionScopeStack.pop();
+        return retValue;
+    } else {
+        cout << "ERROR: Call to undefined function " << name << endl;
+    }
+    return NULL;
+}
+
 Expr* Interpreter::eval_expr(Expr* node) {
     switch(node->type) {
         case NODE_IDENT: 
@@ -284,17 +310,7 @@ Expr* Interpreter::eval_expr(Expr* node) {
         case NODE_FUNCEXPR:
             {
                 FuncExpr* func = (FuncExpr*)node;
-                string funcName = func->invoke->ident->name;
-                if(functions.find(funcName) != functions.end()) {
-                    FuncDef* def = functions[funcName];
-                    functionScopeStack.push(new Scope(funcName));
-                    Expr* retValue = execute_stmts(def->stmts);
-                    functionScopeStack.pop();
-                    return retValue;
-                } else {
-                    cout << "ERROR: Call to undefined function " << funcName << endl;
-                }
-                return NULL;
+                return invoke(func->invoke);
             }
 
         default: return 0;
@@ -308,15 +324,7 @@ void Interpreter::eval_stmt(Stmt* stmt) {
         case NODE_FUNCSTMT:
             {
                 FuncStmt* func = (FuncStmt*)stmt;
-                string funcName = func->invoke->ident->name;
-                if(functions.find(funcName) != functions.end()) {
-                    FuncDef* def = functions[funcName];
-                    functionScopeStack.push(new Scope(funcName));
-                    execute_stmts(def->stmts);
-                    functionScopeStack.pop();
-                } else {
-                    cout << "ERROR: Call to undefined function " << funcName << endl;
-                }
+                invoke(func->invoke);
                 return;
             }
         case NODE_ASSIGN:
