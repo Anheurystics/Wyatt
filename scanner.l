@@ -23,8 +23,7 @@ void yyerror(const char *s);
 [0-9]+         { yylval.ival = new Int(atoi(yytext)); return INT; }
 "print"        { return PRINT; }
 "allocate"     { return ALLOCATE; }
-"init"         { return INIT; }
-"loop"         { return LOOP; }
+"func"         { return FUNC; }
 "draw"         { return DRAW; }
 "use"          { return USE; }
 "if"           { return IF; }

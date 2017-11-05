@@ -578,20 +578,31 @@ void MyParser::execute_init() {
     buffers.clear();
     variables.clear();
 
-    execute_stmts(init);
+    execute_stmts(init->stmts);
 }
 
 void MyParser::execute_loop() {
     if(!loop || status) return;
 
-    execute_stmts(loop);
+    execute_stmts(loop->stmts);
 }
 
 void MyParser::parse(std::string code) {
     YY_BUFFER_STATE state = yy_scan_string(code.c_str());
 
     shaders.clear();
-    status = yyparse(&shaders, &init, &loop);
+    functions.clear();
+    status = yyparse(&shaders, &functions);
+
+    init = functions["init"];
+    if(init == NULL) {
+        std::cout << "ERROR: init function required!\n";
+    }
+
+    loop = functions["loop"];
+    if(loop == NULL) {
+        std::cout << "ERROR: loop function required!\n";
+    }
 
     yy_delete_buffer(state);
 }

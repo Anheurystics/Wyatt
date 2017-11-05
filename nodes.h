@@ -7,8 +7,10 @@
 using namespace std;
 
 enum NodeType {
-    NODE_EXPR, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_VECTOR2, NODE_VECTOR3, NODE_VECTOR4, NODE_MATRIX2, NODE_MATRIX3, NODE_MATRIX4, NODE_IDENT, NODE_UNIFORM, NODE_UPLOADLIST, 
-    NODE_STMT, NODE_ASSIGN, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_USE, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_SSOURCE, NODE_PRINT
+    NODE_INVOKE,
+    NODE_EXPR, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_VECTOR2, NODE_VECTOR3, NODE_VECTOR4, NODE_MATRIX2, NODE_MATRIX3, NODE_MATRIX4, NODE_IDENT, NODE_UNIFORM,
+    NODE_UPLOADLIST, NODE_FUNCEXPR, NODE_ARGLIST,
+    NODE_STMT, NODE_ASSIGN, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_USE, NODE_FUNCSTMT, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_SSOURCE, NODE_PRINT, NODE_FUNCDEF
 };
 
 enum OpType {
@@ -243,6 +245,41 @@ class Stmts: public Node {
         }
 };
 
+class ArgList: public Node {
+    public:
+        vector<Expr*> list;
+
+        ArgList(Expr* init) {
+            if(init) list.push_back(init);
+            type = NODE_ARGLIST;
+        }
+
+        ~ArgList() {
+            for(unsigned int i = 0; i < list.size(); i++) {
+                delete list[i];
+            }
+        }
+};
+
+class FuncDef: public Stmt {
+    public:
+        Ident* ident;
+        ArgList* args;
+        Stmts* stmts;
+
+        FuncDef(Ident* ident, ArgList* args, Stmts* stmts) {
+            this->ident = ident;
+            this->args = args;
+            this->stmts = stmts;
+        }
+
+        ~FuncDef() {
+            delete ident;
+            delete args;
+            delete stmts;
+        }
+};
+
 class If: public Stmt {
     public:
         Expr* condition;
@@ -369,6 +406,51 @@ class Use: public Stmt {
 
         ~Use() {
             delete ident;
+        }
+};
+
+class Invoke: public Node {
+    public:
+        Ident* ident;
+        ArgList* args;
+
+        Invoke(Ident* ident, ArgList* args) {
+            this->ident = ident;
+            this->args = args;
+            type = NODE_INVOKE;
+        }
+
+        ~Invoke() {
+            delete ident;
+            delete args;
+        }
+};
+
+class FuncExpr: public Expr {
+    public:
+        Invoke* invoke;
+
+        FuncExpr(Invoke* invoke) {
+            this->invoke = invoke;
+            type = NODE_FUNCEXPR;
+        }
+
+        ~FuncExpr() {
+            delete invoke;
+        }
+};
+
+class FuncStmt: public Stmt {
+    public:
+        Invoke* invoke;
+
+        FuncStmt(Invoke* invoke) {
+            this->invoke = invoke;
+            type = NODE_FUNCSTMT;
+        }
+
+        ~FuncStmt() {
+            delete invoke;
         }
 };
 

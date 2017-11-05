@@ -11,7 +11,7 @@
 #include "nodes.h"
 
 int yylex();
-void yyerror( std::map<std::string, ShaderPair*> *shaders, Stmts** init, Stmts** loop, const char *s);
+void yyerror( std::map<std::string, ShaderPair*> *shaders, std::map<std::string, FuncDef*> *functions, const char *s);
 }
 
 %debug
@@ -21,7 +21,7 @@ void yyerror( std::map<std::string, ShaderPair*> *shaders, Stmts** init, Stmts**
 %define parse.lac full
 %define parse.error verbose
 
-%parse-param { std::map<std::string, ShaderPair*> *shaders } { Stmts** init } { Stmts** loop }
+%parse-param { std::map<std::string, ShaderPair*> *shaders } { std::map<std::string, FuncDef*> *functions }
 
 %union {
 	Expr* eval;
@@ -32,9 +32,12 @@ void yyerror( std::map<std::string, ShaderPair*> *shaders, Stmts** init, Stmts**
 	Vector3* vval;
 	Stmt* sval;
     Stmts* svval;
+    Invoke* inval;
     ShaderSource* ssval;
 
-	UploadList* lval;
+	UploadList* ulval;
+    ArgList* alval;
+    FuncDef* fdval;
 }
 
 %token<bval> BOOL
@@ -44,29 +47,42 @@ void yyerror( std::map<std::string, ShaderPair*> *shaders, Stmts** init, Stmts**
 
 %token SEMICOLON OPEN_BRACE CLOSE_BRACE
 %token PIPE
-%token OPEN_PAREN CLOSE_PAREN LESS_THAN GREATER_THAN OPEN_BRACKET CLOSE_BRACKET COMMA PERIOD EQUALS AND OR NOT IF WHILE EQUAL NEQUAL GEQUAL LEQUAL COMP_PLUS COMP_MINUS COMP_MULT COMP_DIV COMP_MOD
-%token INIT LOOP ALLOCATE UPLOAD DRAW VERTEX FRAGMENT PRINT USE
+%token OPEN_PAREN CLOSE_PAREN LESS_THAN GREATER_THAN OPEN_BRACKET CLOSE_BRACKET COMMA PERIOD EQUALS EQUAL NEQUAL GEQUAL LEQUAL COMP_PLUS COMP_MINUS COMP_MULT COMP_DIV COMP_MOD
+%token FUNC AND OR NOT IF WHILE ALLOCATE UPLOAD DRAW VERTEX FRAGMENT PRINT USE
 
 %left PLUS MINUS
 %left MULT DIV MOD
 %left AND OR
 %left UNARY
 
-%type<eval> expr 
+%type<inval> invoke;
+
+%type<eval> expr
 %type<eval> scalar bool
 %type<vval> vec3
 %type<idval> uniform;
 
 %type<sval> stmt stmt_block
+%type<fdval> function
 %type<svval> stmts block
-%type <ssval> vert_shader frag_shader
-%type<lval> upload_list
+%type<ssval> vert_shader frag_shader
+%type<ulval> upload_list
+%type<alval> arg_list
 
 %start program 
 %%
 
-program: INIT block LOOP block { *init = $2; *loop = $4; }
-    | vert_shader program { 
+program:
+    |
+    function program  {
+        if(functions->find($1->ident->name) == functions->end()) {
+            functions->insert(std::pair<std::string, FuncDef*>($1->ident->name, $1));
+        } else {
+            std::cout << "ERROR: Redefinition of function " << $1->ident->name << std::endl;
+        }
+    }
+    |
+    vert_shader program { 
         if(shaders->find($1->name) == shaders->end()) {
             ShaderPair* pair = new ShaderPair;
             pair->name = $1->name;
@@ -77,7 +93,8 @@ program: INIT block LOOP block { *init = $2; *loop = $4; }
             (*shaders)[$1->name]->vertex = $1;
         }
     }
-    | frag_shader program { 
+    |
+    frag_shader program { 
         if(shaders->find($1->name) == shaders->end()) {
             ShaderPair* pair = new ShaderPair;
             pair->name = $1->name;
@@ -96,11 +113,15 @@ vert_shader: VERTEX IDENTIFIER SHADER SEMICOLON { $$ = new ShaderSource($2->name
 frag_shader: FRAGMENT IDENTIFIER SHADER SEMICOLON { $$ = new ShaderSource($2->name, $3->name, "frag"); }
     ;
 
+function: FUNC IDENTIFIER OPEN_PAREN arg_list CLOSE_PAREN block { $$ = new FuncDef($2, $4, $6); }
+    ;
+
 expr: scalar { $$ = $1; }
 	| vec3 { $$ = $1; }
     | bool { $$ = $1; }
-    | IDENTIFIER { $$ = $1; }
+    | invoke { $$ = new FuncExpr($1); }
     | uniform { $$ = $1; }
+    | IDENTIFIER { $$ = $1; }
 	| expr PLUS expr { $$ = new Binary($1, OP_PLUS, $3); }
 	| expr MINUS expr { $$ = new Binary($1, OP_MINUS, $3); }
 	| expr MULT expr { $$ = new Binary($1, OP_MULT, $3); }
@@ -120,12 +141,20 @@ stmt: IDENTIFIER EQUALS expr { $$ = new Assign($1, $3); }
     | DRAW IDENTIFIER { $$ = new Draw($2); }
     | USE IDENTIFIER { $$ = new Use($2); }
     | PRINT expr { $$ = new Print($2); }
+    | invoke { $$ = new FuncStmt($1) ; }
     | IDENTIFIER COMP_PLUS expr { $$ = new Assign($1, new Binary($1, OP_PLUS, $3)); }
     | IDENTIFIER COMP_MINUS expr { $$ = new Assign($1, new Binary($1, OP_MINUS, $3)); }
     | IDENTIFIER COMP_MULT expr { $$ = new Assign($1, new Binary($1, OP_MULT, $3)); }
     | IDENTIFIER COMP_DIV expr { $$ = new Assign($1, new Binary($1, OP_DIV, $3)); }
     | IDENTIFIER COMP_MOD expr { $$ = new Assign($1, new Binary($1, OP_MOD, $3)); }
 	;
+
+arg_list: { $$ = new ArgList(0); }
+    | arg_list COMMA expr { $1->list.insert($1->list.end(), $3); }
+    ;
+
+invoke: IDENTIFIER OPEN_PAREN arg_list CLOSE_PAREN { $$ = new Invoke($1, $3); }
+    ;
 
 stmt_block: IF OPEN_PAREN expr CLOSE_PAREN block { $$ = new If($3, $5); }
     | WHILE OPEN_PAREN expr CLOSE_PAREN block { $$ = new While($3, $5); }
@@ -163,7 +192,7 @@ vec3: OPEN_BRACKET expr COMMA expr COMMA expr CLOSE_BRACKET { $$ = new Vector3($
 
 %%
 
-void yyerror(std::map<std::string, ShaderPair*> *shaders, Stmts** init, Stmts** loop, const char* s) {
-    std::cerr << "shaders: " << shaders << "\ninit: " << *init << "\nloop: " << *loop << std::endl;
+void yyerror(std::map<std::string, ShaderPair*> *shaders, std::map<std::string, FuncDef*> *functions, const char* s) {
+    std::cerr << "shaders: " << shaders << "\nfunctions: " << functions << std::endl;
 	fprintf(stderr, "Parse error: %s\n", s);
 }

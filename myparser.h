@@ -43,6 +43,7 @@ class MyParser {
         std::map<std::string, Buffer*> buffers;
         std::map<std::string, Program*> programs;
         std::map<std::string, ShaderPair*> shaders;
+        std::map<std::string, FuncDef*> functions;
 
         std::string current_program_name;
         Program* current_program = NULL;
@@ -59,8 +60,8 @@ class MyParser {
             this->gl = gl;
         }
     private:
-        Stmts* init = NULL;
-        Stmts* loop = NULL;
+        FuncDef* init = NULL;
+        FuncDef* loop = NULL;
         QOpenGLFunctions* gl;
 
         Expr* eval_expr(Expr*);
