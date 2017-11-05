@@ -40,6 +40,7 @@ void CustomGLWidget::paintGL() {
 
 void CustomGLWidget::resizeGL(int width, int height)
 {
+    resize(width, width);
     std::cout << "resize: " << width << " x " << height << std::endl;
 }
 

@@ -20,42 +20,27 @@
    <enum>QTabWidget::Rounded</enum>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>0</y>
-      <width>101</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Code</string>
-    </property>
-   </widget>
-   <widget class="CodeEditor" name="codeEditor">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>20</y>
-      <width>541</width>
-      <height>531</height>
-     </rect>
-    </property>
-    <property name="plainText">
-     <string/>
-    </property>
-   </widget>
-   <widget class="CustomGLWidget" name="openGLWidget">
-    <property name="geometry">
-     <rect>
-      <x>560</x>
-      <y>10</y>
-      <width>361</width>
-      <height>361</height>
-     </rect>
-    </property>
-   </widget>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <widget class="QSplitter" name="splitter">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <widget class="QWidget" name="layoutWidget">
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="CodeEditor" name="codeEditor">
+          <property name="plainText">
+           <string/>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="CustomGLWidget" name="openGLWidget"/>
+     </widget>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -68,7 +53,7 @@
    </property>
    <widget class="QMenu" name="menuGLSL_Editor">
     <property name="title">
-     <string>GLSL Editor</string>
+     <string>Prototype</string>
     </property>
    </widget>
    <addaction name="menuGLSL_Editor"/>
