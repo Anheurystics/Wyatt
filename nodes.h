@@ -169,16 +169,22 @@ class Vector4: public Expr {
 
 class Matrix2: public Expr {
     public:
-        Vector2* v0;
-        Vector2* v1;
+        Vector2 *v0, *v1;
+        Vector2 *c0, *c1;
 
         Matrix2(Vector2* v0, Vector2* v1): v0(v0), v1(v1) {
             type = NODE_MATRIX2;
+
+            c0 = new Vector2(v0->x, v1->x);
+            c1 = new Vector2(v0->y, v1->y);
         }
 
         ~Matrix2() {
             delete v0;
             delete v1;
+
+            c0 = NULL;
+            c1 = NULL;
         }
 };
 
@@ -208,18 +214,28 @@ class Matrix3: public Expr {
 
 class Matrix4: public Expr {
     public:
-        Vector4* v0;
-        Vector4* v1;
-        Vector4* v2;
-        Vector4* v3;
+        Vector4 *v0, *v1, *v2, *v3;
+        Vector4 *c0, *c1, *c2, *c3;
 
-        Matrix4(Vector4* v0, Vector4* v1, Vector4* v2, Vector4* v3): v0(v0), v1(v1), v2(v2), v3(v3) { type = NODE_MATRIX4; }
+        Matrix4(Vector4* v0, Vector4* v1, Vector4* v2, Vector4* v3): v0(v0), v1(v1), v2(v2), v3(v3) {
+            type = NODE_MATRIX4;
+
+            c0 = new Vector4(v0->x, v1->x, v2->x, v3->x);
+            c1 = new Vector4(v0->y, v1->y, v2->y, v3->y);
+            c2 = new Vector4(v0->z, v1->z, v2->z, v3->z);
+            c3 = new Vector4(v0->w, v1->w, v2->w, v3->w);
+        }
 
         ~Matrix4() {
             delete v0;
             delete v1;
             delete v2;
             delete v3;
+
+            c0 = NULL;
+            c1 = NULL;
+            c2 = NULL;
+            c3 = NULL;
         }
 };
 

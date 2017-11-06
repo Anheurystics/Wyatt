@@ -252,6 +252,49 @@ Expr* Interpreter::eval_binary(Binary* bin) {
         }
     }
 
+    if(ltype == NODE_MATRIX2 && (rtype == NODE_INT || rtype == NODE_FLOAT)) {
+        Matrix2* a = (Matrix2*)eval_expr(lhs);
+
+        if(op != OP_MULT && op != OP_DIV) return 0;
+
+        Vector2* v0 = (Vector2*)eval_binary(new Binary(a->v0, op, rhs));
+        Vector2* v1 = (Vector2*)eval_binary(new Binary(a->v1, op, rhs));
+
+        return new Matrix2(v0, v1);
+    }
+
+    if((ltype == NODE_INT || ltype == NODE_FLOAT) && (rtype == NODE_MATRIX2)) {
+        Matrix2* a = (Matrix2*)eval_expr(rhs);
+
+        if(op != OP_MULT) return 0;
+
+        Vector2* v0 = (Vector2*)eval_binary(new Binary(a->v0, op, lhs));
+        Vector2* v1 = (Vector2*)eval_binary(new Binary(a->v1, op, lhs));
+
+        return new Matrix2(v0, v1);
+    }
+
+    if(ltype == NODE_MATRIX2 && rtype == NODE_MATRIX2) {
+        Matrix2* a = (Matrix2*)eval_expr(lhs);
+        Matrix2* b = (Matrix2*)eval_expr(rhs);
+
+        if(op != OP_MULT) return 0;
+
+        Vector2* r0 = new Vector2(new Binary(a->v0, OP_MULT, b->c0), new Binary(a->v0, OP_MULT, b->c1));
+        Vector2* r1 = new Vector2(new Binary(a->v1, OP_MULT, b->c0), new Binary(a->v1, OP_MULT, b->c1));
+
+        return eval_expr(new Matrix2(r0, r1));
+    }
+
+    if(ltype == NODE_VECTOR2 && rtype == NODE_MATRIX2) {
+        Vector2* a = (Vector2*)eval_expr(lhs);
+        Matrix2* b = (Matrix2*)eval_expr(rhs);
+
+        if(op != OP_MULT) return 0;
+
+        return eval_expr(new Vector2(new Binary(a, OP_MULT, b->c0), new Binary(a, OP_MULT, b->c1)));
+    }
+
     if(ltype == NODE_MATRIX3 && (rtype == NODE_INT || rtype == NODE_FLOAT)) {
         Matrix3* a = (Matrix3*)eval_expr(lhs);
 
@@ -267,7 +310,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
     if((ltype == NODE_INT || ltype == NODE_FLOAT) && (rtype == NODE_MATRIX3)) {
         Matrix3* a = (Matrix3*)eval_expr(rhs);
 
-        if(op != OP_MULT && op != OP_DIV) return 0;
+        if(op != OP_MULT) return 0;
 
         Vector3* v0 = (Vector3*)eval_binary(new Binary(a->v0, op, lhs));
         Vector3* v1 = (Vector3*)eval_binary(new Binary(a->v1, op, lhs));
@@ -296,6 +339,55 @@ Expr* Interpreter::eval_binary(Binary* bin) {
         if(op != OP_MULT) return 0;
 
         return eval_expr(new Vector3(new Binary(a, OP_MULT, b->c0), new Binary(a, OP_MULT, b->c1), new Binary(a, OP_MULT, b->c2)));
+    }
+
+    if(ltype == NODE_MATRIX4 && (rtype == NODE_INT || rtype == NODE_FLOAT)) {
+        Matrix4* a = (Matrix4*)eval_expr(lhs);
+
+        if(op != OP_MULT && op != OP_DIV) return 0;
+
+        Vector4* v0 = (Vector4*)eval_binary(new Binary(a->v0, op, rhs));
+        Vector4* v1 = (Vector4*)eval_binary(new Binary(a->v1, op, rhs));
+        Vector4* v2 = (Vector4*)eval_binary(new Binary(a->v2, op, rhs));
+        Vector4* v3 = (Vector4*)eval_binary(new Binary(a->v3, op, rhs));
+
+        return new Matrix4(v0, v1, v2, v3);
+    }
+
+    if((ltype == NODE_INT || ltype == NODE_FLOAT) && (rtype == NODE_MATRIX4)) {
+        Matrix4* a = (Matrix4*)eval_expr(rhs);
+
+        if(op != OP_MULT) return 0;
+
+        Vector4* v0 = (Vector4*)eval_binary(new Binary(a->v0, op, lhs));
+        Vector4* v1 = (Vector4*)eval_binary(new Binary(a->v1, op, lhs));
+        Vector4* v2 = (Vector4*)eval_binary(new Binary(a->v2, op, lhs));
+        Vector4* v3 = (Vector4*)eval_binary(new Binary(a->v3, op, lhs));
+
+        return new Matrix4(v0, v1, v2, v3);
+    }
+
+    if(ltype == NODE_MATRIX4 && rtype == NODE_MATRIX4) {
+        Matrix4* a = (Matrix4*)eval_expr(lhs);
+        Matrix4* b = (Matrix4*)eval_expr(rhs);
+        
+        if(op != OP_MULT) return 0;
+
+        Vector4* r0 = new Vector4(new Binary(a->v0, OP_MULT, b->c0), new Binary(a->v0, OP_MULT, b->c1), new Binary(a->v0, OP_MULT, b->c2), new Binary(a->v0, OP_MULT, b->c3));
+        Vector4* r1 = new Vector4(new Binary(a->v1, OP_MULT, b->c0), new Binary(a->v1, OP_MULT, b->c1), new Binary(a->v1, OP_MULT, b->c2), new Binary(a->v1, OP_MULT, b->c3));
+        Vector4* r2 = new Vector4(new Binary(a->v2, OP_MULT, b->c0), new Binary(a->v2, OP_MULT, b->c1), new Binary(a->v2, OP_MULT, b->c2), new Binary(a->v2, OP_MULT, b->c3));
+        Vector4* r3 = new Vector4(new Binary(a->v3, OP_MULT, b->c0), new Binary(a->v3, OP_MULT, b->c1), new Binary(a->v3, OP_MULT, b->c2), new Binary(a->v3, OP_MULT, b->c3));
+
+        return eval_expr(new Matrix4(r0, r1, r2, r3));
+    }
+
+    if(ltype == NODE_VECTOR4 && rtype == NODE_MATRIX4) {
+        Vector4* a = (Vector4*)eval_expr(lhs);
+        Matrix4* b = (Matrix4*)eval_expr(rhs);
+
+        if(op != OP_MULT) return 0;
+
+        return eval_expr(new Vector4(new Binary(a, OP_MULT, b->c0), new Binary(a, OP_MULT, b->c1), new Binary(a, OP_MULT, b->c2), new Binary(a, OP_MULT, b->c3)));
     }
 
     return 0;
@@ -402,7 +494,7 @@ Expr* Interpreter::eval_expr(Expr* node) {
                 }
 
                 if(x->type == NODE_VECTOR2 && y->type == NODE_VECTOR2) {
-                    return NULL;
+                    return new Matrix2((Vector2*)x, (Vector2*)y);
                 }
 
                 return NULL;
@@ -423,7 +515,7 @@ Expr* Interpreter::eval_expr(Expr* node) {
                     return new Matrix3((Vector3*)x, (Vector3*)y, (Vector3*)z);
                 }
 
-                return 0;
+                return NULL;
             }
 
         case NODE_VECTOR4:
@@ -438,13 +530,20 @@ Expr* Interpreter::eval_expr(Expr* node) {
                     return new Vector4(x, y, z, w);
                 }
 
-                if(x->type == NODE_VECTOR4 && y->type == NODE_VECTOR4 && z->type == NODE_VECTOR4) {
-                    return NULL;
+                if(x->type == NODE_VECTOR4 && y->type == NODE_VECTOR4 && z->type == NODE_VECTOR4 && w->type == NODE_VECTOR4) {
+                    return new Matrix4((Vector4*)x, (Vector4*)y, (Vector4*)z, (Vector4*)w);
                 }
 
                 return NULL;
             }
 
+        case NODE_MATRIX2:
+            {
+                Matrix2* mat2 = (Matrix2*)node;
+                mat2->v0 = (Vector2*)eval_expr(mat2->v0);
+                mat2->v1 = (Vector2*)eval_expr(mat2->v1);
+                return mat2;
+            }
 
         case NODE_MATRIX3:
             {
@@ -453,6 +552,16 @@ Expr* Interpreter::eval_expr(Expr* node) {
                 mat3->v1 = (Vector3*)eval_expr(mat3->v1);
                 mat3->v2 = (Vector3*)eval_expr(mat3->v2);
                 return mat3;
+            }
+
+        case NODE_MATRIX4:
+            {
+                Matrix4* mat4 = (Matrix4*)node;
+                mat4->v0 = (Vector4*)eval_expr(mat4->v0);
+                mat4->v1 = (Vector4*)eval_expr(mat4->v1);
+                mat4->v2 = (Vector4*)eval_expr(mat4->v2);
+                mat4->v3 = (Vector4*)eval_expr(mat4->v3);
+                return mat4;
             }
 
         case NODE_UNARY:
@@ -757,6 +866,13 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                             cout << "[" << resolve_scalar(vec4->x) << ", " << resolve_scalar(vec4->y) << ", " << resolve_scalar(vec4->z) << ", " << resolve_scalar(vec4->w) << "]\n";
                             break;
                         }
+                    case NODE_MATRIX2:
+                        {
+                            Matrix2* mat2 = (Matrix2*)output;
+                            cout << "|" << resolve_scalar(mat2->v0->x) << ", " << resolve_scalar(mat2->v0->y) << "|\n";
+                            cout << "|" << resolve_scalar(mat2->v1->x) << ", " << resolve_scalar(mat2->v1->y) << "|\n";
+                            break;
+                        }
                     case NODE_MATRIX3:
                         {
                             Matrix3* mat3 = (Matrix3*)output;
@@ -765,6 +881,16 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                             cout << "|" << resolve_scalar(mat3->v2->x) << ", " << resolve_scalar(mat3->v2->y) << ", " << resolve_scalar(mat3->v2->z) << "|\n";
                             break;
                         }
+                    case NODE_MATRIX4:
+                        {
+                            Matrix4* mat4 = (Matrix4*)output;
+                            cout << "|" << resolve_scalar(mat4->v0->x) << ", " << resolve_scalar(mat4->v0->y) << ", " << resolve_scalar(mat4->v0->z) << ", " << resolve_scalar(mat4->v0->w) << "|\n";
+                            cout << "|" << resolve_scalar(mat4->v1->x) << ", " << resolve_scalar(mat4->v1->y) << ", " << resolve_scalar(mat4->v1->z) << ", " << resolve_scalar(mat4->v1->w) << "|\n";
+                            cout << "|" << resolve_scalar(mat4->v2->x) << ", " << resolve_scalar(mat4->v2->y) << ", " << resolve_scalar(mat4->v2->z) << ", " << resolve_scalar(mat4->v2->w) << "|\n";
+                            cout << "|" << resolve_scalar(mat4->v3->x) << ", " << resolve_scalar(mat4->v3->y) << ", " << resolve_scalar(mat4->v3->z) << ", " << resolve_scalar(mat4->v3->w) << "|\n";
+                            break;
+                        }
+
                     default: break;
                 }
                 return NULL;
