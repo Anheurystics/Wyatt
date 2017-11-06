@@ -319,13 +319,12 @@ Expr* Interpreter::eval_expr(Expr* node) {
     return 0;
 }
 
-void Interpreter::eval_stmt(Stmt* stmt) {
+Expr* Interpreter::eval_stmt(Stmt* stmt) {
     switch(stmt->type) {
         case NODE_FUNCSTMT:
             {
                 FuncStmt* func = (FuncStmt*)stmt;
-                invoke(func->invoke);
-                return;
+                return invoke(func->invoke);
             }
         case NODE_ASSIGN:
             {
@@ -352,7 +351,7 @@ void Interpreter::eval_stmt(Stmt* stmt) {
                                     type = src->uniforms[uniform->name];
                                 } else {
                                     cout << "Uniform does not exist!\n";
-                                    return;
+                                    return NULL;
                                 }
                             }
 
@@ -372,7 +371,7 @@ void Interpreter::eval_stmt(Stmt* stmt) {
                     cout << "ERROR: Invalid assignment\n";
                 }
 
-                return;
+                return NULL;
             }
         case NODE_ALLOC:
             {
@@ -388,7 +387,7 @@ void Interpreter::eval_stmt(Stmt* stmt) {
                     cout << "ERROR: Can't allocate to " << alloc->ident->name << ": buffer already exists!\n";
                 }
 
-                return;
+                return NULL;
             }
         case NODE_UPLOAD:
             {
@@ -425,7 +424,7 @@ void Interpreter::eval_stmt(Stmt* stmt) {
 
                 buffer->sizes[upload->attrib->name] = target->size() / buffer->layout->attributes[upload->attrib->name];
 
-                return;
+                return NULL;
             }
         case NODE_DRAW:
             {
@@ -433,7 +432,7 @@ void Interpreter::eval_stmt(Stmt* stmt) {
 
                 if(current_program == NULL) {
                     cout << "ERROR: Cannot bind program with name " << current_program_name << endl;
-                    return;
+                    return NULL;
                 }
 
                 Buffer* buffer = buffers[draw->ident->name];
@@ -475,7 +474,7 @@ void Interpreter::eval_stmt(Stmt* stmt) {
                     cout << "ERROR: Can't draw non-existent buffer " << draw->ident->name << endl;
                 }
 
-                return;
+                return NULL;
             }
         case NODE_USE:
             {
@@ -485,30 +484,35 @@ void Interpreter::eval_stmt(Stmt* stmt) {
 
                 if(current_program == NULL) {
                     cout << "ERROR: No valid vertex/fragment pair for program name " << current_program_name << endl;
-                    return;
+                    return NULL;
                 }
 
                 gl->glUseProgram(current_program->handle);
-                return;
+                return NULL;
             }
         case NODE_IF:
             {
                 If* ifstmt = (If*)stmt;
                 Expr* condition = eval_expr(ifstmt->condition);
-                if(!condition) return;
+                if(!condition) return NULL;
                 if(condition->type == NODE_BOOL) {
                     bool b = ((Bool*)condition)->value;
                     if(b) {
-                        execute_stmts(ifstmt->block);
+                        Expr* returnValue = execute_stmts(ifstmt->block);
+                        if(returnValue != NULL) {
+                            return returnValue;
+                        }
                     }
+                } else {
+                    std::cout << "ERROR: Condition in if statement not a boolean\n";
                 }
-                return;
+                return NULL;
             }
         case NODE_WHILE:
             {
                 While* whilestmt = (While*)stmt;
                 Expr* condition = eval_expr(whilestmt->condition);
-                if(!condition) return;
+                if(!condition) return NULL;
                 if(condition->type == NODE_BOOL) {
                     time_t start = time(nullptr);
                     while(true) {
@@ -516,22 +520,28 @@ void Interpreter::eval_stmt(Stmt* stmt) {
                         bool b = ((Bool*)condition)->value;
                         if(!b) break;
 
-                        execute_stmts(whilestmt->block);
+                        Expr* returnValue = execute_stmts(whilestmt->block);
+                        if(returnValue != NULL) {
+                            return returnValue;
+                        }
+
                         time_t now = time(nullptr);
                         
                         int diff = difftime(now, start);
                         if(diff > LOOP_TIMEOUT) { break; }
                     }
+                } else {
+                    std::cout << "ERROR: Condition in while statement not a boolean\n";
                 }
 
-                return;
+                return NULL;
             }
         case NODE_PRINT:
             {
                 Print* print = (Print*)stmt;
                 Expr* output = eval_expr(print->expr);
                 if(output == NULL)
-                    return;
+                    return NULL;
 
                 switch(output->type) {
                     case NODE_INT:
@@ -559,15 +569,15 @@ void Interpreter::eval_stmt(Stmt* stmt) {
                         }
                     default: break;
                 }
-                return;
+                return NULL;
             }
 
-        default: return;
+        default: return NULL;
     }
 }
 
 Expr* Interpreter::execute_stmts(Stmts* stmts) {
-    Expr* returnValue;
+    Expr* returnValue = NULL;
     for(unsigned int it = 0; it < stmts->list.size(); it++) { 
         Stmt* stmt = stmts->list.at(it);
         if(stmt->type == NODE_RETURN) {
@@ -576,7 +586,11 @@ Expr* Interpreter::execute_stmts(Stmts* stmts) {
             break;
         }
 
-        eval_stmt(stmt);
+        Expr* expr = eval_stmt(stmt);
+        if(expr != NULL) {
+            returnValue = expr;
+            break;
+        }
     }
 
     if(returnValue != NULL) {

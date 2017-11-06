@@ -101,7 +101,7 @@ class Interpreter {
         Expr* eval_expr(Expr*);
         Expr* eval_binary(Binary*);
         Expr* invoke(Invoke*);
-        void eval_stmt(Stmt*);
+        Expr* eval_stmt(Stmt*);
 };
 
 #endif //MYPARSER_H
