@@ -12,7 +12,7 @@ Interpreter::Interpreter() {
 
     std::string stdlib = 
         "func abs(v) {"
-        "    if(v < 0) { return -v; }"
+        "    if(v < 0) return -v;"
         "    return v;"
         "}";
 

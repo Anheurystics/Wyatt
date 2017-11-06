@@ -175,6 +175,7 @@ invoke: IDENTIFIER OPEN_PAREN arg_list CLOSE_PAREN { $$ = new Invoke($1, $3); }
     ;
 
 stmt_block: IF OPEN_PAREN expr CLOSE_PAREN block { $$ = new If($3, $5); }
+    | IF OPEN_PAREN expr CLOSE_PAREN stmt SEMICOLON { $$ = new If($3, new Stmts($5)); }
     | WHILE OPEN_PAREN expr CLOSE_PAREN block { $$ = new While($3, $5); }
     ;
 
