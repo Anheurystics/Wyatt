@@ -24,20 +24,20 @@ void yyerror( std::map<std::string, ShaderPair*> *shaders, std::map<std::string,
 %parse-param { std::map<std::string, ShaderPair*> *shaders } { std::map<std::string, FuncDef*> *functions }
 
 %union {
-	Expr* eval;
+    Expr* eval;
     Bool* bval;
-	Int* ival;
-	Float* fval;
-	Ident* idval;
+    Int* ival;
+    Float* fval;
+    Ident* idval;
     Vector2* v2val;
-	Vector3* v3val;
+    Vector3* v3val;
     Vector4* v4val;
-	Stmt* sval;
+    Stmt* sval;
     Stmts* svval;
     Invoke* inval;
     ShaderSource* ssval;
 
-	UploadList* ulval;
+    UploadList* ulval;
     ArgList* alval;
     ParamList* pmval;
     FuncDef* fdval;
@@ -114,7 +114,7 @@ program:
             (*shaders)[$1->name]->fragment = $1;
         }
     }
-	;
+    ;
 
 vert_shader: VERTEX IDENTIFIER SHADER SEMICOLON { $$ = new ShaderSource($2->name, $3->name, "vert"); }
     ;
@@ -127,16 +127,16 @@ function: FUNC IDENTIFIER OPEN_PAREN param_list CLOSE_PAREN block { $$ = new Fun
 
 expr: scalar { $$ = $1; }
     | vec2 { $$ = $1; }
-	| vec3 { $$ = $1; }
+    | vec3 { $$ = $1; }
     | vec4 { $$ = $1; }
     | bool { $$ = $1; }
     | invoke { $$ = new FuncExpr($1); }
     | uniform { $$ = $1; }
     | IDENTIFIER { $$ = $1; }
-	| expr PLUS expr { $$ = new Binary($1, OP_PLUS, $3); }
-	| expr MINUS expr { $$ = new Binary($1, OP_MINUS, $3); }
-	| expr MULT expr { $$ = new Binary($1, OP_MULT, $3); }
-	| expr DIV expr { $$ = new Binary($1, OP_DIV, $3); }
+    | expr PLUS expr { $$ = new Binary($1, OP_PLUS, $3); }
+    | expr MINUS expr { $$ = new Binary($1, OP_MINUS, $3); }
+    | expr MULT expr { $$ = new Binary($1, OP_MULT, $3); }
+    | expr DIV expr { $$ = new Binary($1, OP_DIV, $3); }
     | expr MOD expr { $$ = new Binary($1, OP_MOD, $3); }
     | expr LESS_THAN expr { $$ = new Binary($1, OP_LESSTHAN, $3); }
     | expr GREATER_THAN expr { $$ = new Binary($1, OP_GREATERTHAN, $3); }
@@ -146,15 +146,15 @@ expr: scalar { $$ = $1; }
     | expr GEQUAL expr { $$ = new Binary($1, OP_GEQUAL, $3); }
     | MINUS expr { $$ = new Unary(OP_MINUS, $2); } %prec UNARY
     | OPEN_PAREN expr OPEN_PAREN { $$ = $2; }
-	;
+    ;
 
 uniform: IDENTIFIER PERIOD IDENTIFIER { $$ = new Uniform($1, $3); }
     ;
 
 stmt: IDENTIFIER EQUALS expr { $$ = new Assign($1, $3); }
     | uniform EQUALS expr { $$ = new Assign($1, $3); }
-	| ALLOCATE IDENTIFIER { $$ = new Alloc($2); }
-	| IDENTIFIER OPEN_BRACKET IDENTIFIER CLOSE_BRACKET UPLOAD upload_list { $$ = new Upload($1, $3, $6); }
+    | ALLOCATE IDENTIFIER { $$ = new Alloc($2); }
+    | IDENTIFIER OPEN_BRACKET IDENTIFIER CLOSE_BRACKET UPLOAD upload_list { $$ = new Upload($1, $3, $6); }
     | DRAW IDENTIFIER { $$ = new Draw($2); }
     | USE IDENTIFIER { $$ = new Use($2); }
     | PRINT expr { $$ = new Print($2); }
@@ -165,7 +165,7 @@ stmt: IDENTIFIER EQUALS expr { $$ = new Assign($1, $3); }
     | IDENTIFIER COMP_MULT expr { $$ = new Assign($1, new Binary($1, OP_MULT, $3)); }
     | IDENTIFIER COMP_DIV expr { $$ = new Assign($1, new Binary($1, OP_DIV, $3)); }
     | IDENTIFIER COMP_MOD expr { $$ = new Assign($1, new Binary($1, OP_MOD, $3)); }
-	;
+    ;
 
 arg_list: { $$ = new ArgList(0); }
     | expr { $$ = new ArgList($1); }
@@ -193,8 +193,8 @@ stmts: { $$ = new Stmts(0); }
 block: OPEN_BRACE stmts CLOSE_BRACE { $$ = $2; }
 
 upload_list: expr { $$ = new UploadList($1); }
-	| upload_list COMMA expr { $1->list.insert($1->list.end(), $3); }
-	;
+    | upload_list COMMA expr { $1->list.insert($1->list.end(), $3); }
+    ;
 
 bool: BOOL { $$ = $1; }
     | bool AND bool { $$ = new Binary($1, OP_AND, $3); }
@@ -203,8 +203,8 @@ bool: BOOL { $$ = $1; }
     ;
 
 scalar: INT { $$ = $1; }
-	| FLOAT { $$ = $1; }
-	;
+    | FLOAT { $$ = $1; }
+    ;
 
 vec2: OPEN_BRACKET expr COMMA expr COMMA CLOSE_BRACKET { $$ = new Vector2($2, $4); }
     ;
@@ -213,11 +213,11 @@ vec3: OPEN_BRACKET expr COMMA expr COMMA expr CLOSE_BRACKET { $$ = new Vector3($
     ;
 
 vec4: OPEN_BRACKET expr COMMA expr COMMA expr COMMA expr CLOSE_BRACKET { $$ = new Vector4($2, $4, $6, $8); }
-	;
+    ;
 
 %%
 
 void yyerror(std::map<std::string, ShaderPair*> *shaders, std::map<std::string, FuncDef*> *functions, const char* s) {
     std::cerr << "shaders: " << shaders << "\nfunctions: " << functions << std::endl;
-	fprintf(stderr, "Parse error: %s\n", s);
+    fprintf(stderr, "Parse error: %s\n", s);
 }
