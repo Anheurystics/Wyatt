@@ -206,7 +206,7 @@ scalar: INT { $$ = $1; }
     | FLOAT { $$ = $1; }
     ;
 
-vec2: OPEN_BRACKET expr COMMA expr COMMA CLOSE_BRACKET { $$ = new Vector2($2, $4); }
+vec2: OPEN_BRACKET expr COMMA expr CLOSE_BRACKET { $$ = new Vector2($2, $4); }
     ;
 
 vec3: OPEN_BRACKET expr COMMA expr COMMA expr CLOSE_BRACKET { $$ = new Vector3($2, $4, $6); }
