@@ -220,6 +220,31 @@ Expr* Interpreter::eval_binary(Binary* bin) {
 Expr* Interpreter::invoke(Invoke* invoke) {
     string name = invoke->ident->name;
     FuncDef* def = NULL;
+
+    if(name == "cos") {
+        if(invoke->args->list.size() == 1) {
+            Expr* v = eval_expr(invoke->args->list[0]);
+            if(v->type == NODE_FLOAT || v->type == NODE_INT) {
+                return new Float(cosf(resolve_scalar(v)));
+            }
+        }
+    }
+
+    if(name == "sin") {
+        if(invoke->args->list.size() == 1) {
+            Expr* v = eval_expr(invoke->args->list[0]);
+            if(v->type == NODE_FLOAT || v->type == NODE_INT) {
+                return new Float(sinf(resolve_scalar(v)));
+            }
+        }
+    }
+
+    if(name == "pi") {
+        if(invoke->args->list.size() == 0) {
+            return new Float(3.14159f);
+        }
+    }
+
     if(builtins.find(name) != builtins.end()) {
         def = builtins[name];
     }
