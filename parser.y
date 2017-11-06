@@ -29,7 +29,9 @@ void yyerror( std::map<std::string, ShaderPair*> *shaders, std::map<std::string,
 	Int* ival;
 	Float* fval;
 	Ident* idval;
-	Vector3* vval;
+    Vector2* v2val;
+	Vector3* v3val;
+    Vector4* v4val;
 	Stmt* sval;
     Stmts* svval;
     Invoke* inval;
@@ -63,7 +65,9 @@ void yyerror( std::map<std::string, ShaderPair*> *shaders, std::map<std::string,
 
 %type<eval> expr
 %type<eval> scalar bool
-%type<vval> vec3
+%type<v2val> vec2
+%type<v3val> vec3
+%type<v4val> vec4
 %type<idval> uniform;
 
 %type<sval> stmt stmt_block
@@ -122,7 +126,9 @@ function: FUNC IDENTIFIER OPEN_PAREN param_list CLOSE_PAREN block { $$ = new Fun
     ;
 
 expr: scalar { $$ = $1; }
+    | vec2 { $$ = $1; }
 	| vec3 { $$ = $1; }
+    | vec4 { $$ = $1; }
     | bool { $$ = $1; }
     | invoke { $$ = new FuncExpr($1); }
     | uniform { $$ = $1; }
@@ -200,7 +206,13 @@ scalar: INT { $$ = $1; }
 	| FLOAT { $$ = $1; }
 	;
 
+vec2: OPEN_BRACKET expr COMMA expr COMMA CLOSE_BRACKET { $$ = new Vector2($2, $4); }
+    ;
+
 vec3: OPEN_BRACKET expr COMMA expr COMMA expr CLOSE_BRACKET { $$ = new Vector3($2, $4, $6); }
+    ;
+
+vec4: OPEN_BRACKET expr COMMA expr COMMA expr COMMA expr CLOSE_BRACKET { $$ = new Vector4($2, $4, $6, $8); }
 	;
 
 %%
