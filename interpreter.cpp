@@ -267,6 +267,7 @@ Expr* Interpreter::invoke(Invoke* invoke) {
                 localScope->declare(def->params->list[i]->name, eval_expr(invoke->args->list[i]));
             }
         }
+
         Expr* retValue = execute_stmts(def->stmts);
         functionScopeStack.pop();
         return retValue;
@@ -314,8 +315,7 @@ Expr* Interpreter::eval_expr(Expr* node) {
                 Expr* z = eval_expr(vec3->z);
                 
                 if((x->type == NODE_INT || x->type == NODE_FLOAT) && (y->type == NODE_INT || y->type == NODE_FLOAT) && (z->type == NODE_INT || z->type == NODE_FLOAT)) {
-                    vec3->x = x; vec3->y = y; vec3->z = z;
-                    return vec3;
+                    return new Vector3(x, y, z);
                 }
 
                 if(x->type == NODE_VECTOR3 && y->type == NODE_VECTOR3 && z->type == NODE_VECTOR3) {
