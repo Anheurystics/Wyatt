@@ -93,6 +93,8 @@ class Interpreter {
         map<string, ShaderPair*> shaders;
         map<string, FuncDef*> functions;
 
+        map<string, FuncDef*> builtins;
+
         string current_program_name;
         Program* current_program = NULL;
 

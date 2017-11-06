@@ -9,6 +9,18 @@
 
 Interpreter::Interpreter() {
     globalScope = new Scope("global");
+
+    std::string stdlib = 
+        "func abs(v) {"
+        "    if(v < 0) { return -v; }"
+        "    return v;"
+        "}";
+
+    parse(stdlib);
+
+    for(map<string, FuncDef*>::iterator it = functions.begin(); it != functions.end(); ++it) {
+        builtins[it->first] = it->second;
+    }
 }
 
 void Interpreter::reset() {
@@ -201,8 +213,16 @@ Expr* Interpreter::eval_binary(Binary* bin) {
 
 Expr* Interpreter::invoke(Invoke* invoke) {
     string name = invoke->ident->name;
+    FuncDef* def = NULL;
+    if(builtins.find(name) != builtins.end()) {
+        def = builtins[name];
+    }
+
     if(functions.find(name) != functions.end()) {
-        FuncDef* def = functions[name];
+        def = functions[name];
+    }
+
+    if(def != NULL) {
         Scope* localScope = new Scope(name);
         functionScopeStack.push(localScope);
         int nParams = def->params->list.size();
