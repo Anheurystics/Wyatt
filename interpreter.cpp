@@ -11,6 +11,20 @@ Interpreter::Interpreter() {
     globalScope = new Scope("global");
 }
 
+void Interpreter::reset() {
+    buffers.clear();
+    programs.clear();
+    shaders.clear();
+    functions.clear();
+    globalScope->clear();
+    while(!functionScopeStack.empty()) functionScopeStack.pop();
+    current_program_name = "";
+    current_program = NULL;
+    init = NULL;
+    loop = NULL;
+    gl = NULL;
+}
+
 Expr* Interpreter::eval_binary(Binary* bin) {
     Expr* lhs = eval_expr(bin->lhs);
     if(!lhs) return 0;
@@ -671,11 +685,12 @@ void Interpreter::execute_loop() {
 
 void Interpreter::parse(string code) {
     YY_BUFFER_STATE state = yy_scan_string(code.c_str());
-
-    shaders.clear();
-    functions.clear();
+    reset();
     status = yyparse(&shaders, &functions);
+    yy_delete_buffer(state);
+}
 
+void Interpreter::prepare() {
     init = functions["init"];
     if(init == NULL) {
         cout << "ERROR: init function required!\n";
@@ -685,7 +700,5 @@ void Interpreter::parse(string code) {
     if(loop == NULL) {
         cout << "ERROR: loop function required!\n";
     }
-
-    yy_delete_buffer(state);
 }
 

@@ -29,6 +29,7 @@ void CustomGLWidget::paintGL() {
         interpreter.parse(code);
         interpreter.setFunctions(context()->functions());
         interpreter.compile_program();
+        interpreter.prepare();
         interpreter.execute_init();
 
         dirtyShaders = false;

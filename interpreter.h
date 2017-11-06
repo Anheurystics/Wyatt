@@ -26,6 +26,7 @@ class Interpreter {
 
         void parse(string);
         Expr* execute_stmts(Stmts*);
+        void prepare();
         void execute_init();
         void execute_loop();
         void compile_program();
@@ -33,6 +34,7 @@ class Interpreter {
         void setFunctions(QOpenGLFunctions* gl) {
             this->gl = gl;
         }
+        void reset();
 
     private:
         struct Layout {
