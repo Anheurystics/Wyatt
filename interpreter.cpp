@@ -124,6 +124,47 @@ Expr* Interpreter::eval_binary(Binary* bin) {
         }
     }
 
+    if(ltype == NODE_VECTOR2 && rtype == NODE_VECTOR2) {
+        Vector2* a = (Vector2*)eval_expr(lhs);
+        Vector2* b = (Vector2*)eval_expr(rhs);
+
+        float ax = resolve_scalar(a->x);
+        float ay = resolve_scalar(a->y);
+        float bx = resolve_scalar(b->x);
+        float by = resolve_scalar(b->y);
+
+        switch(op) {
+            case OP_PLUS: return new Vector2(new Float(ax+bx), new Float(ay+by));
+            case OP_MINUS: return new Vector2(new Float(ax-bx), new Float(ay-by));
+            case OP_MULT: return new Float(ax*bx + ay*by);
+            case OP_MOD: return new Float(ax*by - ay*bx);
+            default: return 0;
+        }
+    }
+
+    if(ltype == NODE_VECTOR2 && (rtype == NODE_INT || rtype == NODE_FLOAT)) {
+        Vector2* a = (Vector2*)eval_expr(lhs);
+        float ax = resolve_scalar(a->x), ay = resolve_scalar(a->y);
+        float b = resolve_scalar(rhs);
+
+        switch(op) {
+            case OP_MULT: return new Vector2(new Float(ax*b), new Float(ay*b));
+            case OP_DIV: return new Vector2(new Float(ax/b), new Float(ay/b));
+            default: return 0;
+        }
+    }
+
+    if((ltype == NODE_INT || ltype == NODE_FLOAT) && rtype == NODE_VECTOR2) {
+        float a = resolve_scalar(lhs);
+        Vector2* b = (Vector2*)eval_expr(rhs);
+        float bx = resolve_scalar(b->x), by = resolve_scalar(b->y);
+
+        switch(op) {
+            case OP_MULT: return new Vector2(new Float(bx*a), new Float(by*a));
+            default: return 0;
+        }
+    }
+
     if(ltype == NODE_VECTOR3 && rtype == NODE_VECTOR3) {
         Vector3* a = (Vector3*)eval_expr(lhs);
         Vector3* b = (Vector3*)eval_expr(rhs);
@@ -163,7 +204,50 @@ Expr* Interpreter::eval_binary(Binary* bin) {
 
         switch(op) {
             case OP_MULT: return new Vector3(new Float(bx*a), new Float(by*a), new Float(bz*a));
-            case OP_DIV: return new Vector3(new Float(bx/a), new Float(by/a), new Float(bz/a));
+            default: return 0;
+        }
+    }
+
+    if(ltype == NODE_VECTOR4 && rtype == NODE_VECTOR4) {
+        Vector4* a = (Vector4*)eval_expr(lhs);
+        Vector4* b = (Vector4*)eval_expr(rhs);
+
+        float ax = resolve_scalar(a->x); 
+        float ay = resolve_scalar(a->y);
+        float az = resolve_scalar(a->z);
+        float aw = resolve_scalar(a->w);
+        float bx = resolve_scalar(b->x);
+        float by = resolve_scalar(b->y);
+        float bz = resolve_scalar(b->z);
+        float bw = resolve_scalar(b->w);
+
+        switch(op) {
+            case OP_PLUS: return new Vector4(new Float(ax+bx), new Float(ay+by), new Float(az+bz), new Float(aw+bw));
+            case OP_MINUS: return new Vector4(new Float(ax-bx), new Float(ay-by), new Float(az-bz), new Float(aw-bw));
+            case OP_MULT: return new Float(ax*bx + ay*by + az*bz + aw*bw);
+            default: return 0;
+        }
+    }
+
+    if(ltype == NODE_VECTOR4 && (rtype == NODE_INT || rtype == NODE_FLOAT)) {
+        Vector4* a = (Vector4*)eval_expr(lhs);
+        float ax = resolve_scalar(a->x), ay = resolve_scalar(a->y), az = resolve_scalar(a->z), aw = resolve_scalar(a->w);
+        float b = resolve_scalar(rhs);
+
+        switch(op) {
+            case OP_MULT: return new Vector4(new Float(ax*b), new Float(ay*b), new Float(az*b), new Float(aw*b));
+            case OP_DIV: return new Vector4(new Float(ax/b), new Float(ay/b), new Float(az/b), new Float(aw/b));
+            default: return 0;
+        }
+    }
+
+    if((ltype == NODE_INT || ltype == NODE_FLOAT) && rtype == NODE_VECTOR4) {
+        float a = resolve_scalar(lhs);
+        Vector4* b = (Vector4*)eval_expr(rhs);
+        float bx = resolve_scalar(b->x), by = resolve_scalar(b->y), bz = resolve_scalar(b->z), bw = resolve_scalar(b->w);
+
+        switch(op) {
+            case OP_MULT: return new Vector4(new Float(bx*a), new Float(by*a), new Float(bz*a), new Float(bw*a));
             default: return 0;
         }
     }
@@ -307,6 +391,23 @@ Expr* Interpreter::eval_expr(Expr* node) {
         case NODE_FLOAT:
             return node;
 
+        case NODE_VECTOR2:
+            {
+                Vector2* vec2 = (Vector2*)node;
+                Expr* x = eval_expr(vec2->x);
+                Expr* y = eval_expr(vec2->y);
+
+                if((x->type == NODE_INT || x->type == NODE_FLOAT) && (y->type == NODE_INT || y->type == NODE_FLOAT)) {
+                    return new Vector2(x, y);
+                }
+
+                if(x->type == NODE_VECTOR2 && y->type == NODE_VECTOR2) {
+                    return NULL;
+                }
+
+                return NULL;
+            }
+
         case NODE_VECTOR3:
             {
                 Vector3* vec3 = (Vector3*)(node);
@@ -324,6 +425,26 @@ Expr* Interpreter::eval_expr(Expr* node) {
 
                 return 0;
             }
+
+        case NODE_VECTOR4:
+            {
+                Vector4* vec4 = (Vector4*)(node);
+                Expr* x = eval_expr(vec4->x);
+                Expr* y = eval_expr(vec4->y);
+                Expr* z = eval_expr(vec4->z);
+                Expr* w = eval_expr(vec4->w);
+                
+                if((x->type == NODE_INT || x->type == NODE_FLOAT) && (y->type == NODE_INT || y->type == NODE_FLOAT) && (z->type == NODE_INT || z->type == NODE_FLOAT) && (w->type == NODE_INT || w->type == NODE_FLOAT)) {
+                    return new Vector4(x, y, z, w);
+                }
+
+                if(x->type == NODE_VECTOR4 && y->type == NODE_VECTOR4 && z->type == NODE_VECTOR4) {
+                    return NULL;
+                }
+
+                return NULL;
+            }
+
 
         case NODE_MATRIX3:
             {
@@ -618,10 +739,22 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                     case NODE_BOOL:
                         cout << (((Bool*)output)->value? "true" : "false") << endl;
                         break;
+                    case NODE_VECTOR2:
+                        {
+                            Vector2* vec2 = (Vector2*)output;
+                            cout << "[" << resolve_scalar(vec2->x) << ", " << resolve_scalar(vec2->y) << "]\n";
+                            break;
+                        }
                     case NODE_VECTOR3:
                         {
                             Vector3* vec3 = (Vector3*)output;
                             cout << "[" << resolve_scalar(vec3->x) << ", " << resolve_scalar(vec3->y) << ", " << resolve_scalar(vec3->z) << "]\n";
+                            break;
+                        }
+                    case NODE_VECTOR4:
+                        {
+                            Vector4* vec4 = (Vector4*)output;
+                            cout << "[" << resolve_scalar(vec4->x) << ", " << resolve_scalar(vec4->y) << ", " << resolve_scalar(vec4->z) << ", " << resolve_scalar(vec4->w) << "]\n";
                             break;
                         }
                     case NODE_MATRIX3:

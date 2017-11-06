@@ -156,6 +156,7 @@ class Vector4: public Expr {
             this->y = y;
             this->z = z;
             this->w = w;
+            type = NODE_VECTOR4;
         }
 
         ~Vector4() {
