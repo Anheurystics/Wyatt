@@ -10,16 +10,22 @@
 Interpreter::Interpreter() {
     globalScope = new Scope("global");
 
-    std::string stdlib = 
-        "func abs(v) {"
-        "    if(v < 0) return -v;"
-        "    return v;"
-        "}";
+    string utilsrc = "";
 
-    parse(stdlib);
+    ifstream utilfile;
+    utilfile.open("utils.txt", ios::in);
+    if(utilfile.is_open()) {
+        string line;
+        while(getline(utilfile, line)) {
+            utilsrc += line + "\n";
+        }
+        utilfile.close();
 
-    for(map<string, FuncDef*>::iterator it = functions.begin(); it != functions.end(); ++it) {
-        builtins[it->first] = it->second;
+        parse(utilsrc);
+
+        for(map<string, FuncDef*>::iterator it = functions.begin(); it != functions.end(); ++it) {
+            builtins[it->first] = it->second;
+        }
     }
 }
 
