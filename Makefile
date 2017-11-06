@@ -1748,6 +1748,11 @@ mainwindow.o: mainwindow.cpp mainwindow.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qinputmethod.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QButtonGroup \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qbuttongroup.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QGridLayout \
+		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qgridlayout.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qlayout.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qlayoutitem.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qboxlayout.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QHeaderView \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qheaderview.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qabstractitemview.h \
@@ -1764,16 +1769,17 @@ mainwindow.o: mainwindow.cpp mainwindow.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qstyle.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qtabbar.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qrubberband.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QLabel \
-		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qlabel.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QMenu \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qmenu.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QMenuBar \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qmenubar.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QSplitter \
+		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qsplitter.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QStatusBar \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qstatusbar.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QToolBar \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qtoolbar.h \
+		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QVBoxLayout \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QWidget \
 		codeeditor.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QPlainTextEdit \

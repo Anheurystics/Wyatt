@@ -48,13 +48,16 @@ void yyerror( std::map<std::string, ShaderPair*> *shaders, std::map<std::string,
 
 %token SEMICOLON OPEN_BRACE CLOSE_BRACE
 %token PIPE
-%token OPEN_PAREN CLOSE_PAREN LESS_THAN GREATER_THAN OPEN_BRACKET CLOSE_BRACKET COMMA PERIOD EQUALS EQUAL NEQUAL GEQUAL LEQUAL COMP_PLUS COMP_MINUS COMP_MULT COMP_DIV COMP_MOD
+%token OPEN_PAREN CLOSE_PAREN LESS_THAN GREATER_THAN OPEN_BRACKET CLOSE_BRACKET COMMA PERIOD EQUALS COMP_PLUS COMP_MINUS COMP_MULT COMP_DIV COMP_MOD
 %token FUNC AND OR NOT IF WHILE ALLOCATE UPLOAD DRAW VERTEX FRAGMENT PRINT USE RETURN
 
 %left PLUS MINUS
 %left MULT DIV MOD
 %left AND OR
-%left UNARY
+%right UNARY
+
+%nonassoc EQUAL NEQUAL GEQUAL LEQUAL
+%nonassoc LESS_THAN GREATER_THAN
 
 %type<inval> invoke;
 
@@ -129,6 +132,12 @@ expr: scalar { $$ = $1; }
 	| expr MULT expr { $$ = new Binary($1, OP_MULT, $3); }
 	| expr DIV expr { $$ = new Binary($1, OP_DIV, $3); }
     | expr MOD expr { $$ = new Binary($1, OP_MOD, $3); }
+    | expr LESS_THAN expr { $$ = new Binary($1, OP_LESSTHAN, $3); }
+    | expr GREATER_THAN expr { $$ = new Binary($1, OP_GREATERTHAN, $3); }
+    | expr EQUAL expr { $$ = new Binary($1, OP_EQUAL, $3); }
+    | expr NEQUAL expr { $$ = new Binary($1, OP_NEQUAL, $3); }
+    | expr LEQUAL expr { $$ = new Binary($1, OP_LEQUAL, $3); }
+    | expr GEQUAL expr { $$ = new Binary($1, OP_GEQUAL, $3); }
     | MINUS expr { $$ = new Unary(OP_MINUS, $2); } %prec UNARY
     | OPEN_PAREN expr OPEN_PAREN { $$ = $2; }
 	;
@@ -184,12 +193,6 @@ bool: BOOL { $$ = $1; }
     | bool AND bool { $$ = new Binary($1, OP_AND, $3); }
     | bool OR bool { $$ = new Binary($1, OP_OR, $3); }
     | NOT bool { $$ = new Unary(OP_NOT, $2); } %prec UNARY
-    | scalar EQUAL scalar { $$ = new Binary($1, OP_EQUAL, $3); }
-    | scalar LESS_THAN scalar { $$ = new Binary($1, OP_LESSTHAN, $3); }
-    | scalar GREATER_THAN scalar { $$ = new Binary($1, OP_GREATERTHAN, $3); }
-    | scalar NEQUAL scalar { $$ = new Binary($1, OP_NEQUAL, $3); }
-    | scalar LEQUAL scalar { $$ = new Binary($1, OP_LEQUAL, $3); }
-    | scalar GEQUAL scalar { $$ = new Binary($1, OP_GEQUAL, $3); }
     ;
 
 scalar: INT { $$ = $1; }
