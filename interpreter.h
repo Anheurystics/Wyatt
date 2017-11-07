@@ -16,12 +16,13 @@
 
 #include "parser.h"
 #include "scanner.h"
+#include "logwindow.h"
 
 using namespace std;
 
 class Interpreter {
     public:
-        Interpreter();
+        Interpreter(LogWindow*);
 
         int status = -1;
 
@@ -107,6 +108,8 @@ class Interpreter {
         Expr* eval_binary(Binary*);
         Expr* invoke(Invoke*);
         Expr* eval_stmt(Stmt*);
+
+        LogWindow* logger;
 };
 
 #endif //MYPARSER_H

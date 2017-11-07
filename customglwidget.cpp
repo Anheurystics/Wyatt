@@ -2,8 +2,13 @@
 
 CustomGLWidget::CustomGLWidget(QWidget *parent = 0): QOpenGLWidget(parent)
 {
-    //MainWindow* window = qobject_cast<MainWindow*>(this->parent());
+    MainWindow* window = qobject_cast<MainWindow*>(this->parent());
     dirtyShaders = true;
+
+    QTimer* timer = new QTimer(this); 
+    timer->setInterval(17);
+    connect(timer, SIGNAL(timeout()), this, SLOT(update()));
+    timer->start();
 }
 
 void CustomGLWidget::updateCode()
@@ -26,23 +31,26 @@ void CustomGLWidget::paintGL() {
     glClear(GL_COLOR_BUFFER_BIT);
 
     if(dirtyShaders) {
-        interpreter.parse(code);
-        interpreter.setFunctions(context()->functions());
-        interpreter.compile_program();
-        interpreter.prepare();
-        interpreter.execute_init();
+        logger->clear();
+
+        interpreter->parse(code);
+        interpreter->setFunctions(context()->functions());
+        interpreter->compile_program();
+        interpreter->prepare();
+        interpreter->execute_init();
 
         dirtyShaders = false;
     }
 
-    std::cout << "interpreter " << (!interpreter.status? "OK" : "ERROR") << std::endl;
-    interpreter.execute_loop();
+    if(interpreter->status != 0) {
+        std::cout << "interpreter ERROR\n";
+    }
+    interpreter->execute_loop();
 }
 
 void CustomGLWidget::resizeGL(int width, int height)
 {
     resize(width, width);
-    std::cout << "resize: " << width << " x " << height << std::endl;
 }
 
 CustomGLWidget::~CustomGLWidget()

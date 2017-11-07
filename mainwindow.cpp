@@ -20,6 +20,10 @@ MainWindow::MainWindow(QWidget *parent) :
     vEditor->setType("vertex");
 
     highlighter = new Highlighter(vEditor->document());
+
+    CustomGLWidget* glWidget = ui->openGLWidget;
+    glWidget->logger = ui->logWindow;
+    glWidget->interpreter = new Interpreter(ui->logWindow);
 }
 
 MainWindow::~MainWindow()

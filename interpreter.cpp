@@ -7,7 +7,8 @@
 
 #define LOOP_TIMEOUT 5
 
-Interpreter::Interpreter() {
+Interpreter::Interpreter(LogWindow* logger) {
+    this->logger = logger;
     globalScope = new Scope("global");
 
     string utilsrc = "";
@@ -432,10 +433,10 @@ Expr* Interpreter::invoke(Invoke* invoke) {
     if(def != NULL) {
         Scope* localScope = new Scope(name);
         functionScopeStack.push(localScope);
-        int nParams = def->params->list.size();
-        int nArgs = invoke->args->list.size();
+        unsigned int nParams = def->params->list.size();
+        unsigned int nArgs = invoke->args->list.size();
         if(nParams != nArgs) {
-            cout << "ERROR: Function " << name << " expects " << nParams << " arguments, got " << nArgs << endl;
+            logger->log("ERROR: Function " + name + " expects " + to_string(nParams) + " arguments, got " + to_string(nArgs));
             return NULL;
         }
         if(nParams > 0) {
@@ -448,7 +449,7 @@ Expr* Interpreter::invoke(Invoke* invoke) {
         functionScopeStack.pop();
         return retValue;
     } else {
-        cout << "ERROR: Call to undefined function " << name << endl;
+        logger->log("ERROR: Call to undefined function " + name);
     }
     return NULL;
 }
@@ -468,7 +469,7 @@ Expr* Interpreter::eval_expr(Expr* node) {
 
                 value = globalScope->get(ident->name);
                 if(value == NULL) {
-                    cout << "ERROR: Undefined variable " << ident->name << endl;
+                    logger->log("ERROR: Undefined variable " + ident->name);
                 }
 
                 return value;
@@ -645,7 +646,7 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                                 if(src->uniforms.find(uniform->name) != src->uniforms.end()) {
                                     type = src->uniforms[uniform->name];
                                 } else {
-                                    cout << "Uniform does not exist!\n";
+                                    logger->log("ERROR: Uniform " + uniform->name + " of shader " + current_program_name + " does not exist!");
                                     return NULL;
                                 }
                             }
@@ -655,7 +656,8 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                                     Vector3* vec3 = (Vector3*)rhs;
                                     gl->glUniform3f(gl->glGetUniformLocation(current_program->handle, uniform->name.c_str()), resolve_vec3(vec3));
                                 } else {
-                                    cout << "Uniform uploadm mismatch: vec3 required\n";
+                                    logger->log("ERROR: Uniform upload mismatch: vec3 required for " + uniform->name + " of shader " + current_program_name);
+                                    return NULL;
                                 }
                             } else if(type == "mat4") {
                             }
@@ -663,7 +665,7 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                         }
                     }
                 } else {
-                    cout << "ERROR: Invalid assignment\n";
+                    logger->log("ERROR: Invalid assignment");
                 }
 
                 return NULL;
@@ -679,7 +681,7 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                     gl->glGenBuffers(1, &(buf->handle));
                     buffers[alloc->ident->name] = buf;
                 } else {
-                    cout << "ERROR: Can't allocate to " << alloc->ident->name << ": buffer already exists!\n";
+                    logger->log("ERROR: Can't allocate to " + alloc->ident->name + ": buffer already exists!");
                 }
 
                 return NULL;
@@ -700,7 +702,7 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                 for(unsigned int i = 0; i < upload->list->list.size(); i++) {
                     Expr* expr = eval_expr(upload->list->list[i]);
                     if(!expr) {
-                        cout << "ERROR: Can't upload illegal value into buffer\n";
+                        logger->log("ERROR: Can't upload illegal value into buffer");
                         break;
                     }
 
@@ -726,7 +728,7 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                 Draw* draw = (Draw*)stmt;
 
                 if(current_program == NULL) {
-                    cout << "ERROR: Cannot bind program with name " << current_program_name << endl;
+                    logger->log("ERROR: Cannot bind program with name " + current_program_name);
                     return NULL;
                 }
 
@@ -766,7 +768,7 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
 
                     gl->glDrawArrays(GL_TRIANGLES, 0, final_vector.size() / total_size);
                 } else {
-                    cout << "ERROR: Can't draw non-existent buffer " << draw->ident->name << endl;
+                    logger->log("ERROR: Can't draw non-existent buffer " + draw->ident->name);
                 }
 
                 return NULL;
@@ -778,7 +780,7 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                 current_program = programs[current_program_name];
 
                 if(current_program == NULL) {
-                    cout << "ERROR: No valid vertex/fragment pair for program name " << current_program_name << endl;
+                    logger->log("ERROR: No valid vertex/fragment pair for program name " + current_program_name);
                     return NULL;
                 }
 
@@ -799,7 +801,7 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                         }
                     }
                 } else {
-                    std::cout << "ERROR: Condition in if statement not a boolean\n";
+                    logger->log("ERROR: Condition in if statement not a boolean");
                 }
                 return NULL;
             }
@@ -826,7 +828,7 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                         if(diff > LOOP_TIMEOUT) { break; }
                     }
                 } else {
-                    std::cout << "ERROR: Condition in while statement not a boolean\n";
+                    logger->log("ERROR: Condition in while statement not a boolean");
                 }
 
                 return NULL;
@@ -840,54 +842,54 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
 
                 switch(output->type) {
                     case NODE_INT:
-                        cout << resolve_int(output) << endl;
+                        logger->log(to_string(resolve_int(output)));
                         break;
                     case NODE_FLOAT:
-                        cout << resolve_float(output) << endl;
+                        logger->log(to_string(resolve_float(output)));
                         break;
                     case NODE_BOOL:
-                        cout << (((Bool*)output)->value? "true" : "false") << endl;
+                        logger->log(((Bool*)output)->value? "true" : "false");
                         break;
                     case NODE_VECTOR2:
                         {
                             Vector2* vec2 = (Vector2*)output;
-                            cout << "[" << resolve_scalar(vec2->x) << ", " << resolve_scalar(vec2->y) << "]\n";
+                            logger->log("[" + to_string(resolve_scalar(vec2->x)) + ", " + to_string(resolve_scalar(vec2->y)) + "]");
                             break;
                         }
                     case NODE_VECTOR3:
                         {
                             Vector3* vec3 = (Vector3*)output;
-                            cout << "[" << resolve_scalar(vec3->x) << ", " << resolve_scalar(vec3->y) << ", " << resolve_scalar(vec3->z) << "]\n";
+                            logger->log("[" + to_string(resolve_scalar(vec3->x)) + ", " + to_string(resolve_scalar(vec3->y)) + ", " + to_string(resolve_scalar(vec3->z)) + "]");
                             break;
                         }
                     case NODE_VECTOR4:
                         {
                             Vector4* vec4 = (Vector4*)output;
-                            cout << "[" << resolve_scalar(vec4->x) << ", " << resolve_scalar(vec4->y) << ", " << resolve_scalar(vec4->z) << ", " << resolve_scalar(vec4->w) << "]\n";
+                            logger->log("[" + to_string(resolve_scalar(vec4->x)) + ", " + to_string(resolve_scalar(vec4->y)) + ", " + to_string(resolve_scalar(vec4->z)) + ", " + to_string(resolve_scalar(vec4->w)) + "]");
                             break;
                         }
                     case NODE_MATRIX2:
                         {
                             Matrix2* mat2 = (Matrix2*)output;
-                            cout << "|" << resolve_scalar(mat2->v0->x) << ", " << resolve_scalar(mat2->v0->y) << "|\n";
-                            cout << "|" << resolve_scalar(mat2->v1->x) << ", " << resolve_scalar(mat2->v1->y) << "|\n";
+                            logger->log("|" + to_string(resolve_scalar(mat2->v0->x)) + ", " + to_string(resolve_scalar(mat2->v0->y)) + "|");
+                            logger->log("|" + to_string(resolve_scalar(mat2->v1->x)) + ", " + to_string(resolve_scalar(mat2->v1->y)) + "|");
                             break;
                         }
                     case NODE_MATRIX3:
                         {
                             Matrix3* mat3 = (Matrix3*)output;
-                            cout << "|" << resolve_scalar(mat3->v0->x) << ", " << resolve_scalar(mat3->v0->y) << ", " << resolve_scalar(mat3->v0->z) << "|\n";
-                            cout << "|" << resolve_scalar(mat3->v1->x) << ", " << resolve_scalar(mat3->v1->y) << ", " << resolve_scalar(mat3->v1->z) << "|\n";
-                            cout << "|" << resolve_scalar(mat3->v2->x) << ", " << resolve_scalar(mat3->v2->y) << ", " << resolve_scalar(mat3->v2->z) << "|\n";
+                            logger->log("|" + to_string(resolve_scalar(mat3->v0->x)) + ", " + to_string(resolve_scalar(mat3->v0->y)) + ", " + to_string(resolve_scalar(mat3->v0->z)) + "|");
+                            logger->log("|" + to_string(resolve_scalar(mat3->v1->x)) + ", " + to_string(resolve_scalar(mat3->v1->y)) + ", " + to_string(resolve_scalar(mat3->v1->z)) + "|");
+                            logger->log("|" + to_string(resolve_scalar(mat3->v2->x)) + ", " + to_string(resolve_scalar(mat3->v2->y)) + ", " + to_string(resolve_scalar(mat3->v2->z)) + "|");
                             break;
                         }
                     case NODE_MATRIX4:
                         {
                             Matrix4* mat4 = (Matrix4*)output;
-                            cout << "|" << resolve_scalar(mat4->v0->x) << ", " << resolve_scalar(mat4->v0->y) << ", " << resolve_scalar(mat4->v0->z) << ", " << resolve_scalar(mat4->v0->w) << "|\n";
-                            cout << "|" << resolve_scalar(mat4->v1->x) << ", " << resolve_scalar(mat4->v1->y) << ", " << resolve_scalar(mat4->v1->z) << ", " << resolve_scalar(mat4->v1->w) << "|\n";
-                            cout << "|" << resolve_scalar(mat4->v2->x) << ", " << resolve_scalar(mat4->v2->y) << ", " << resolve_scalar(mat4->v2->z) << ", " << resolve_scalar(mat4->v2->w) << "|\n";
-                            cout << "|" << resolve_scalar(mat4->v3->x) << ", " << resolve_scalar(mat4->v3->y) << ", " << resolve_scalar(mat4->v3->z) << ", " << resolve_scalar(mat4->v3->w) << "|\n";
+                            logger->log("|" + to_string(resolve_scalar(mat4->v0->x)) + ", " + to_string(resolve_scalar(mat4->v0->y)) + ", " + to_string(resolve_scalar(mat4->v0->z)) + ", " + to_string(resolve_scalar(mat4->v0->w)) + "|");
+                            logger->log("|" + to_string(resolve_scalar(mat4->v1->x)) + ", " + to_string(resolve_scalar(mat4->v1->y)) + ", " + to_string(resolve_scalar(mat4->v1->z)) + ", " + to_string(resolve_scalar(mat4->v1->w)) + "|");
+                            logger->log("|" + to_string(resolve_scalar(mat4->v2->x)) + ", " + to_string(resolve_scalar(mat4->v2->y)) + ", " + to_string(resolve_scalar(mat4->v2->z)) + ", " + to_string(resolve_scalar(mat4->v2->w)) + "|");
+                            logger->log("|" + to_string(resolve_scalar(mat4->v3->x)) + ", " + to_string(resolve_scalar(mat4->v3->y)) + ", " + to_string(resolve_scalar(mat4->v3->z)) + ", " + to_string(resolve_scalar(mat4->v3->w)) + "|");
                             break;
                         }
 
@@ -954,12 +956,12 @@ void Interpreter::compile_program() {
         program->fragSource = it->second->fragment;
 
         if(program->vertSource == NULL) {
-            cout << "ERROR: Missing vertex shader source for program " << it->first << endl;
+            logger->log("ERROR: Missing vertex shader source for program " + it->first);
             continue;
         }
 
         if(program->fragSource == NULL) {
-            cout << "ERROR: Missing fragment shader source for program " << it->first << endl;
+            logger->log("ERROR: Missing fragment shader source for program " + it->first);
             continue;
         }
 
@@ -972,7 +974,8 @@ void Interpreter::compile_program() {
         gl->glGetProgramiv(program->handle, GL_LINK_STATUS, &success);
         gl->glGetProgramInfoLog(program->handle, 256, 0, log);
         if(success != GL_TRUE) {
-            cout << "program error\n" << log << endl;
+            logger->log("ERROR: Can't compile program-- see error log below for details");
+            logger->log(string(log));
         }
 
         programs[it->first] = program;
@@ -1003,12 +1006,12 @@ void Interpreter::parse(string code) {
 void Interpreter::prepare() {
     init = functions["init"];
     if(init == NULL) {
-        cout << "ERROR: init function required!\n";
+        logger->log("ERROR: init() function required!");
     }
 
     loop = functions["loop"];
     if(loop == NULL) {
-        cout << "ERROR: loop function required!\n";
+        logger->log("ERROR: loop() function required!");
     }
 }
 

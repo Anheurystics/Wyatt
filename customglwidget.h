@@ -3,6 +3,7 @@
 
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
+#include <QTimer>
 
 #include "mainwindow.h"
 #include "codeeditor.h"
@@ -25,6 +26,10 @@ class CustomGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
         void paintGL();
         void resizeGL(int, int);
 
+        LogWindow* logger;
+        Interpreter* interpreter;
+
+
     private:
         bool dirtyShaders;
 
@@ -32,9 +37,6 @@ class CustomGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 
         public slots:
             void updateCode();
-
-    private:
-        Interpreter interpreter;
 };
 
 #endif // CUSTOMGLWIDGET_H
