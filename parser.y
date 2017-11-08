@@ -20,6 +20,7 @@ void yyerror( std::map<std::string, ShaderPair*> *shaders, std::map<std::string,
 %output "parser.cpp"
 %define parse.lac full
 %define parse.error verbose
+%locations
 
 %parse-param { std::map<std::string, ShaderPair*> *shaders } { std::map<std::string, FuncDef*> *functions }
 

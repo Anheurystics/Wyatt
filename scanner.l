@@ -4,19 +4,27 @@
 #include <cstdlib>
 #include "parser.h"
 
+#define YY_USER_ACTION \
+    if(yylloc.first_line != yylineno) yycolumn = 0; \
+    yylloc.first_line = yylloc.last_line = yylineno; \
+    yylloc.first_column = yycolumn; yylloc.last_column = yycolumn + yyleng - 1; \
+    yycolumn += yyleng; \
+
+int yycolumn = 0;
 int yylex();
 void yyerror(const char *s);
 %}
 
 %option header-file="scanner.h"
 %option outfile="scanner.cpp"
+%option yylineno
 %option noyywrap
 %option nounput
 
 %%
 "vert"         { return VERTEX; }
 "frag"         { return FRAGMENT; }
-"`"(\\.|[^`])*"`" { yylval.idval = new Ident(strdup(yytext));  return SHADER; }
+"`"(\\.|[^`])*"`" { yylval.idval = new Ident(strdup(yytext)); return SHADER; }
 "//".*         ;
 [ \t\n]        ;
 [0-9]+\.[0-9]+ { yylval.fval = new Float(float(atof(yytext))); return FLOAT; }

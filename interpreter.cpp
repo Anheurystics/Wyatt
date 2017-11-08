@@ -999,6 +999,7 @@ void Interpreter::execute_loop() {
 void Interpreter::parse(string code) {
     YY_BUFFER_STATE state = yy_scan_string(code.c_str());
     reset();
+    yylineno = 1;
     status = yyparse(&shaders, &functions);
     yy_delete_buffer(state);
 }

@@ -19,6 +19,8 @@ enum OpType {
 
 class Node {
     public:
+        unsigned int first_line, last_line;
+        unsigned int first_column, last_column;
         NodeType type;
 };
 
