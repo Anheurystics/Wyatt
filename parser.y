@@ -145,7 +145,7 @@ expr: scalar { $$ = $1; }
     | expr LEQUAL expr { $$ = new Binary($1, OP_LEQUAL, $3); }
     | expr GEQUAL expr { $$ = new Binary($1, OP_GEQUAL, $3); }
     | MINUS expr { $$ = new Unary(OP_MINUS, $2); } %prec UNARY
-    | OPEN_PAREN expr OPEN_PAREN { $$ = $2; }
+    | OPEN_PAREN expr CLOSE_PAREN { $$ = $2; }
     ;
 
 uniform: IDENTIFIER PERIOD IDENTIFIER { $$ = new Uniform($1, $3); }
