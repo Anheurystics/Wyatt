@@ -31,7 +31,7 @@ SOURCES += \
     parser.cpp \
     codeeditor.cpp \
     highlighter.cpp \
-    logwindow.cpp
+    logwindow.cpp \
 
 HEADERS += \
     mainwindow.h \
@@ -42,7 +42,7 @@ HEADERS += \
     nodes.h \
     codeeditor.h \
     highlighter.h \
-    logwindow.h
+    logwindow.h \
 
 FORMS += \
     mainwindow.ui
