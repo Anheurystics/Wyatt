@@ -32,6 +32,7 @@ SOURCES += \
     codeeditor.cpp \
     highlighter.cpp \
     logwindow.cpp \
+    helper.cpp \
 
 HEADERS += \
     mainwindow.h \
@@ -43,6 +44,7 @@ HEADERS += \
     codeeditor.h \
     highlighter.h \
     logwindow.h \
+    helper.h \
 
 FORMS += \
     mainwindow.ui

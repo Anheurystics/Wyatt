@@ -59,7 +59,8 @@ SOURCES       = main.cpp \
 		parser.cpp \
 		codeeditor.cpp \
 		highlighter.cpp \
-		logwindow.cpp moc_mainwindow.cpp \
+		logwindow.cpp \
+		helper.cpp moc_mainwindow.cpp \
 		moc_customglwidget.cpp \
 		moc_codeeditor.cpp \
 		moc_highlighter.cpp
@@ -72,6 +73,7 @@ OBJECTS       = main.o \
 		codeeditor.o \
 		highlighter.o \
 		logwindow.o \
+		helper.o \
 		moc_mainwindow.o \
 		moc_customglwidget.o \
 		moc_codeeditor.o \
@@ -265,7 +267,8 @@ DIST          = parser.y \
 		nodes.h \
 		codeeditor.h \
 		highlighter.h \
-		logwindow.h main.cpp \
+		logwindow.h \
+		helper.h main.cpp \
 		mainwindow.cpp \
 		customglwidget.cpp \
 		interpreter.cpp \
@@ -273,7 +276,8 @@ DIST          = parser.y \
 		parser.cpp \
 		codeeditor.cpp \
 		highlighter.cpp \
-		logwindow.cpp
+		logwindow.cpp \
+		helper.cpp
 QMAKE_TARGET  = prototype
 DESTDIR       = 
 TARGET        = prototype
@@ -667,8 +671,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents ../../Qt5.9.0/5.9/gcc_64/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents mainwindow.h customglwidget.h interpreter.h scanner.h parser.h nodes.h codeeditor.h highlighter.h logwindow.h $(DISTDIR)/
-	$(COPY_FILE) --parents main.cpp mainwindow.cpp customglwidget.cpp interpreter.cpp scanner.cpp parser.cpp codeeditor.cpp highlighter.cpp logwindow.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents mainwindow.h customglwidget.h interpreter.h scanner.h parser.h nodes.h codeeditor.h highlighter.h logwindow.h helper.h $(DISTDIR)/
+	$(COPY_FILE) --parents main.cpp mainwindow.cpp customglwidget.cpp interpreter.cpp scanner.cpp parser.cpp codeeditor.cpp highlighter.cpp logwindow.cpp helper.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents mainwindow.ui $(DISTDIR)/
 
 
@@ -822,6 +826,7 @@ moc_mainwindow.cpp: ../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QMainWindow \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QTextCharFormat \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/QRegularExpression \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qregularexpression.h \
+		helper.h \
 		mainwindow.h \
 		moc_predefs.h \
 		../../Qt5.9.0/5.9/gcc_64/bin/moc
@@ -964,6 +969,7 @@ moc_customglwidget.cpp: ../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QOpenGLWidget
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QTextCharFormat \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/QRegularExpression \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qregularexpression.h \
+		helper.h \
 		codeeditor.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QPlainTextEdit \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qplaintextedit.h \
@@ -1367,6 +1373,7 @@ ui_mainwindow.h: mainwindow.ui \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QTextCharFormat \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/QRegularExpression \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qregularexpression.h \
+		helper.h \
 		codeeditor.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QPlainTextEdit \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qplaintextedit.h \
@@ -1756,7 +1763,8 @@ main.o: main.cpp ../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QApplication \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qtextcursor.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QTextCharFormat \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/QRegularExpression \
-		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qregularexpression.h
+		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qregularexpression.h \
+		helper.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o main.cpp
 
 mainwindow.o: mainwindow.cpp mainwindow.h \
@@ -1878,6 +1886,7 @@ mainwindow.o: mainwindow.cpp mainwindow.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QTextCharFormat \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/QRegularExpression \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qregularexpression.h \
+		helper.h \
 		ui_mainwindow.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/QVariant \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QAction \
@@ -2098,6 +2107,7 @@ customglwidget.o: customglwidget.cpp customglwidget.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QTextCharFormat \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/QRegularExpression \
 		../../Qt5.9.0/5.9/gcc_64/include/QtCore/qregularexpression.h \
+		helper.h \
 		codeeditor.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/QPlainTextEdit \
 		../../Qt5.9.0/5.9/gcc_64/include/QtWidgets/qplaintextedit.h \
@@ -2248,7 +2258,8 @@ interpreter.o: interpreter.cpp interpreter.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qglyphrun.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qrawfont.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfontdatabase.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QTextCursor
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QTextCursor \
+		helper.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o interpreter.o interpreter.cpp
 
 scanner.o: scanner.cpp parser.h \
@@ -2606,6 +2617,9 @@ logwindow.o: logwindow.cpp logwindow.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QTextCursor \
 		nodes.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o logwindow.o logwindow.cpp
+
+helper.o: helper.cpp helper.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o helper.o helper.cpp
 
 moc_mainwindow.o: moc_mainwindow.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_mainwindow.o moc_mainwindow.cpp
