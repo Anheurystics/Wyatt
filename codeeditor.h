@@ -35,6 +35,7 @@ private slots:
 
 private:
     LineNumberArea* lineNumberArea;
+    QFont monoFont;
     std::string type;
 };
 
