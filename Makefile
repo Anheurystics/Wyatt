@@ -1617,7 +1617,8 @@ ui_mainwindow.h: mainwindow.ui \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qglyphrun.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qrawfont.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfontdatabase.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QTextCursor
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QTextCursor \
+		nodes.h
 	/home/willard/Qt5.9.0/5.9/gcc_64/bin/uic mainwindow.ui -o ui_mainwindow.h
 
 compiler_yacc_decl_make_all:
@@ -2602,7 +2603,8 @@ logwindow.o: logwindow.cpp logwindow.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qglyphrun.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qrawfont.h \
 		../../Qt5.9.0/5.9/gcc_64/include/QtGui/qfontdatabase.h \
-		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QTextCursor
+		../../Qt5.9.0/5.9/gcc_64/include/QtGui/QTextCursor \
+		nodes.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o logwindow.o logwindow.cpp
 
 moc_mainwindow.o: moc_mainwindow.cpp 
