@@ -2,7 +2,9 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+
 #include "highlighter.h"
+#include "helper.h"
 
 namespace Ui {
 class MainWindow;

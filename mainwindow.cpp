@@ -7,19 +7,19 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    CodeEditor* vEditor = ui->codeEditor;
-    QObject::connect(vEditor, SIGNAL(textChanged()), ui->openGLWidget, SLOT(updateCode()));
+    CodeEditor* codeEditor = ui->codeEditor;
+    QObject::connect(codeEditor, SIGNAL(textChanged()), ui->openGLWidget, SLOT(updateCode()));
 
-    vEditor->setPlainText("vert basic `\n#version 130\n\nin vec3 pos;\n\nvoid main() {\n\tgl_Position = vec4(pos, 1.0);\n}\n`;\n\nfrag basic `#version 130\n\nout vec4 FragColor;\n\nvoid main() {\n\tgl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);\n}\n`;\n\nfunc init() {\n\tallocate a;\n\ta[pos] <- [-1,-1,0], [1,-1,0], [0,1,0];\n}\n\nfunc loop() {\n\tuse basic;\n\tdraw a;\n}\n");
-    QTextCharFormat deffmt = vEditor->currentCharFormat();
+    codeEditor->setPlainText(QString::fromStdString(str_from_file("main.txt")));
+    QTextCharFormat deffmt = codeEditor->currentCharFormat();
     deffmt.setUnderlineColor(QColor(Qt::red));
     deffmt.setUnderlineStyle(QTextCharFormat::WaveUnderline);
-    QTextCursor cursor = vEditor->textCursor();
+    QTextCursor cursor = codeEditor->textCursor();
     cursor.movePosition(QTextCursor::End);
-    vEditor->setCurrentCharFormat(deffmt);
-    vEditor->setType("vertex");
+    codeEditor->setCurrentCharFormat(deffmt);
+    codeEditor->setType("vertex");
 
-    highlighter = new Highlighter(vEditor->document());
+    highlighter = new Highlighter(codeEditor->document());
 
     CustomGLWidget* glWidget = ui->openGLWidget;
     glWidget->logger = ui->logWindow;

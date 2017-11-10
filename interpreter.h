@@ -17,6 +17,7 @@
 #include "parser.h"
 #include "scanner.h"
 #include "logwindow.h"
+#include "helper.h"
 
 using namespace std;
 

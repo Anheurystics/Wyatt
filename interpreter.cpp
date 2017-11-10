@@ -11,22 +11,11 @@ Interpreter::Interpreter(LogWindow* logger) {
     this->logger = logger;
     globalScope = new Scope("global");
 
-    string utilsrc = "";
+    string utilsrc = str_from_file("utils.txt");
+    parse(utilsrc);
 
-    ifstream utilfile;
-    utilfile.open("utils.txt", ios::in);
-    if(utilfile.is_open()) {
-        string line;
-        while(getline(utilfile, line)) {
-            utilsrc += line + "\n";
-        }
-        utilfile.close();
-
-        parse(utilsrc);
-
-        for(map<string, FuncDef*>::iterator it = functions.begin(); it != functions.end(); ++it) {
-            builtins[it->first] = it->second;
-        }
+    for(map<string, FuncDef*>::iterator it = functions.begin(); it != functions.end(); ++it) {
+        builtins[it->first] = it->second;
     }
 }
 
