@@ -4,7 +4,6 @@ CodeEditor::CodeEditor(QWidget *parent = 0): QPlainTextEdit(parent)
 {
     type = "";
 
-    QFont monoFont;
     monoFont.setFamily("Courier");
     monoFont.setStyleHint(QFont::Monospace);
     monoFont.setFixedPitch(true);
@@ -58,7 +57,7 @@ void CodeEditor::highlightCurrentLine() {
 
     if(!isReadOnly()) {
         QTextEdit::ExtraSelection selection;
-        QColor lineColor = QColor(Qt::yellow).lighter(160);
+        QColor lineColor = QColor(Qt::yellow).lighter(180);
 
         selection.format.setBackground(lineColor);
         selection.format.setProperty(QTextFormat::FullWidthSelection, true);
@@ -84,7 +83,8 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event) {
         if(block.isVisible() && bottom >= event->rect().top()) {
             QString number = QString::number(blockNumber + 1);
             painter.setPen(Qt::black);
-            painter.drawText(0, top, lineNumberArea->width(), fontMetrics().height(), Qt::AlignRight, number);
+            painter.setFont(monoFont);
+            painter.drawText(-3, top, lineNumberArea->width(), fontMetrics().height(), Qt::AlignRight, number);
         }
 
         block = block.next();
