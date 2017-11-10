@@ -6,6 +6,8 @@
 #include <QPlainTextEdit>
 #include <QTextCursor>
 
+#include "nodes.h"
+
 using namespace std;
 
 struct LogInfo {
@@ -21,6 +23,7 @@ class LogWindow : public QPlainTextEdit
 
         void log(string);
         void log(LogInfo info, string);
+        void log(Node*, string, string);
         void clear();
 };
 

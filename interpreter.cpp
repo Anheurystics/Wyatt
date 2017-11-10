@@ -435,8 +435,9 @@ Expr* Interpreter::invoke(Invoke* invoke) {
         functionScopeStack.push(localScope);
         unsigned int nParams = def->params->list.size();
         unsigned int nArgs = invoke->args->list.size();
+
         if(nParams != nArgs) {
-            logger->log("ERROR: Function " + name + " expects " + to_string(nParams) + " arguments, got " + to_string(nArgs));
+            logger->log(invoke, "ERROR", "Function " + name + " expects " + to_string(nParams) + " arguments, got " + to_string(nArgs));
             return NULL;
         }
         if(nParams > 0) {
@@ -626,7 +627,7 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
             {
                 Assign* assign = (Assign*)stmt;
                 Expr* rhs = eval_expr(assign->value);
-                if(rhs) {
+                if(rhs != NULL) {
                     Ident* ident = assign->ident;
                     if(ident->type == NODE_IDENT) {
                         Scope* scope = globalScope;
@@ -691,6 +692,11 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                 Upload* upload = (Upload*)stmt;
 
                 Buffer* buffer = buffers[upload->ident->name];
+                if(buffer == NULL) {
+                    logger->log("ERROR: Can't upload to unallocated buffer");
+                    return NULL;
+                }
+
                 Layout* layout = buffer->layout;
 
                 if(layout->attributes.find(upload->attrib->name) == layout->attributes.end()) {
@@ -733,11 +739,15 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                 }
 
                 Buffer* buffer = buffers[draw->ident->name];
-                if(buffer) {
+                if(buffer != NULL) {
                     Layout* layout = buffer->layout;
                     vector<float> final_vector;
 
                     map<string, unsigned int> attributes = layout->attributes;
+                    if(attributes.size() == 0) {
+                        logger->log("ERROR: Cannot draw empty buffer!");
+                        return NULL;
+                    }
 
                     gl->glBindBuffer(GL_ARRAY_BUFFER, buffer->handle);
                     for(unsigned int i = 0; i < buffer->sizes[layout->list[0]]; i++) {

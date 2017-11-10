@@ -1,3 +1,6 @@
+#ifndef NODES_H
+#define NODES_H
+
 #include <string>
 #include <vector>
 #include <map>
@@ -565,3 +568,5 @@ class Print: public Stmt {
             delete expr;
         }
 };
+
+#endif // NODES_H

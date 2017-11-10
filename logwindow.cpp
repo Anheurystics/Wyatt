@@ -39,6 +39,18 @@ void LogWindow::log(LogInfo info, string msg) {
     this->log(output);
 }
 
+void LogWindow::log(Node* node, string label, string msg) {
+    LogInfo info;
+    info.label = label;
+    info.first_line = node->first_line;
+    info.last_line = node->last_line;
+    info.first_column = node->first_line;
+    info.last_column = node->last_column;
+
+    this->log(info, msg);
+}
+
 void LogWindow::clear() {
     this->setPlainText("");
 }
+
