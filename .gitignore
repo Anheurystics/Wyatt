@@ -1,3 +1,5 @@
+prototype.pro.user
+Makefile
 moc_*
 ui_mainwindow.h
 *.o
