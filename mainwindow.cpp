@@ -8,14 +8,15 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     CodeEditor* codeEditor = ui->codeEditor;
+    codeEditor->setPlainText(QString::fromStdString(str_from_file("main.txt")));
     QObject::connect(codeEditor, SIGNAL(textChanged()), ui->openGLWidget, SLOT(updateCode()));
 
-    codeEditor->setPlainText(QString::fromStdString(str_from_file("main.txt")));
     QTextCharFormat deffmt = codeEditor->currentCharFormat();
     deffmt.setUnderlineColor(QColor(Qt::red));
     deffmt.setUnderlineStyle(QTextCharFormat::WaveUnderline);
     QTextCursor cursor = codeEditor->textCursor();
     cursor.movePosition(QTextCursor::End);
+
     codeEditor->setCurrentCharFormat(deffmt);
     codeEditor->setType("vertex");
 

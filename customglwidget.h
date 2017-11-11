@@ -29,10 +29,9 @@ class CustomGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
         LogWindow* logger;
         Interpreter* interpreter;
 
+        bool codeChanged;
 
     private:
-        bool dirtyShaders;
-
         std::string code;
 
         public slots:

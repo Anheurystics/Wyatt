@@ -3,12 +3,13 @@
 CustomGLWidget::CustomGLWidget(QWidget *parent = 0): QOpenGLWidget(parent)
 {
     MainWindow* window = qobject_cast<MainWindow*>(this->parent());
-    dirtyShaders = true;
 
     QTimer* timer = new QTimer(this); 
     timer->setInterval(17);
     connect(timer, SIGNAL(timeout()), this, SLOT(update()));
     timer->start();
+
+    codeChanged = false;
 }
 
 void CustomGLWidget::updateCode()
@@ -17,7 +18,8 @@ void CustomGLWidget::updateCode()
     CodeEditor *editor = qobject_cast<CodeEditor*>(source);
 
     code = editor->document()->toPlainText().toStdString() + '\n';
-    dirtyShaders = true;
+    codeChanged = true;
+
     update();
 }
 
@@ -30,7 +32,9 @@ void CustomGLWidget::initializeGL()
 void CustomGLWidget::paintGL() {
     glClear(GL_COLOR_BUFFER_BIT);
 
-    if(dirtyShaders) {
+    if(codeChanged) {
+        codeChanged = false;
+
         logger->clear();
 
         interpreter->parse(code);
@@ -38,14 +42,13 @@ void CustomGLWidget::paintGL() {
         interpreter->compile_program();
         interpreter->prepare();
         interpreter->execute_init();
-
-        dirtyShaders = false;
     }
 
     if(interpreter->status != 0) {
         std::cout << "interpreter ERROR\n";
+    } else {
+        interpreter->execute_loop();
     }
-    interpreter->execute_loop();
 }
 
 void CustomGLWidget::resizeGL(int width, int height)

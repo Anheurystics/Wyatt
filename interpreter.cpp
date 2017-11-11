@@ -11,10 +11,16 @@
 
 Interpreter::Interpreter(LogWindow* logger) {
     this->logger = logger;
+
     globalScope = new Scope("global");
 
     string utilsrc = str_from_file("utils.txt");
     parse(utilsrc);
+    if(status != 0) {
+        logger->log("Error parsing utils.txt");
+    }
+
+    status = 0;
 
     for(map<string, FuncDef*>::iterator it = functions.begin(); it != functions.end(); ++it) {
         builtins[it->first] = it->second;
