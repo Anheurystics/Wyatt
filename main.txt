@@ -19,11 +19,10 @@ void main() {
 
 func init() {
 	allocate a;
-	a[pos] <- [-1,-1,0], [1,-1,0], [0,1,0];
+	a.pos <- [-1,-1,0], [1,-1,0], [0,1,0];
 }
 
 func loop() {
 	use basic;
 	draw a;
 }
-

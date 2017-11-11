@@ -158,7 +158,7 @@ uniform: IDENTIFIER PERIOD IDENTIFIER { $$ = new Uniform($1, $3); }
 stmt: IDENTIFIER EQUALS expr { $$ = new Assign($1, $3); $$->first_line = @1.first_line; $$->last_line = @3.last_line; }
     | uniform EQUALS expr { $$ = new Assign($1, $3); $$->first_line = @1.first_line; $$->last_line = @3.last_line; }
     | ALLOCATE IDENTIFIER { $$ = new Alloc($2); $$->first_line = @1.first_line; $$->last_line = @2.last_line; }
-    | IDENTIFIER OPEN_BRACKET IDENTIFIER CLOSE_BRACKET UPLOAD upload_list { $$ = new Upload($1, $3, $6); $$->first_line = @1.first_line; $$->last_line = @6.last_line; }
+    | IDENTIFIER PERIOD IDENTIFIER UPLOAD upload_list { $$ = new Upload($1, $3, $5); $$->first_line = @1.first_line; $$->last_line = @5.last_line; }
     | DRAW IDENTIFIER { $$ = new Draw($2); $$->first_line = @1.first_line; $$->last_line = @2.last_line; }
     | USE IDENTIFIER { $$ = new Use($2); $$->first_line = @1.first_line; $$->last_line = @2.last_line; }
     | PRINT expr { $$ = new Print($2); $$->first_line = @1.first_line; $$->last_line = @2.last_line; }
