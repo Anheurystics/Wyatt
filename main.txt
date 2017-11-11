@@ -3,8 +3,12 @@ vert basic `
 
 in vec3 pos;
 
+uniform mat4 model;
+
+out vec4 Position;
+
 void main() {
-	gl_Position = vec4(pos, 1.0);
+	gl_Position = model * vec4(pos, 1.0);
 }
 `;
 
@@ -13,16 +17,21 @@ frag basic `#version 130
 out vec4 FragColor;
 
 void main() {
-	gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+	FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 }
 `;
 
 func init() {
 	allocate a;
 	a.pos <- [-1,-1,0], [1,-1,0], [0,1,0];
+
+	use basic;
+	basic.model = mat4_translation(0,0,0);
 }
 
 func loop() {
 	use basic;
 	draw a;
 }
+    
+

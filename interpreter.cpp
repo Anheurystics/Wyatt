@@ -472,6 +472,72 @@ Expr* Interpreter::eval_expr(Expr* node) {
 
                 return value;
             }
+       case NODE_UNIFORM:
+            {
+                Uniform* uniform = (Uniform*)node;
+                if(current_program->vertSource->name == uniform->shader) {
+                    ShaderSource* src = current_program->vertSource;
+                    string type = "";
+                    if(src->uniforms.find(uniform->name) != src->uniforms.end()) {
+                        type = src->uniforms[uniform->name];
+                    } else {
+                        src = current_program->fragSource;
+                        if(src->uniforms.find(uniform->name) != src->uniforms.end()) {
+                            type = src->uniforms[uniform->name];
+                        } else {
+                            logger->log("ERROR: Uniform " + uniform->name + " of shader " + current_program_name + " does not exist!");
+                            return NULL;
+                        }
+                    }
+
+                    GLint loc = gl->glGetUniformLocation(current_program->handle, uniform->name.c_str());
+                    if(type == "float") {
+                        Float* f = new Float(0);
+                        gl->glGetUniformfv(current_program->handle, loc, &(f->value));
+                        return f;
+                    } else
+                    if(type == "vec2") {
+                        float value[2];
+                        gl->glGetUniformfv(current_program->handle, loc, &value[0]);
+                        return new Vector2(new Float(value[0]), new Float(value[1]));
+                    } else 
+                    if(type == "vec3") {
+                        float value[3];
+                        gl->glGetUniformfv(current_program->handle, loc, &value[0]);
+                        return new Vector3(new Float(value[0]), new Float(value[1]), new Float(value[2]));
+                    } else
+                    if(type == "vec4") {
+                        float value[4];
+                        gl->glGetUniformfv(current_program->handle, loc, &value[0]);
+                        return new Vector4(new Float(value[0]), new Float(value[1]), new Float(value[2]), new Float(value[3]));
+                    } else 
+                    if(type == "mat2") {
+                        float value[4];
+                        gl->glGetUniformfv(current_program->handle, loc, &value[0]);
+                        return new Matrix2(new Vector2(new Float(value[0]), new Float(value[1])), new Vector2(new Float(value[2]), new Float(value[3])));
+                    } else
+                    if(type == "mat3") {
+                        float value[9];
+                        gl->glGetUniformfv(current_program->handle, loc, &value[0]);
+                        return new Matrix3(
+                            new Vector3(new Float(value[0]), new Float(value[1]), new Float(value[2])),
+                            new Vector3(new Float(value[3]), new Float(value[4]), new Float(value[5])),
+                            new Vector3(new Float(value[6]), new Float(value[7]), new Float(value[8]))
+                        );
+                    } else
+                    if(type == "mat4") {
+                        float value[16];
+                        gl->glGetUniformfv(current_program->handle, loc, &value[0]);
+                        return new Matrix4(
+                            new Vector4(new Float(value[0]), new Float(value[1]), new Float(value[2]), new Float(value[3])),
+                            new Vector4(new Float(value[4]), new Float(value[5]), new Float(value[6]), new Float(value[7])),
+                            new Vector4(new Float(value[8]), new Float(value[9]), new Float(value[10]), new Float(value[11])),
+                            new Vector4(new Float(value[12]), new Float(value[13]), new Float(value[14]), new Float(value[15]))
+                        );
+                    }
+
+                }
+            }
 
         case NODE_BOOL:
             return node;
@@ -650,7 +716,6 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                             }
 
                             GLint loc = gl->glGetUniformLocation(current_program->handle, uniform->name.c_str());
-                            logger->log("INFO: Uploading " + type);
                             if(type == "float") {
                                 if(rhs->type == NODE_FLOAT) {
                                     Float* f = (Float*)rhs;
