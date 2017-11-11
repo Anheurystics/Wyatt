@@ -1,4 +1,4 @@
-func mat3_ident() {
+func mat3_identity() {
     return [[1,0,0],[0,1,0],[0,0,1]];
 }
 
@@ -19,7 +19,7 @@ func mat4_identity(s) {
 }
 
 func mat4_translation(x, y, z) {
-    return [[1,0,0,0],[0,1,0,0],[0,0,0,1],[x,y,z,1]];
+    return [[1,0,0,0],[0,1,0,0],[0,0,1,0],[x,y,z,1]];
 }
 
 func mat4_scale(s) {
