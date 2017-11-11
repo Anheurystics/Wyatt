@@ -3,7 +3,9 @@
 #define resolve_int(n) ((Int*)n)->value
 #define resolve_float(n) ((Float*)n)->value
 #define resolve_scalar(n) ((n->type == NODE_INT)? (float)(resolve_int(n)) : resolve_float(n))
+#define resolve_vec2(v) resolve_scalar(v->x), resolve_scalar(v->y)
 #define resolve_vec3(v) resolve_scalar(v->x), resolve_scalar(v->y), resolve_scalar(v->z)
+#define resolve_vec4(v) resolve_scalar(v->x), resolve_scalar(v->y), resolve_scalar(v->z), resolve_scalar(v->w)
 
 #define LOOP_TIMEOUT 5
 
@@ -641,15 +643,81 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                                 }
                             }
 
+                            GLint loc = gl->glGetUniformLocation(current_program->handle, uniform->name.c_str());
+                            logger->log("INFO: Uploading " + type);
+                            if(type == "float") {
+                                if(rhs->type == NODE_FLOAT) {
+                                    Float* f = (Float*)rhs;
+                                    gl->glUniform1f(loc, resolve_float(f));
+                                } else {
+                                    logger->log("ERROR: Uniform upload mismatch: float required for " + uniform->name + " of shader " + current_program_name);
+                                    return NULL;
+                                }
+                            } else
+                            if(type == "vec2") {
+                                if(rhs->type == NODE_VECTOR2) {
+                                    Vector2* vec2 = (Vector2*)eval_expr(rhs);
+                                    gl->glUniform2f(loc, resolve_vec2(vec2));
+                                } else {
+                                    logger->log("ERROR: Uniform upload mismatch: vec2 required for " + uniform->name + " of shader " + current_program_name);
+                                }
+                            } else 
                             if(type == "vec3") {
                                 if(rhs->type == NODE_VECTOR3) {
-                                    Vector3* vec3 = (Vector3*)rhs;
-                                    gl->glUniform3f(gl->glGetUniformLocation(current_program->handle, uniform->name.c_str()), resolve_vec3(vec3));
+                                    Vector3* vec3 = (Vector3*)eval_expr(rhs);
+                                    gl->glUniform3f(loc, resolve_vec3(vec3));
                                 } else {
                                     logger->log("ERROR: Uniform upload mismatch: vec3 required for " + uniform->name + " of shader " + current_program_name);
                                     return NULL;
                                 }
-                            } else if(type == "mat4") {
+                            } else
+                            if(type == "vec4") {
+                                if(rhs->type == NODE_VECTOR4) {
+                                    Vector4* vec4 = (Vector4*)eval_expr(rhs);
+                                    gl->glUniform4f(loc, resolve_vec4(vec4));
+                                } else {
+                                    logger->log("ERROR: Uniform upload mismatch: vec4 required for " + uniform->name + " of shader " + current_program_name);
+                                    return NULL;
+                                }
+                            } else
+                            if(type == "mat2") {
+                                if(rhs->type == NODE_MATRIX2) {
+                                    Matrix2* mat2 = (Matrix2*)eval_expr(rhs);
+                                    float data[4];
+                                    data[0] = resolve_scalar(mat2->v0->x); data[1] = resolve_scalar(mat2->v0->y);
+                                    data[2] = resolve_scalar(mat2->v1->x); data[3] = resolve_scalar(mat2->v1->y);
+                                    gl->glUniform2fv(loc, 1, data);
+                                } else {
+                                    logger->log("ERROR: Uniform upload mismatch: vec4 required for " + uniform->name + " of shader " + current_program_name);
+                                    return NULL;
+                                }
+                            } else
+                            if(type == "mat3") {
+                                if(rhs->type == NODE_MATRIX3) {
+                                    Matrix3* mat3 = (Matrix3*)eval_expr(rhs);
+                                    float data[9];
+                                    data[0] = resolve_scalar(mat3->v0->x); data[1] = resolve_scalar(mat3->v0->y); data[2] = resolve_scalar(mat3->v0->z);
+                                    data[3] = resolve_scalar(mat3->v1->x); data[4] = resolve_scalar(mat3->v1->y); data[5] = resolve_scalar(mat3->v1->z);
+                                    data[6] = resolve_scalar(mat3->v2->x); data[7] = resolve_scalar(mat3->v2->y); data[8] = resolve_scalar(mat3->v2->z);
+                                    gl->glUniformMatrix3fv(loc, 1, false, data);
+                                } else {
+                                    logger->log("ERROR: Uniform upload mismatch: mat3 required for " + uniform->name + " of shader " + current_program_name);
+                                    return NULL;
+                                }
+                            } else
+                            if(type == "mat4") {
+                                if(rhs->type == NODE_MATRIX4) {
+                                    Matrix4* mat4 = (Matrix4*)eval_expr(rhs);
+                                    float data[16];
+                                    data[0] = resolve_scalar(mat4->v0->x); data[1] = resolve_scalar(mat4->v0->y); data[2] = resolve_scalar(mat4->v0->z); data[3] = resolve_scalar(mat4->v0->w);
+                                    data[4] = resolve_scalar(mat4->v1->x); data[5] = resolve_scalar(mat4->v1->y); data[6] = resolve_scalar(mat4->v1->z); data[7] = resolve_scalar(mat4->v1->w);
+                                    data[8] = resolve_scalar(mat4->v2->x); data[9] = resolve_scalar(mat4->v2->y); data[10] = resolve_scalar(mat4->v2->z); data[11] = resolve_scalar(mat4->v2->w);
+                                    data[12] = resolve_scalar(mat4->v3->x); data[13] = resolve_scalar(mat4->v3->y); data[14] = resolve_scalar(mat4->v3->z); data[15] = resolve_scalar(mat4->v3->w);
+                                    gl->glUniformMatrix4fv(loc, 1, false, data);
+                                } else {
+                                    logger->log("ERROR: Uniform upload mismatch: mat3 required for " + uniform->name + " of shader " + current_program_name);
+                                    return NULL;
+                                }
                             }
 
                         }
