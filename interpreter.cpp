@@ -413,6 +413,15 @@ Expr* Interpreter::invoke(Invoke* invoke) {
         }
     }
 
+    if(name == "tan") {
+        if(invoke->args->list.size() == 1) {
+            Expr* v = eval_expr(invoke->args->list[0]);
+            if(v->type == NODE_FLOAT || v->type == NODE_INT) {
+                return new Float(tanf(resolve_scalar(v)));
+            }
+        }
+    }
+
     if(name == "pi") {
         if(invoke->args->list.size() == 0) {
             return new Float(3.14159f);

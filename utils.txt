@@ -42,3 +42,13 @@ func mat4_scale(s) {
     return [[s,0,0,0],[0,s,0,0],[0,0,s,0],[0,0,0,1]];
 }
 
+func mat4_perspective(fov, aspect, near, far) {
+    f = 1.0 / tan(fov * 0.5);
+    nf = 1.0 / (near - far);
+    return [
+        [f/aspect, 0, 0, 0],
+        [0, f, 0, 0],
+        [0, 0, (far + near) * nf, -1],
+        [0, 0, (2 * far * near) * nf, 0]
+    ];
+}
