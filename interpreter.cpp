@@ -60,7 +60,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
         switch(op) {
             case OP_AND: return new Bool(a && b);
             case OP_OR: return new Bool(a || b);
-            default: return NULL;
+            default: break;
         }
     }
 
@@ -80,7 +80,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
             case OP_NEQUAL: return new Bool(a != b);
             case OP_LEQUAL: return new Bool(a <= b);
             case OP_GEQUAL: return new Bool(a >= b);
-            default: return NULL;
+            default: break;
         }
     }
 
@@ -99,7 +99,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
             case OP_NEQUAL: return new Bool(a != b);
             case OP_LEQUAL: return new Bool(a <= b);
             case OP_GEQUAL: return new Bool(a >= b);
-            default: return NULL;
+            default: break;
         }
     }
 
@@ -118,7 +118,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
             case OP_NEQUAL: return new Bool(a != b);
             case OP_LEQUAL: return new Bool(a <= b);
             case OP_GEQUAL: return new Bool(a >= b);
-            default: return NULL;
+            default: break;
         }
     }
 
@@ -136,7 +136,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
             case OP_MINUS: return new Vector2(new Float(ax-bx), new Float(ay-by));
             case OP_MULT: return new Float(ax*bx + ay*by);
             case OP_MOD: return new Float(ax*by - ay*bx);
-            default: return NULL;
+            default: break;
         }
     }
 
@@ -148,7 +148,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
         switch(op) {
             case OP_MULT: return new Vector2(new Float(ax*b), new Float(ay*b));
             case OP_DIV: return new Vector2(new Float(ax/b), new Float(ay/b));
-            default: return NULL;
+            default: break;
         }
     }
 
@@ -159,7 +159,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
 
         switch(op) {
             case OP_MULT: return new Vector2(new Float(bx*a), new Float(by*a));
-            default: return NULL;
+            default: break;
         }
     }
 
@@ -179,7 +179,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
             case OP_MINUS: return new Vector3(new Float(ax-bx), new Float(ay-by), new Float(az-bz));
             case OP_MULT: return new Float(ax*bx + ay*by + az*bz);
             case OP_MOD: return new Vector3(new Float(ay*bz-az*by), new Float(az*bx-ax*bz), new Float(ax*by-ay*bx));
-            default: return NULL;
+            default: break;
         }
     }
 
@@ -191,7 +191,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
         switch(op) {
             case OP_MULT: return new Vector3(new Float(ax*b), new Float(ay*b), new Float(az*b));
             case OP_DIV: return new Vector3(new Float(ax/b), new Float(ay/b), new Float(az/b));
-            default: return NULL;
+            default: break;
         }
     }
 
@@ -202,7 +202,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
 
         switch(op) {
             case OP_MULT: return new Vector3(new Float(bx*a), new Float(by*a), new Float(bz*a));
-            default: return NULL;
+            default: break;
         }
     }
 
@@ -223,7 +223,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
             case OP_PLUS: return new Vector4(new Float(ax+bx), new Float(ay+by), new Float(az+bz), new Float(aw+bw));
             case OP_MINUS: return new Vector4(new Float(ax-bx), new Float(ay-by), new Float(az-bz), new Float(aw-bw));
             case OP_MULT: return new Float(ax*bx + ay*by + az*bz + aw*bw);
-            default: return NULL;
+            default: break;
         }
     }
 
@@ -235,7 +235,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
         switch(op) {
             case OP_MULT: return new Vector4(new Float(ax*b), new Float(ay*b), new Float(az*b), new Float(aw*b));
             case OP_DIV: return new Vector4(new Float(ax/b), new Float(ay/b), new Float(az/b), new Float(aw/b));
-            default: return NULL;
+            default: break;
         }
     }
 
@@ -246,148 +246,140 @@ Expr* Interpreter::eval_binary(Binary* bin) {
 
         switch(op) {
             case OP_MULT: return new Vector4(new Float(bx*a), new Float(by*a), new Float(bz*a), new Float(bw*a));
-            default: return NULL;
+            default: break;
         }
     }
 
     if(ltype == NODE_MATRIX2 && (rtype == NODE_INT || rtype == NODE_FLOAT)) {
         Matrix2* a = (Matrix2*)eval_expr(lhs);
 
-        if(op != OP_MULT && op != OP_DIV) return NULL;
-
-        Vector2* v0 = (Vector2*)eval_binary(new Binary(a->v0, op, rhs));
-        Vector2* v1 = (Vector2*)eval_binary(new Binary(a->v1, op, rhs));
-
-        return new Matrix2(v0, v1);
+        if(op == OP_MULT || op == OP_DIV) {
+            Vector2* v0 = (Vector2*)eval_binary(new Binary(a->v0, op, rhs));
+            Vector2* v1 = (Vector2*)eval_binary(new Binary(a->v1, op, rhs));
+            return new Matrix2(v0, v1);
+        }
     }
 
     if((ltype == NODE_INT || ltype == NODE_FLOAT) && (rtype == NODE_MATRIX2)) {
         Matrix2* a = (Matrix2*)eval_expr(rhs);
 
-        if(op != OP_MULT) return NULL;
-
-        Vector2* v0 = (Vector2*)eval_binary(new Binary(a->v0, op, lhs));
-        Vector2* v1 = (Vector2*)eval_binary(new Binary(a->v1, op, lhs));
-
-        return new Matrix2(v0, v1);
+        if(op == OP_MULT) {
+            Vector2* v0 = (Vector2*)eval_binary(new Binary(a->v0, op, lhs));
+            Vector2* v1 = (Vector2*)eval_binary(new Binary(a->v1, op, lhs));
+            return new Matrix2(v0, v1);
+        }
     }
 
     if(ltype == NODE_MATRIX2 && rtype == NODE_MATRIX2) {
         Matrix2* a = (Matrix2*)eval_expr(lhs);
         Matrix2* b = (Matrix2*)eval_expr(rhs);
 
-        if(op != OP_MULT) return NULL;
-
-        Vector2* r0 = new Vector2(new Binary(a->v0, OP_MULT, b->c0), new Binary(a->v0, OP_MULT, b->c1));
-        Vector2* r1 = new Vector2(new Binary(a->v1, OP_MULT, b->c0), new Binary(a->v1, OP_MULT, b->c1));
-
-        return eval_expr(new Matrix2(r0, r1));
+        if(op == OP_MULT) {
+            Vector2* r0 = new Vector2(new Binary(a->v0, OP_MULT, b->c0), new Binary(a->v0, OP_MULT, b->c1));
+            Vector2* r1 = new Vector2(new Binary(a->v1, OP_MULT, b->c0), new Binary(a->v1, OP_MULT, b->c1));
+            return eval_expr(new Matrix2(r0, r1));
+        }
     }
 
     if(ltype == NODE_VECTOR2 && rtype == NODE_MATRIX2) {
         Vector2* a = (Vector2*)eval_expr(lhs);
         Matrix2* b = (Matrix2*)eval_expr(rhs);
 
-        if(op != OP_MULT) return NULL;
-
-        return eval_expr(new Vector2(new Binary(a, OP_MULT, b->c0), new Binary(a, OP_MULT, b->c1)));
+        if(op == OP_MULT) {
+            return eval_expr(new Vector2(new Binary(a, OP_MULT, b->c0), new Binary(a, OP_MULT, b->c1)));
+        }
     }
 
     if(ltype == NODE_MATRIX3 && (rtype == NODE_INT || rtype == NODE_FLOAT)) {
         Matrix3* a = (Matrix3*)eval_expr(lhs);
 
-        if(op != OP_MULT && op != OP_DIV) return NULL;
-
-        Vector3* v0 = (Vector3*)eval_binary(new Binary(a->v0, op, rhs));
-        Vector3* v1 = (Vector3*)eval_binary(new Binary(a->v1, op, rhs));
-        Vector3* v2 = (Vector3*)eval_binary(new Binary(a->v2, op, rhs));
-
-        return new Matrix3(v0, v1, v2);
+        if(op == OP_MULT || op == OP_DIV) {
+            Vector3* v0 = (Vector3*)eval_binary(new Binary(a->v0, op, rhs));
+            Vector3* v1 = (Vector3*)eval_binary(new Binary(a->v1, op, rhs));
+            Vector3* v2 = (Vector3*)eval_binary(new Binary(a->v2, op, rhs));
+            return new Matrix3(v0, v1, v2);
+        }
     }
 
     if((ltype == NODE_INT || ltype == NODE_FLOAT) && (rtype == NODE_MATRIX3)) {
         Matrix3* a = (Matrix3*)eval_expr(rhs);
 
-        if(op != OP_MULT) return NULL;
-
-        Vector3* v0 = (Vector3*)eval_binary(new Binary(a->v0, op, lhs));
-        Vector3* v1 = (Vector3*)eval_binary(new Binary(a->v1, op, lhs));
-        Vector3* v2 = (Vector3*)eval_binary(new Binary(a->v2, op, lhs));
-
-        return new Matrix3(v0, v1, v2);
+        if(op == OP_MULT) {
+            Vector3* v0 = (Vector3*)eval_binary(new Binary(a->v0, op, lhs));
+            Vector3* v1 = (Vector3*)eval_binary(new Binary(a->v1, op, lhs));
+            Vector3* v2 = (Vector3*)eval_binary(new Binary(a->v2, op, lhs));
+            return new Matrix3(v0, v1, v2);
+        }
     }
 
     if(ltype == NODE_MATRIX3 && rtype == NODE_MATRIX3) {
         Matrix3* a = (Matrix3*)eval_expr(lhs);
         Matrix3* b = (Matrix3*)eval_expr(rhs);
         
-        if(op != OP_MULT) return NULL;
-
-        Vector3* r0 = new Vector3(new Binary(a->v0, OP_MULT, b->c0), new Binary(a->v0, OP_MULT, b->c1), new Binary(a->v0, OP_MULT, b->c2));
-        Vector3* r1 = new Vector3(new Binary(a->v1, OP_MULT, b->c0), new Binary(a->v1, OP_MULT, b->c1), new Binary(a->v1, OP_MULT, b->c2));
-        Vector3* r2 = new Vector3(new Binary(a->v2, OP_MULT, b->c0), new Binary(a->v2, OP_MULT, b->c1), new Binary(a->v2, OP_MULT, b->c2));
-
-        return eval_expr(new Matrix3(r0, r1, r2));
+        if(op == OP_MULT) {
+            Vector3* r0 = new Vector3(new Binary(a->v0, OP_MULT, b->c0), new Binary(a->v0, OP_MULT, b->c1), new Binary(a->v0, OP_MULT, b->c2));
+            Vector3* r1 = new Vector3(new Binary(a->v1, OP_MULT, b->c0), new Binary(a->v1, OP_MULT, b->c1), new Binary(a->v1, OP_MULT, b->c2));
+            Vector3* r2 = new Vector3(new Binary(a->v2, OP_MULT, b->c0), new Binary(a->v2, OP_MULT, b->c1), new Binary(a->v2, OP_MULT, b->c2));
+            return eval_expr(new Matrix3(r0, r1, r2));
+        }
     }
 
     if(ltype == NODE_VECTOR3 && rtype == NODE_MATRIX3) {
         Vector3* a = (Vector3*)eval_expr(lhs);
         Matrix3* b = (Matrix3*)eval_expr(rhs);
 
-        if(op != OP_MULT) return NULL;
-
-        return eval_expr(new Vector3(new Binary(a, OP_MULT, b->c0), new Binary(a, OP_MULT, b->c1), new Binary(a, OP_MULT, b->c2)));
+        if(op == OP_MULT) {
+            return eval_expr(new Vector3(new Binary(a, OP_MULT, b->c0), new Binary(a, OP_MULT, b->c1), new Binary(a, OP_MULT, b->c2)));
+        }
     }
 
     if(ltype == NODE_MATRIX4 && (rtype == NODE_INT || rtype == NODE_FLOAT)) {
         Matrix4* a = (Matrix4*)eval_expr(lhs);
 
-        if(op != OP_MULT && op != OP_DIV) return NULL;
-
-        Vector4* v0 = (Vector4*)eval_binary(new Binary(a->v0, op, rhs));
-        Vector4* v1 = (Vector4*)eval_binary(new Binary(a->v1, op, rhs));
-        Vector4* v2 = (Vector4*)eval_binary(new Binary(a->v2, op, rhs));
-        Vector4* v3 = (Vector4*)eval_binary(new Binary(a->v3, op, rhs));
-
-        return new Matrix4(v0, v1, v2, v3);
+        if(op == OP_MULT || op == OP_DIV) {
+            Vector4* v0 = (Vector4*)eval_binary(new Binary(a->v0, op, rhs));
+            Vector4* v1 = (Vector4*)eval_binary(new Binary(a->v1, op, rhs));
+            Vector4* v2 = (Vector4*)eval_binary(new Binary(a->v2, op, rhs));
+            Vector4* v3 = (Vector4*)eval_binary(new Binary(a->v3, op, rhs));
+            return new Matrix4(v0, v1, v2, v3);
+        }
     }
 
     if((ltype == NODE_INT || ltype == NODE_FLOAT) && (rtype == NODE_MATRIX4)) {
         Matrix4* a = (Matrix4*)eval_expr(rhs);
 
-        if(op != OP_MULT) return NULL;
-
-        Vector4* v0 = (Vector4*)eval_binary(new Binary(a->v0, op, lhs));
-        Vector4* v1 = (Vector4*)eval_binary(new Binary(a->v1, op, lhs));
-        Vector4* v2 = (Vector4*)eval_binary(new Binary(a->v2, op, lhs));
-        Vector4* v3 = (Vector4*)eval_binary(new Binary(a->v3, op, lhs));
-
-        return new Matrix4(v0, v1, v2, v3);
+        if(op == OP_MULT) {
+            Vector4* v0 = (Vector4*)eval_binary(new Binary(a->v0, op, lhs));
+            Vector4* v1 = (Vector4*)eval_binary(new Binary(a->v1, op, lhs));
+            Vector4* v2 = (Vector4*)eval_binary(new Binary(a->v2, op, lhs));
+            Vector4* v3 = (Vector4*)eval_binary(new Binary(a->v3, op, lhs));
+            return new Matrix4(v0, v1, v2, v3);
+        }
     }
 
     if(ltype == NODE_MATRIX4 && rtype == NODE_MATRIX4) {
         Matrix4* a = (Matrix4*)eval_expr(lhs);
         Matrix4* b = (Matrix4*)eval_expr(rhs);
         
-        if(op != OP_MULT) return NULL;
-
-        Vector4* r0 = new Vector4(new Binary(a->v0, OP_MULT, b->c0), new Binary(a->v0, OP_MULT, b->c1), new Binary(a->v0, OP_MULT, b->c2), new Binary(a->v0, OP_MULT, b->c3));
-        Vector4* r1 = new Vector4(new Binary(a->v1, OP_MULT, b->c0), new Binary(a->v1, OP_MULT, b->c1), new Binary(a->v1, OP_MULT, b->c2), new Binary(a->v1, OP_MULT, b->c3));
-        Vector4* r2 = new Vector4(new Binary(a->v2, OP_MULT, b->c0), new Binary(a->v2, OP_MULT, b->c1), new Binary(a->v2, OP_MULT, b->c2), new Binary(a->v2, OP_MULT, b->c3));
-        Vector4* r3 = new Vector4(new Binary(a->v3, OP_MULT, b->c0), new Binary(a->v3, OP_MULT, b->c1), new Binary(a->v3, OP_MULT, b->c2), new Binary(a->v3, OP_MULT, b->c3));
-
-        return eval_expr(new Matrix4(r0, r1, r2, r3));
+        if(op == OP_MULT) {
+            Vector4* r0 = new Vector4(new Binary(a->v0, OP_MULT, b->c0), new Binary(a->v0, OP_MULT, b->c1), new Binary(a->v0, OP_MULT, b->c2), new Binary(a->v0, OP_MULT, b->c3));
+            Vector4* r1 = new Vector4(new Binary(a->v1, OP_MULT, b->c0), new Binary(a->v1, OP_MULT, b->c1), new Binary(a->v1, OP_MULT, b->c2), new Binary(a->v1, OP_MULT, b->c3));
+            Vector4* r2 = new Vector4(new Binary(a->v2, OP_MULT, b->c0), new Binary(a->v2, OP_MULT, b->c1), new Binary(a->v2, OP_MULT, b->c2), new Binary(a->v2, OP_MULT, b->c3));
+            Vector4* r3 = new Vector4(new Binary(a->v3, OP_MULT, b->c0), new Binary(a->v3, OP_MULT, b->c1), new Binary(a->v3, OP_MULT, b->c2), new Binary(a->v3, OP_MULT, b->c3));
+            return eval_expr(new Matrix4(r0, r1, r2, r3));
+        }
     }
 
     if(ltype == NODE_VECTOR4 && rtype == NODE_MATRIX4) {
         Vector4* a = (Vector4*)eval_expr(lhs);
         Matrix4* b = (Matrix4*)eval_expr(rhs);
 
-        if(op != OP_MULT) return NULL;
-
-        return eval_expr(new Vector4(new Binary(a, OP_MULT, b->c0), new Binary(a, OP_MULT, b->c1), new Binary(a, OP_MULT, b->c2), new Binary(a, OP_MULT, b->c3)));
+        if(op == OP_MULT) {
+            return eval_expr(new Vector4(new Binary(a, OP_MULT, b->c0), new Binary(a, OP_MULT, b->c1), new Binary(a, OP_MULT, b->c2), new Binary(a, OP_MULT, b->c3)));
+        }
     }
 
+    logger->log(bin, "ERROR", "Invalid operation between " + type_to_name(ltype) + " and " + type_to_name(rtype));
     return NULL;
 }
 
@@ -756,10 +748,8 @@ Expr* Interpreter::eval_expr(Expr* node) {
                 return invoke(func->invoke);
             }
 
-        default: return NULL;
+        default: logger->log(node, "ERROR", "Illegal expression"); return NULL;
     }
-
-    return NULL;
 }
 
 Expr* Interpreter::eval_stmt(Stmt* stmt) {
