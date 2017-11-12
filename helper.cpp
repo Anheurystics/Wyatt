@@ -10,6 +10,8 @@ string str_from_file(string filename) {
             text += line + '\n';
         }
         file.close();
+    } else {
+       cout << "File not found: " << filename << endl;
     }
 
     return text;

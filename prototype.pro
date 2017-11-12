@@ -51,7 +51,9 @@ FORMS += \
 
 DISTFILES += \
     parser.y \
-    scanner.l
+    scanner.l \
+    main.txt \
+    utils.txt
 
 FLEX_SOURCES = scanner.l
 BISON_SOURCES = parser.y
