@@ -461,6 +461,51 @@ Expr* Interpreter::invoke(Invoke* invoke) {
     return NULL;
 }
 
+Expr* Interpreter::resolve_vector(vector<Expr*> list) {
+    vector<float> data;
+    int n = 0;
+
+    for(unsigned int i = 0; i < list.size(); i++) {
+        Expr* expr = list[i];
+        if(expr->type == NODE_FLOAT || expr->type == NODE_INT) {
+            data.push_back(resolve_scalar(expr));
+            n += 1;
+        } else
+        if(expr->type == NODE_VECTOR2) {
+            Vector2* vec2 = (Vector2*)eval_expr(expr);
+            data.push_back(resolve_scalar(vec2->x));
+            data.push_back(resolve_scalar(vec2->y));
+            n += 2;
+        } else
+        if(expr->type == NODE_VECTOR3) {
+            Vector3* vec3 = (Vector3*)eval_expr(expr);
+            data.push_back(resolve_scalar(vec3->x));
+            data.push_back(resolve_scalar(vec3->y));
+            data.push_back(resolve_scalar(vec3->z));
+            n += 3;
+        } else
+        if(expr->type == NODE_VECTOR4) {
+            Vector4* vec4 = (Vector4*)eval_expr(expr);
+            data.push_back(resolve_scalar(vec4->x));
+            data.push_back(resolve_scalar(vec4->y));
+            data.push_back(resolve_scalar(vec4->z));
+            data.push_back(resolve_scalar(vec4->w));
+            n += 4;
+        } else {
+            return NULL;
+        }
+    }
+
+    if(data.size() == 3) {
+        return new Vector3(new Float(data[0]), new Float(data[1]), new Float(data[2]));
+    }
+    if(data.size() == 4) {
+        return new Vector4(new Float(data[0]), new Float(data[1]), new Float(data[2]), new Float(data[3]));
+    }
+
+    return NULL;
+}
+
 Expr* Interpreter::eval_expr(Expr* node) {
     switch(node->type) {
         case NODE_IDENT: 
@@ -571,7 +616,7 @@ Expr* Interpreter::eval_expr(Expr* node) {
                     return new Matrix2((Vector2*)x, (Vector2*)y);
                 }
 
-                return NULL;
+                return resolve_vector({x, y});
             }
 
         case NODE_VECTOR3:
@@ -589,7 +634,7 @@ Expr* Interpreter::eval_expr(Expr* node) {
                     return new Matrix3((Vector3*)x, (Vector3*)y, (Vector3*)z);
                 }
 
-                return NULL;
+                return resolve_vector({x, y, z});
             }
 
         case NODE_VECTOR4:

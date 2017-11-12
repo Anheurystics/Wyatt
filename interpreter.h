@@ -109,6 +109,7 @@ class Interpreter {
         Expr* eval_binary(Binary*);
         Expr* invoke(Invoke*);
         Expr* eval_stmt(Stmt*);
+        Expr* resolve_vector(vector<Expr*>);
 
         LogWindow* logger;
 };
