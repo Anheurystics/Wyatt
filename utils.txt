@@ -19,7 +19,7 @@ func mat3_scale(s) {
     return [[s,0,0],[0,s,0],[0,0,1]];
 }
 
-func mat4_identity(s) {
+func mat4_identity() {
     return [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]];
 }
 
@@ -44,6 +44,14 @@ func mat4_rotation_z(angle) {
 
 func mat4_scale(s) {
     return [[s,0,0,0],[0,s,0,0],[0,0,s,0],[0,0,0,1]];
+}
+
+func mat4_lookat(eye, at, up) {
+    front = normalize(eye - at);
+    up = normalize(up);
+    right = up % front;
+    up = front % right;
+    return [[right, 0], [up, 0], [front, 0], [-eye,1]];
 }
 
 func mat4_perspective(fov, aspect, near, far) {
