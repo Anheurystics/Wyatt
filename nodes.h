@@ -16,6 +16,21 @@ enum NodeType {
     NODE_STMT, NODE_ASSIGN, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_USE, NODE_FUNCSTMT, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_SSOURCE, NODE_PRINT, NODE_FUNCDEF, NODE_RETURN
 };
 
+inline string type_to_name(NodeType type) {
+    switch(type) {
+        case NODE_BOOL: return "bool";
+        case NODE_INT: return "int";
+        case NODE_FLOAT: return "float";
+        case NODE_VECTOR2: return "vec2";
+        case NODE_VECTOR3: return "vec3";
+        case NODE_VECTOR4: return "vec4";
+        case NODE_MATRIX2: return "mat2";
+        case NODE_MATRIX3: return "mat3";
+        case NODE_MATRIX4: return "mat4";
+        default: return "";
+    }
+}
+
 enum OpType {
     OP_PLUS, OP_MINUS, OP_MULT, OP_DIV, OP_MOD, OP_ABS, OP_AND, OP_OR, OP_NOT, OP_EQUAL, OP_LESSTHAN, OP_GREATERTHAN, OP_NEQUAL, OP_LEQUAL, OP_GEQUAL
 };
