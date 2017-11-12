@@ -7,7 +7,8 @@ func mat3_translation(x, y) {
 }
 
 func mat3_rotation(angle) {
-    return [[cos(angle), -sin(angle), 0], [sin(angle), cos(angle), 0], [0, 0, 1]];
+    c = cos(angle); s = sin(angle);
+    return [[c,-s,0],[s,c,0],[0,0,1]];
 }
 
 func mat3_scale(s) {
@@ -20,6 +21,21 @@ func mat4_identity(s) {
 
 func mat4_translation(x, y, z) {
     return [[1,0,0,0],[0,1,0,0],[0,0,1,0],[x,y,z,1]];
+}
+
+func mat4_rotation_x(angle) {
+    c = cos(angle); s = sin(angle);
+    return [[1,0,0,0],[0,c,-s,0],[0,s,c,0],[0,0,0,1]];
+}
+
+func mat4_rotation_y(angle) {
+    c = cos(angle); s = sin(angle);
+    return [[c,0,s,0],[0,1,0,0],[-s,0,c,0],[0,0,0,1]];
+}
+
+func mat4_rotation_z(angle) {
+    c = cos(angle); s = sin(angle);
+    return [[c,-s,0,0],[s,c,0,0],[0,0,0,0],[0,0,0,1]];
 }
 
 func mat4_scale(s) {

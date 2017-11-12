@@ -33,5 +33,3 @@ func loop() {
 	use basic;
 	draw a;
 }
-    
-
