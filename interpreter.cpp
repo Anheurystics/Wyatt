@@ -447,7 +447,12 @@ Expr* Interpreter::invoke(Invoke* invoke) {
         }
         if(nParams > 0) {
             for(unsigned int i = 0; i < nParams; i++) {
-                localScope->declare(def->params->list[i]->name, eval_expr(invoke->args->list[i]));
+                Expr* arg = eval_expr(invoke->args->list[i]);
+                if(arg == NULL) {
+                    logger->log("ERROR: Invalid argument passed on to " + name);
+                    return NULL;
+                }
+                localScope->declare(def->params->list[i]->name, arg);
             }
         }
 
