@@ -668,6 +668,30 @@ Expr* Interpreter::eval_expr(Expr* node) {
                         return new Bool(!(b->value));
                     }
                 }
+                if(un->op == OP_ABS) {
+                    if(rhs->type == NODE_INT) {
+                        return new Int(abs(resolve_int(rhs)));
+                    }
+                    if(rhs->type == NODE_FLOAT) {
+                        return new Float(fabs(resolve_float(rhs)));
+                    }
+                    if(rhs->type == NODE_VECTOR2) {
+                        Vector2* vec2 = (Vector2*)rhs;
+                        float x = resolve_scalar(vec2->x), y = resolve_scalar(vec2->y);
+                        return new Float(sqrtf(x * x + y * y));
+                    }
+                    if(rhs->type == NODE_VECTOR3) {
+                        Vector3* vec3 = (Vector3*)rhs;
+                        float x = resolve_scalar(vec3->x), y = resolve_scalar(vec3->y), z = resolve_scalar(vec3->z);
+                        return new Float(sqrtf(x * x + y * y + z * z));
+                    }
+                    if(rhs->type == NODE_VECTOR4) {
+                        Vector4* vec4 = (Vector4*)rhs;
+                        float x = resolve_scalar(vec4->x), y = resolve_scalar(vec4->y), z = resolve_scalar(vec4->z), w = resolve_scalar(vec4->w);
+                        return new Float(sqrtf(x * x + y * y + z * z + w * w));
+                    }
+                    return NULL;
+                }
             }
 
         case NODE_BINARY:

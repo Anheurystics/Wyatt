@@ -149,6 +149,7 @@ expr: INT { $$ = $1; $$->first_line = @1.first_line; $$->last_line = @1.last_lin
     | expr LEQUAL expr { $$ = new Binary($1, OP_LEQUAL, $3); $$->first_line = @1.first_line; $$->last_line = @3.last_line; }
     | expr GEQUAL expr { $$ = new Binary($1, OP_GEQUAL, $3); $$->first_line = @1.first_line; $$->last_line = @3.last_line; }
     | MINUS expr { $$ = new Unary(OP_MINUS, $2); $$->first_line = @1.first_line; $$->last_line = @2.last_line; } %prec UNARY
+    | PIPE expr PIPE { $$ = new Unary(OP_ABS, $2); $$->first_line = @1.first_line; $$->last_line = @3.last_line; }
     | OPEN_PAREN expr CLOSE_PAREN { $$ = $2; $$->first_line = @1.first_line; $$->last_line = @3.last_line; }
     ;
 
