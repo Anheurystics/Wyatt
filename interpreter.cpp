@@ -438,7 +438,6 @@ Expr* Interpreter::invoke(Invoke* invoke) {
 
     if(def != NULL) {
         Scope* localScope = new Scope(name);
-        functionScopeStack.push(localScope);
         unsigned int nParams = def->params->list.size();
         unsigned int nArgs = invoke->args->list.size();
 
@@ -452,6 +451,7 @@ Expr* Interpreter::invoke(Invoke* invoke) {
             }
         }
 
+        functionScopeStack.push(localScope);
         Expr* retValue = execute_stmts(def->stmts);
         functionScopeStack.pop();
         return retValue;
