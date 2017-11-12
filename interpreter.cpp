@@ -43,12 +43,12 @@ void Interpreter::reset() {
 
 Expr* Interpreter::eval_binary(Binary* bin) {
     Expr* lhs = eval_expr(bin->lhs);
-    if(!lhs) return 0;
+    if(!lhs) return NULL;
 
     OpType op = bin->op;
 
     Expr* rhs = eval_expr(bin->rhs);
-    if(!rhs) return 0;
+    if(!rhs) return NULL;
 
     NodeType ltype = lhs->type;
     NodeType rtype = rhs->type;
@@ -60,7 +60,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
         switch(op) {
             case OP_AND: return new Bool(a && b);
             case OP_OR: return new Bool(a || b);
-            default: return 0;
+            default: return NULL;
         }
     }
 
@@ -80,7 +80,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
             case OP_NEQUAL: return new Bool(a != b);
             case OP_LEQUAL: return new Bool(a <= b);
             case OP_GEQUAL: return new Bool(a >= b);
-            default: return 0;
+            default: return NULL;
         }
     }
 
@@ -99,7 +99,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
             case OP_NEQUAL: return new Bool(a != b);
             case OP_LEQUAL: return new Bool(a <= b);
             case OP_GEQUAL: return new Bool(a >= b);
-            default: return 0;
+            default: return NULL;
         }
     }
 
@@ -118,7 +118,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
             case OP_NEQUAL: return new Bool(a != b);
             case OP_LEQUAL: return new Bool(a <= b);
             case OP_GEQUAL: return new Bool(a >= b);
-            default: return 0;
+            default: return NULL;
         }
     }
 
@@ -136,7 +136,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
             case OP_MINUS: return new Vector2(new Float(ax-bx), new Float(ay-by));
             case OP_MULT: return new Float(ax*bx + ay*by);
             case OP_MOD: return new Float(ax*by - ay*bx);
-            default: return 0;
+            default: return NULL;
         }
     }
 
@@ -148,7 +148,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
         switch(op) {
             case OP_MULT: return new Vector2(new Float(ax*b), new Float(ay*b));
             case OP_DIV: return new Vector2(new Float(ax/b), new Float(ay/b));
-            default: return 0;
+            default: return NULL;
         }
     }
 
@@ -159,7 +159,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
 
         switch(op) {
             case OP_MULT: return new Vector2(new Float(bx*a), new Float(by*a));
-            default: return 0;
+            default: return NULL;
         }
     }
 
@@ -179,7 +179,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
             case OP_MINUS: return new Vector3(new Float(ax-bx), new Float(ay-by), new Float(az-bz));
             case OP_MULT: return new Float(ax*bx + ay*by + az*bz);
             case OP_MOD: return new Vector3(new Float(ay*bz-az*by), new Float(az*bx-ax*bz), new Float(ax*by-ay*bx));
-            default: return 0;
+            default: return NULL;
         }
     }
 
@@ -191,7 +191,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
         switch(op) {
             case OP_MULT: return new Vector3(new Float(ax*b), new Float(ay*b), new Float(az*b));
             case OP_DIV: return new Vector3(new Float(ax/b), new Float(ay/b), new Float(az/b));
-            default: return 0;
+            default: return NULL;
         }
     }
 
@@ -202,7 +202,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
 
         switch(op) {
             case OP_MULT: return new Vector3(new Float(bx*a), new Float(by*a), new Float(bz*a));
-            default: return 0;
+            default: return NULL;
         }
     }
 
@@ -223,7 +223,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
             case OP_PLUS: return new Vector4(new Float(ax+bx), new Float(ay+by), new Float(az+bz), new Float(aw+bw));
             case OP_MINUS: return new Vector4(new Float(ax-bx), new Float(ay-by), new Float(az-bz), new Float(aw-bw));
             case OP_MULT: return new Float(ax*bx + ay*by + az*bz + aw*bw);
-            default: return 0;
+            default: return NULL;
         }
     }
 
@@ -235,7 +235,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
         switch(op) {
             case OP_MULT: return new Vector4(new Float(ax*b), new Float(ay*b), new Float(az*b), new Float(aw*b));
             case OP_DIV: return new Vector4(new Float(ax/b), new Float(ay/b), new Float(az/b), new Float(aw/b));
-            default: return 0;
+            default: return NULL;
         }
     }
 
@@ -246,14 +246,14 @@ Expr* Interpreter::eval_binary(Binary* bin) {
 
         switch(op) {
             case OP_MULT: return new Vector4(new Float(bx*a), new Float(by*a), new Float(bz*a), new Float(bw*a));
-            default: return 0;
+            default: return NULL;
         }
     }
 
     if(ltype == NODE_MATRIX2 && (rtype == NODE_INT || rtype == NODE_FLOAT)) {
         Matrix2* a = (Matrix2*)eval_expr(lhs);
 
-        if(op != OP_MULT && op != OP_DIV) return 0;
+        if(op != OP_MULT && op != OP_DIV) return NULL;
 
         Vector2* v0 = (Vector2*)eval_binary(new Binary(a->v0, op, rhs));
         Vector2* v1 = (Vector2*)eval_binary(new Binary(a->v1, op, rhs));
@@ -264,7 +264,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
     if((ltype == NODE_INT || ltype == NODE_FLOAT) && (rtype == NODE_MATRIX2)) {
         Matrix2* a = (Matrix2*)eval_expr(rhs);
 
-        if(op != OP_MULT) return 0;
+        if(op != OP_MULT) return NULL;
 
         Vector2* v0 = (Vector2*)eval_binary(new Binary(a->v0, op, lhs));
         Vector2* v1 = (Vector2*)eval_binary(new Binary(a->v1, op, lhs));
@@ -276,7 +276,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
         Matrix2* a = (Matrix2*)eval_expr(lhs);
         Matrix2* b = (Matrix2*)eval_expr(rhs);
 
-        if(op != OP_MULT) return 0;
+        if(op != OP_MULT) return NULL;
 
         Vector2* r0 = new Vector2(new Binary(a->v0, OP_MULT, b->c0), new Binary(a->v0, OP_MULT, b->c1));
         Vector2* r1 = new Vector2(new Binary(a->v1, OP_MULT, b->c0), new Binary(a->v1, OP_MULT, b->c1));
@@ -288,7 +288,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
         Vector2* a = (Vector2*)eval_expr(lhs);
         Matrix2* b = (Matrix2*)eval_expr(rhs);
 
-        if(op != OP_MULT) return 0;
+        if(op != OP_MULT) return NULL;
 
         return eval_expr(new Vector2(new Binary(a, OP_MULT, b->c0), new Binary(a, OP_MULT, b->c1)));
     }
@@ -296,7 +296,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
     if(ltype == NODE_MATRIX3 && (rtype == NODE_INT || rtype == NODE_FLOAT)) {
         Matrix3* a = (Matrix3*)eval_expr(lhs);
 
-        if(op != OP_MULT && op != OP_DIV) return 0;
+        if(op != OP_MULT && op != OP_DIV) return NULL;
 
         Vector3* v0 = (Vector3*)eval_binary(new Binary(a->v0, op, rhs));
         Vector3* v1 = (Vector3*)eval_binary(new Binary(a->v1, op, rhs));
@@ -308,7 +308,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
     if((ltype == NODE_INT || ltype == NODE_FLOAT) && (rtype == NODE_MATRIX3)) {
         Matrix3* a = (Matrix3*)eval_expr(rhs);
 
-        if(op != OP_MULT) return 0;
+        if(op != OP_MULT) return NULL;
 
         Vector3* v0 = (Vector3*)eval_binary(new Binary(a->v0, op, lhs));
         Vector3* v1 = (Vector3*)eval_binary(new Binary(a->v1, op, lhs));
@@ -321,7 +321,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
         Matrix3* a = (Matrix3*)eval_expr(lhs);
         Matrix3* b = (Matrix3*)eval_expr(rhs);
         
-        if(op != OP_MULT) return 0;
+        if(op != OP_MULT) return NULL;
 
         Vector3* r0 = new Vector3(new Binary(a->v0, OP_MULT, b->c0), new Binary(a->v0, OP_MULT, b->c1), new Binary(a->v0, OP_MULT, b->c2));
         Vector3* r1 = new Vector3(new Binary(a->v1, OP_MULT, b->c0), new Binary(a->v1, OP_MULT, b->c1), new Binary(a->v1, OP_MULT, b->c2));
@@ -334,7 +334,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
         Vector3* a = (Vector3*)eval_expr(lhs);
         Matrix3* b = (Matrix3*)eval_expr(rhs);
 
-        if(op != OP_MULT) return 0;
+        if(op != OP_MULT) return NULL;
 
         return eval_expr(new Vector3(new Binary(a, OP_MULT, b->c0), new Binary(a, OP_MULT, b->c1), new Binary(a, OP_MULT, b->c2)));
     }
@@ -342,7 +342,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
     if(ltype == NODE_MATRIX4 && (rtype == NODE_INT || rtype == NODE_FLOAT)) {
         Matrix4* a = (Matrix4*)eval_expr(lhs);
 
-        if(op != OP_MULT && op != OP_DIV) return 0;
+        if(op != OP_MULT && op != OP_DIV) return NULL;
 
         Vector4* v0 = (Vector4*)eval_binary(new Binary(a->v0, op, rhs));
         Vector4* v1 = (Vector4*)eval_binary(new Binary(a->v1, op, rhs));
@@ -355,7 +355,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
     if((ltype == NODE_INT || ltype == NODE_FLOAT) && (rtype == NODE_MATRIX4)) {
         Matrix4* a = (Matrix4*)eval_expr(rhs);
 
-        if(op != OP_MULT) return 0;
+        if(op != OP_MULT) return NULL;
 
         Vector4* v0 = (Vector4*)eval_binary(new Binary(a->v0, op, lhs));
         Vector4* v1 = (Vector4*)eval_binary(new Binary(a->v1, op, lhs));
@@ -369,7 +369,7 @@ Expr* Interpreter::eval_binary(Binary* bin) {
         Matrix4* a = (Matrix4*)eval_expr(lhs);
         Matrix4* b = (Matrix4*)eval_expr(rhs);
         
-        if(op != OP_MULT) return 0;
+        if(op != OP_MULT) return NULL;
 
         Vector4* r0 = new Vector4(new Binary(a->v0, OP_MULT, b->c0), new Binary(a->v0, OP_MULT, b->c1), new Binary(a->v0, OP_MULT, b->c2), new Binary(a->v0, OP_MULT, b->c3));
         Vector4* r1 = new Vector4(new Binary(a->v1, OP_MULT, b->c0), new Binary(a->v1, OP_MULT, b->c1), new Binary(a->v1, OP_MULT, b->c2), new Binary(a->v1, OP_MULT, b->c3));
@@ -383,12 +383,12 @@ Expr* Interpreter::eval_binary(Binary* bin) {
         Vector4* a = (Vector4*)eval_expr(lhs);
         Matrix4* b = (Matrix4*)eval_expr(rhs);
 
-        if(op != OP_MULT) return 0;
+        if(op != OP_MULT) return NULL;
 
         return eval_expr(new Vector4(new Binary(a, OP_MULT, b->c0), new Binary(a, OP_MULT, b->c1), new Binary(a, OP_MULT, b->c2), new Binary(a, OP_MULT, b->c3)));
     }
 
-    return 0;
+    return NULL;
 }
 
 Expr* Interpreter::invoke(Invoke* invoke) {
@@ -693,7 +693,7 @@ Expr* Interpreter::eval_expr(Expr* node) {
                 Unary* un = (Unary*)node;
                 Expr* rhs = eval_expr(un->rhs);
 
-                if(!rhs) return 0;
+                if(!rhs) return NULL;
 
                 if(un->op == OP_MINUS) {
                     if(rhs->type == NODE_INT) {
@@ -756,10 +756,10 @@ Expr* Interpreter::eval_expr(Expr* node) {
                 return invoke(func->invoke);
             }
 
-        default: return 0;
+        default: return NULL;
     }
 
-    return 0;
+    return NULL;
 }
 
 Expr* Interpreter::eval_stmt(Stmt* stmt) {
