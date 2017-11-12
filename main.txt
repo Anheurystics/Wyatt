@@ -4,12 +4,13 @@ vert basic `
 in vec3 pos;
 
 uniform mat4 model;
+uniform mat4 view;
 uniform mat4 proj;
 
 out vec4 Position;
 
 void main() {
-	gl_Position = proj * model * vec4(pos, 1.0);
+    gl_Position = proj * view * model * vec4(pos, 1.0);
 }
 `;
 
@@ -18,26 +19,30 @@ frag basic `#version 130
 out vec4 FragColor;
 
 void main() {
-	FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+    FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 }
 `;
 
 func init() {
-	allocate a;
-	a.pos <- [-1,-1,0], [1,-1,0], [0,1,0];
+    allocate a;
+    a.pos <- [-1,-1,0], [1,-1,0], [0,1,0];
 
-	angle = 0;
+    angle = 0;
 
-	use basic;
-	basic.model = mat4_translation(0,0,-5);
-	basic.proj = mat4_perspective(pi() * 0.25, 1.0, 0.1, 100.0);
+    eye = [0,0,4];
+    at = [0,0,0];
+    up = [0,1,0];
+
+    use basic;
+    basic.view = mat4_lookat(eye, at, up);
+    basic.proj = mat4_perspective(pi() * 0.25, 1.0, 0.1, 100.0);
 }
 
 func loop() {
-	angle += 0.025 * pi();
+    angle += 0.025 * pi();
 
-	use basic;
-	basic.model = mat4_rotation_y(angle) * mat4_translation(0,0,-5);
-	draw a;
+    use basic;
+    basic.model = mat4_rotation_y(angle);
+    draw a;
 }
 
