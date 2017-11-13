@@ -261,11 +261,11 @@ class Matrix4: public Expr {
 
 class Index: public Expr {
     public:
-        Ident* ident;
+        Expr* source;
         Expr* index;
 
-        Index(Ident* ident, Expr* index) {
-            this->ident = ident;
+        Index(Expr* source, Expr* index) {
+            this->source = source;
             this->index = index;
             type = NODE_INDEX;
         }

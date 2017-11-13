@@ -749,22 +749,22 @@ Expr* Interpreter::eval_expr(Expr* node) {
             }
         case NODE_INDEX:
             {
-                Index* index = (Index*)node;
-                Expr* lhs = eval_expr(index->ident);
-                Expr* rhs = eval_expr(index->index);
+                Index* in= (Index*)node;
+                Expr* source = eval_expr(in->source);
+                Expr* index = eval_expr(in->index);
                 
-                if(lhs->type == NODE_VECTOR2 && rhs->type == NODE_INT) {
-                    Vector2* vec2 = (Vector2*)lhs;
-                    int i = resolve_int(rhs);
+                if(source->type == NODE_VECTOR2 && index->type == NODE_INT) {
+                    Vector2* vec2 = (Vector2*)source;
+                    int i = resolve_int(index);
                     if(i == 0) return eval_expr(vec2->x);
                     if(i == 1) return eval_expr(vec2->y);
                         
                     logger->log(index, "ERROR", "Index out of range for vec2 access");
                     return NULL;
                 } else
-                if(lhs->type == NODE_VECTOR3 && rhs->type == NODE_INT) {
-                    Vector3* vec3 = (Vector3*)lhs;
-                    int i = resolve_int(rhs);
+                if(source->type == NODE_VECTOR3 && index->type == NODE_INT) {
+                    Vector3* vec3 = (Vector3*)source;
+                    int i = resolve_int(index);
                     if(i == 0) return eval_expr(vec3->x);
                     if(i == 1) return eval_expr(vec3->y);
                     if(i == 2) return eval_expr(vec3->z);
@@ -772,9 +772,9 @@ Expr* Interpreter::eval_expr(Expr* node) {
                     logger->log(index, "ERROR", "Index out of range for vec3 access");
                     return NULL;
                 }
-                if(lhs->type == NODE_VECTOR4 && rhs->type == NODE_INT) {
-                    Vector4* vec4 = (Vector4*)lhs;
-                    int i = resolve_int(rhs);
+                if(source->type == NODE_VECTOR4 && index->type == NODE_INT) {
+                    Vector4* vec4 = (Vector4*)source;
+                    int i = resolve_int(index);
                     if(i == 0) return eval_expr(vec4->x);
                     if(i == 1) return eval_expr(vec4->y);
                     if(i == 2) return eval_expr(vec4->z);
@@ -783,9 +783,9 @@ Expr* Interpreter::eval_expr(Expr* node) {
                     logger->log(index, "ERROR", "Index out of range for vec4 access");
                     return NULL;
                 }
-                if(lhs->type == NODE_MATRIX2 && rhs->type == NODE_INT) {
-                    Matrix2* mat2 = (Matrix2*)lhs;
-                    int i = resolve_int(rhs);
+                if(source->type == NODE_MATRIX2 && index->type == NODE_INT) {
+                    Matrix2* mat2 = (Matrix2*)source;
+                    int i = resolve_int(index);
                     if(i == 0) return eval_expr(mat2->v0);
                     if(i == 1) return eval_expr(mat2->v1);
                     
