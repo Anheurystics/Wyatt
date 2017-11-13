@@ -747,6 +747,55 @@ Expr* Interpreter::eval_expr(Expr* node) {
                 FuncExpr* func = (FuncExpr*)node;
                 return invoke(func->invoke);
             }
+        case NODE_INDEX:
+            {
+                Index* index = (Index*)node;
+                Expr* lhs = eval_expr(index->ident);
+                Expr* rhs = eval_expr(index->index);
+                
+                if(lhs->type == NODE_VECTOR2 && rhs->type == NODE_INT) {
+                    Vector2* vec2 = (Vector2*)lhs;
+                    int i = resolve_int(rhs);
+                    if(i == 0) return eval_expr(vec2->x);
+                    if(i == 1) return eval_expr(vec2->y);
+                        
+                    logger->log(index, "ERROR", "Index out of range for vec2 access");
+                    return NULL;
+                } else
+                if(lhs->type == NODE_VECTOR3 && rhs->type == NODE_INT) {
+                    Vector3* vec3 = (Vector3*)lhs;
+                    int i = resolve_int(rhs);
+                    if(i == 0) return eval_expr(vec3->x);
+                    if(i == 1) return eval_expr(vec3->y);
+                    if(i == 2) return eval_expr(vec3->z);
+                        
+                    logger->log(index, "ERROR", "Index out of range for vec3 access");
+                    return NULL;
+                }
+                if(lhs->type == NODE_VECTOR4 && rhs->type == NODE_INT) {
+                    Vector4* vec4 = (Vector4*)lhs;
+                    int i = resolve_int(rhs);
+                    if(i == 0) return eval_expr(vec4->x);
+                    if(i == 1) return eval_expr(vec4->y);
+                    if(i == 2) return eval_expr(vec4->z);
+                    if(i == 4) return eval_expr(vec4->w);
+                        
+                    logger->log(index, "ERROR", "Index out of range for vec4 access");
+                    return NULL;
+                }
+                if(lhs->type == NODE_MATRIX2 && rhs->type == NODE_INT) {
+                    Matrix2* mat2 = (Matrix2*)lhs;
+                    int i = resolve_int(rhs);
+                    if(i == 0) return eval_expr(mat2->v0);
+                    if(i == 1) return eval_expr(mat2->v1);
+                    
+                    logger->log(index, "ERROR", "Index out of range for mat2 access");
+                    return NULL;
+                }
+
+                logger->log(index," ERROR", "Invalid use of [] operator");
+                return NULL;
+            }
 
         default: logger->log(node, "ERROR", "Illegal expression"); return NULL;
     }
