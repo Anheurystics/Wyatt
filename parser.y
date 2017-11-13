@@ -66,8 +66,7 @@ void yyerror( std::map<std::string, ShaderPair*> *shaders, std::map<std::string,
 
 %type<inval> invoke;
 
-%type<eval> expr
-%type<eval> bool
+%type<eval> expr bool index
 %type<v2val> vec2
 %type<v3val> vec3
 %type<v4val> vec4
@@ -138,7 +137,7 @@ expr: INT { $$ = $1; set_lines($$,@1,@1); }
     | invoke { $$ = new FuncExpr($1); set_lines($$, @1, @1); }
     | uniform { $$ = $1; set_lines($$, @1, @1); }
     | IDENTIFIER { $$ = $1; set_lines($$, @1, @1); }
-    | IDENTIFIER OPEN_BRACKET expr CLOSE_BRACKET { $$ = new Index($1, $3); set_lines($$, @1, @4); }
+    | index { $$ = $1; set_lines($$, @1, @1); }
     | expr PLUS expr { $$ = new Binary($1, OP_PLUS, $3); set_lines($$, @1, @3); }
     | expr MINUS expr { $$ = new Binary($1, OP_MINUS, $3); set_lines($$, @1, @3); }
     | expr MULT expr { $$ = new Binary($1, OP_MULT, $3); set_lines($$, @1, @3); }
@@ -153,6 +152,10 @@ expr: INT { $$ = $1; set_lines($$,@1,@1); }
     | MINUS expr { $$ = new Unary(OP_MINUS, $2); set_lines($$, @1, @2); } %prec UNARY
     | PIPE expr PIPE { $$ = new Unary(OP_ABS, $2); set_lines($$, @1, @3); }
     | OPEN_PAREN expr CLOSE_PAREN { $$ = $2; set_lines($$, @1, @3); }
+    ;
+
+index: IDENTIFIER OPEN_BRACKET expr CLOSE_BRACKET { $$ = new Index($1, $3); set_lines($$, @1, @4); }
+    | index OPEN_BRACKET expr CLOSE_BRACKET { $$ = new Index($1, $3); set_lines($$, @1, @4); }
     ;
 
 uniform: IDENTIFIER PERIOD IDENTIFIER { $$ = new Uniform($1, $3); }
