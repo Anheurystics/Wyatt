@@ -13,6 +13,7 @@
 int yylex();
 void yyerror( std::map<std::string, ShaderPair*> *shaders, std::map<std::string, FuncDef*> *functions, const char *s);
 
+#define set_lines(dst, start, end) dst->first_line = start.first_line; dst->last_line = end.last_line;
 }
 
 %debug
@@ -125,52 +126,52 @@ vert_shader: VERTEX IDENTIFIER SHADER SEMICOLON { $$ = new ShaderSource($2->name
 frag_shader: FRAGMENT IDENTIFIER SHADER SEMICOLON { $$ = new ShaderSource($2->name, $3->name, "frag"); }
     ;
 
-function: FUNC IDENTIFIER OPEN_PAREN param_list CLOSE_PAREN block { $$ = new FuncDef($2, $4, $6); $$->first_line = @1.first_line; $$->last_line = @6.last_line; }
+function: FUNC IDENTIFIER OPEN_PAREN param_list CLOSE_PAREN block { $$ = new FuncDef($2, $4, $6); set_lines($$, @1, @6); }
     ;
 
-expr: INT { $$ = $1; $$->first_line = @1.first_line; $$->last_line = @1.last_line; }
-    | FLOAT { $$ = $1; $$->first_line = @1.first_line; $$->last_line = @1.last_line; }
-    | vec2 { $$ = $1; $$->first_line = @1.first_line; $$->last_line = @1.last_line; }
-    | vec3 { $$ = $1; $$->first_line = @1.first_line; $$->last_line = @1.last_line; }
-    | vec4 { $$ = $1; $$->first_line = @1.first_line; $$->last_line = @1.last_line; }
-    | bool { $$ = $1; $$->first_line = @1.first_line; $$->last_line = @1.last_line; }
-    | invoke { $$ = new FuncExpr($1); $$->first_line = @1.first_line; $$->last_line = @1.last_line; }
-    | uniform { $$ = $1; $$->first_line = @1.first_line; $$->last_line = @1.last_line; }
-    | IDENTIFIER { $$ = $1; $$->first_line = @1.first_line; $$->last_line = @1.last_line; }
-    | IDENTIFIER OPEN_BRACKET expr CLOSE_BRACKET { $$ = new Index($1, $3); $$->first_line = @1.first_line; $$->last_line = @4.last_line; }
-    | expr PLUS expr { $$ = new Binary($1, OP_PLUS, $3); $$->first_line = @1.first_line; $$->last_line = @3.last_line; }
-    | expr MINUS expr { $$ = new Binary($1, OP_MINUS, $3); $$->first_line = @1.first_line; $$->last_line = @3.last_line; }
-    | expr MULT expr { $$ = new Binary($1, OP_MULT, $3); $$->first_line = @1.first_line; $$->last_line = @3.last_line; }
-    | expr DIV expr { $$ = new Binary($1, OP_DIV, $3); $$->first_line = @1.first_line; $$->last_line = @3.last_line; }
-    | expr MOD expr { $$ = new Binary($1, OP_MOD, $3); $$->first_line = @1.first_line; $$->last_line = @3.last_line; }
-    | expr LESS_THAN expr { $$ = new Binary($1, OP_LESSTHAN, $3); $$->first_line = @1.first_line; $$->last_line = @3.last_line;}
-    | expr GREATER_THAN expr { $$ = new Binary($1, OP_GREATERTHAN, $3); $$->first_line = @1.first_line; $$->last_line = @3.last_line; }
-    | expr EQUAL expr { $$ = new Binary($1, OP_EQUAL, $3); $$->first_line = @1.first_line; $$->last_line = @3.last_line; }
-    | expr NEQUAL expr { $$ = new Binary($1, OP_NEQUAL, $3); $$->first_line = @1.first_line; $$->last_line = @3.last_line; }
-    | expr LEQUAL expr { $$ = new Binary($1, OP_LEQUAL, $3); $$->first_line = @1.first_line; $$->last_line = @3.last_line; }
-    | expr GEQUAL expr { $$ = new Binary($1, OP_GEQUAL, $3); $$->first_line = @1.first_line; $$->last_line = @3.last_line; }
-    | MINUS expr { $$ = new Unary(OP_MINUS, $2); $$->first_line = @1.first_line; $$->last_line = @2.last_line; } %prec UNARY
-    | PIPE expr PIPE { $$ = new Unary(OP_ABS, $2); $$->first_line = @1.first_line; $$->last_line = @3.last_line; }
-    | OPEN_PAREN expr CLOSE_PAREN { $$ = $2; $$->first_line = @1.first_line; $$->last_line = @3.last_line; }
+expr: INT { $$ = $1; set_lines($$,@1,@1); }
+    | FLOAT { $$ = $1; set_lines($$, @1, @1); }
+    | vec2 { $$ = $1; set_lines($$, @1, @1); }
+    | vec3 { $$ = $1; set_lines($$, @1, @1); }
+    | vec4 { $$ = $1; set_lines($$, @1, @1); }
+    | bool { $$ = $1; set_lines($$, @1, @1); }
+    | invoke { $$ = new FuncExpr($1); set_lines($$, @1, @1); }
+    | uniform { $$ = $1; set_lines($$, @1, @1); }
+    | IDENTIFIER { $$ = $1; set_lines($$, @1, @1); }
+    | IDENTIFIER OPEN_BRACKET expr CLOSE_BRACKET { $$ = new Index($1, $3); set_lines($$, @1, @4); }
+    | expr PLUS expr { $$ = new Binary($1, OP_PLUS, $3); set_lines($$, @1, @3); }
+    | expr MINUS expr { $$ = new Binary($1, OP_MINUS, $3); set_lines($$, @1, @3); }
+    | expr MULT expr { $$ = new Binary($1, OP_MULT, $3); set_lines($$, @1, @3); }
+    | expr DIV expr { $$ = new Binary($1, OP_DIV, $3); set_lines($$, @1, @3); }
+    | expr MOD expr { $$ = new Binary($1, OP_MOD, $3); set_lines($$, @1, @3); }
+    | expr LESS_THAN expr { $$ = new Binary($1, OP_LESSTHAN, $3); set_lines($$, @1, @3);}
+    | expr GREATER_THAN expr { $$ = new Binary($1, OP_GREATERTHAN, $3); set_lines($$, @1, @3); }
+    | expr EQUAL expr { $$ = new Binary($1, OP_EQUAL, $3); set_lines($$, @1, @3); }
+    | expr NEQUAL expr { $$ = new Binary($1, OP_NEQUAL, $3); set_lines($$, @1, @3); }
+    | expr LEQUAL expr { $$ = new Binary($1, OP_LEQUAL, $3); set_lines($$, @1, @3); }
+    | expr GEQUAL expr { $$ = new Binary($1, OP_GEQUAL, $3); set_lines($$, @1, @3); }
+    | MINUS expr { $$ = new Unary(OP_MINUS, $2); set_lines($$, @1, @2); } %prec UNARY
+    | PIPE expr PIPE { $$ = new Unary(OP_ABS, $2); set_lines($$, @1, @3); }
+    | OPEN_PAREN expr CLOSE_PAREN { $$ = $2; set_lines($$, @1, @3); }
     ;
 
 uniform: IDENTIFIER PERIOD IDENTIFIER { $$ = new Uniform($1, $3); }
     ;
 
-stmt: IDENTIFIER EQUALS expr { $$ = new Assign($1, $3); $$->first_line = @1.first_line; $$->last_line = @3.last_line; }
-    | uniform EQUALS expr { $$ = new Assign($1, $3); $$->first_line = @1.first_line; $$->last_line = @3.last_line; }
-    | ALLOCATE IDENTIFIER { $$ = new Alloc($2); $$->first_line = @1.first_line; $$->last_line = @2.last_line; }
-    | IDENTIFIER PERIOD IDENTIFIER UPLOAD upload_list { $$ = new Upload($1, $3, $5); $$->first_line = @1.first_line; $$->last_line = @5.last_line; }
-    | DRAW IDENTIFIER { $$ = new Draw($2); $$->first_line = @1.first_line; $$->last_line = @2.last_line; }
-    | USE IDENTIFIER { $$ = new Use($2); $$->first_line = @1.first_line; $$->last_line = @2.last_line; }
-    | PRINT expr { $$ = new Print($2); $$->first_line = @1.first_line; $$->last_line = @2.last_line; }
-    | RETURN expr { $$ = new Return($2); $$->first_line = @1.first_line; $$->last_line = @2.last_line; }
-    | invoke { $$ = new FuncStmt($1); $$->first_line = @1.first_line; $$->last_line = @1.last_line; }
-    | IDENTIFIER COMP_PLUS expr { $$ = new Assign($1, new Binary($1, OP_PLUS, $3)); $$->first_line = @1.first_line; $$->last_line = @3.last_line; }
-    | IDENTIFIER COMP_MINUS expr { $$ = new Assign($1, new Binary($1, OP_MINUS, $3)); $$->first_line = @1.first_line; $$->last_line = @3.last_line; }
-    | IDENTIFIER COMP_MULT expr { $$ = new Assign($1, new Binary($1, OP_MULT, $3)); $$->first_line = @1.first_line; $$->last_line = @3.last_line;}
-    | IDENTIFIER COMP_DIV expr { $$ = new Assign($1, new Binary($1, OP_DIV, $3)); $$->first_line = @1.first_line; $$->last_line = @3.last_line; }
-    | IDENTIFIER COMP_MOD expr { $$ = new Assign($1, new Binary($1, OP_MOD, $3)); $$->first_line = @1.first_line; $$->last_line = @3.last_line;}
+stmt: IDENTIFIER EQUALS expr { $$ = new Assign($1, $3); set_lines($$, @1, @3); }
+    | uniform EQUALS expr { $$ = new Assign($1, $3); set_lines($$, @1, @3); }
+    | ALLOCATE IDENTIFIER { $$ = new Alloc($2); set_lines($$, @1, @2); }
+    | IDENTIFIER PERIOD IDENTIFIER UPLOAD upload_list { $$ = new Upload($1, $3, $5); set_lines($$, @1, @5); }
+    | DRAW IDENTIFIER { $$ = new Draw($2); set_lines($$, @1, @2); }
+    | USE IDENTIFIER { $$ = new Use($2); set_lines($$, @1, @2); }
+    | PRINT expr { $$ = new Print($2); set_lines($$, @1, @2); }
+    | RETURN expr { $$ = new Return($2); set_lines($$, @1, @2); }
+    | invoke { $$ = new FuncStmt($1); set_lines($$, @1, @1); }
+    | IDENTIFIER COMP_PLUS expr { $$ = new Assign($1, new Binary($1, OP_PLUS, $3)); set_lines($$, @1, @3); }
+    | IDENTIFIER COMP_MINUS expr { $$ = new Assign($1, new Binary($1, OP_MINUS, $3)); set_lines($$, @1, @3); }
+    | IDENTIFIER COMP_MULT expr { $$ = new Assign($1, new Binary($1, OP_MULT, $3)); set_lines($$, @1, @3);}
+    | IDENTIFIER COMP_DIV expr { $$ = new Assign($1, new Binary($1, OP_DIV, $3)); set_lines($$, @1, @3); }
+    | IDENTIFIER COMP_MOD expr { $$ = new Assign($1, new Binary($1, OP_MOD, $3)); set_lines($$, @1, @3);}
     ;
 
 arg_list: { $$ = new ArgList(0); }
@@ -183,7 +184,7 @@ param_list: { $$ = new ParamList(0); }
     | param_list COMMA IDENTIFIER { $1->list.push_back($3); }
     ;
 
-invoke: IDENTIFIER OPEN_PAREN arg_list CLOSE_PAREN { $$ = new Invoke($1, $3); $$->first_line = @1.first_line; $$->last_line = @1.last_line; }
+invoke: IDENTIFIER OPEN_PAREN arg_list CLOSE_PAREN { $$ = new Invoke($1, $3); set_lines($$, @1, @1); }
     ;
 
 stmt_block: IF OPEN_PAREN expr CLOSE_PAREN block { $$ = new If($3, $5); }
@@ -203,18 +204,18 @@ upload_list: expr { $$ = new UploadList($1); }
     ;
 
 bool: BOOL { $$ = $1; }
-    | bool AND bool { $$ = new Binary($1, OP_AND, $3); $$->first_line = @1.first_line; $$->last_line = @3.last_line; }
-    | bool OR bool { $$ = new Binary($1, OP_OR, $3); $$->first_line = @1.first_line; $$->last_line = @3.last_line; }
-    | NOT bool { $$ = new Unary(OP_NOT, $2); $$->first_line = @1.first_line; $$->last_line = @2.last_line; } %prec UNARY
+    | bool AND bool { $$ = new Binary($1, OP_AND, $3); set_lines($$, @1, @3); }
+    | bool OR bool { $$ = new Binary($1, OP_OR, $3); set_lines($$, @1, @3); }
+    | NOT bool { $$ = new Unary(OP_NOT, $2); set_lines($$, @1, @2); } %prec UNARY
     ;
 
-vec2: OPEN_BRACKET expr COMMA expr CLOSE_BRACKET { $$ = new Vector2($2, $4); $$->first_line = @1.first_line; $$->last_line = @5.last_line; }
+vec2: OPEN_BRACKET expr COMMA expr CLOSE_BRACKET { $$ = new Vector2($2, $4); set_lines($$, @1, @5); }
     ;
 
-vec3: OPEN_BRACKET expr COMMA expr COMMA expr CLOSE_BRACKET { $$ = new Vector3($2, $4, $6); $$->first_line = @1.first_line; $$->last_line = @7.last_line; }
+vec3: OPEN_BRACKET expr COMMA expr COMMA expr CLOSE_BRACKET { $$ = new Vector3($2, $4, $6); set_lines($$, @1, @7); }
     ;
 
-vec4: OPEN_BRACKET expr COMMA expr COMMA expr COMMA expr CLOSE_BRACKET { $$ = new Vector4($2, $4, $6, $8); $$->first_line = @1.first_line; $$->last_line = @9.last_line; }
+vec4: OPEN_BRACKET expr COMMA expr COMMA expr COMMA expr CLOSE_BRACKET { $$ = new Vector4($2, $4, $6, $8); set_lines($$, @1, @9); }
     ;
 
 %%
