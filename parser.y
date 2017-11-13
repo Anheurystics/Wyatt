@@ -137,6 +137,7 @@ expr: INT { $$ = $1; $$->first_line = @1.first_line; $$->last_line = @1.last_lin
     | invoke { $$ = new FuncExpr($1); $$->first_line = @1.first_line; $$->last_line = @1.last_line; }
     | uniform { $$ = $1; $$->first_line = @1.first_line; $$->last_line = @1.last_line; }
     | IDENTIFIER { $$ = $1; $$->first_line = @1.first_line; $$->last_line = @1.last_line; }
+    | IDENTIFIER OPEN_BRACKET expr CLOSE_BRACKET { $$ = new Index($1, $3); $$->first_line = @1.first_line; $$->last_line = @4.last_line; }
     | expr PLUS expr { $$ = new Binary($1, OP_PLUS, $3); $$->first_line = @1.first_line; $$->last_line = @3.last_line; }
     | expr MINUS expr { $$ = new Binary($1, OP_MINUS, $3); $$->first_line = @1.first_line; $$->last_line = @3.last_line; }
     | expr MULT expr { $$ = new Binary($1, OP_MULT, $3); $$->first_line = @1.first_line; $$->last_line = @3.last_line; }

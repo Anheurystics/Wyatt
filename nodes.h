@@ -12,7 +12,7 @@ using namespace std;
 enum NodeType {
     NODE_INVOKE,
     NODE_EXPR, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_VECTOR2, NODE_VECTOR3, NODE_VECTOR4, NODE_MATRIX2, NODE_MATRIX3, NODE_MATRIX4, NODE_IDENT, NODE_UNIFORM,
-    NODE_UPLOADLIST, NODE_FUNCEXPR, NODE_ARGLIST, NODE_PARAMLIST,
+    NODE_UPLOADLIST, NODE_FUNCEXPR, NODE_ARGLIST, NODE_PARAMLIST, NODE_INDEX,
     NODE_STMT, NODE_ASSIGN, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_USE, NODE_FUNCSTMT, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_SSOURCE, NODE_PRINT, NODE_FUNCDEF, NODE_RETURN
 };
 
@@ -256,6 +256,18 @@ class Matrix4: public Expr {
             c1 = NULL;
             c2 = NULL;
             c3 = NULL;
+        }
+};
+
+class Index: public Expr {
+    public:
+        Ident* ident;
+        Expr* index;
+
+        Index(Ident* ident, Expr* index) {
+            this->ident = ident;
+            this->index = index;
+            type = NODE_INDEX;
         }
 };
 
