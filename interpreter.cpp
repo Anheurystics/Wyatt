@@ -806,7 +806,8 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
         case NODE_FUNCSTMT:
             {
                 FuncStmt* func = (FuncStmt*)stmt;
-                return invoke(func->invoke);
+                invoke(func->invoke);
+                return NULL;
             }
         case NODE_ASSIGN:
             {
