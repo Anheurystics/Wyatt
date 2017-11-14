@@ -199,7 +199,7 @@ invoke: T_IDENTIFIER T_OPEN_PAREN arg_list T_CLOSE_PAREN { $$ = new Invoke($1, $
 stmt_block: T_IF T_OPEN_PAREN expr T_CLOSE_PAREN block { $$ = new If($3, $5); }
     | T_IF T_OPEN_PAREN expr T_CLOSE_PAREN stmt T_SEMICOLON { $$ = new If($3, new Stmts($5)); }
     | T_WHILE T_OPEN_PAREN expr T_CLOSE_PAREN block { $$ = new While($3, $5); }
-    | T_FOR T_IDENTIFIER T_IN expr T_COMMA expr T_COMMA expr block { $$ = new For($2, $4, $6, $8, $9); }
+    | T_FOR T_OPEN_PAREN T_IDENTIFIER T_IN expr T_COMMA expr T_COMMA expr T_CLOSE_PAREN block { $$ = new For($3, $5, $7, $9, $11); }
     ;
 
 stmts: { $$ = new Stmts(0); }

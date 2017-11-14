@@ -1161,19 +1161,26 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                 For* forstmt = (For*)stmt;
                 Ident* iterator = forstmt->iterator;
                 Expr *start = eval_expr(forstmt->start), *end = eval_expr(forstmt->end), *increment = eval_expr(forstmt->increment);
-                if(start->type == NODE_INT && end->type == NODE_INT && increment->type == NODE_INT) {
-                    int s = resolve_int(start), e = resolve_int(end), inc = resolve_int(increment);
+                if(start->type == NODE_INT || end->type == NODE_INT || increment->type == NODE_INT) {
+                    eval_stmt(new Assign(iterator, start));
+
                     time_t start = time(nullptr);
-                    for(int i = s; i < e; i += inc) {
+                    while(true) {
+                        Bool* terminate = (Bool*)eval_binary(new Binary(iterator, OP_EQUAL, end));
+                        if(terminate->value) {
+                            break;
+                        }
+
                         Expr* returnValue = execute_stmts(forstmt->block);
                         if(returnValue != NULL) {
                             return returnValue;
                         }
 
-                        time_t now = time(nullptr);
+                        eval_stmt(new Assign(iterator, new Binary(iterator, OP_PLUS, increment)));
 
+                        time_t now = time(nullptr);
                         int diff = difftime(now, start);
-                        if(diff > LOOP_TIMEOUT) { break; }
+                        if(diff > LOOP_TIMEOUT) { break;}
                     }
                 }
 
