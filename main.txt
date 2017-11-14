@@ -78,4 +78,3 @@ func loop() {
     basic.model = mat4_rotation_x(angle) * mat4_rotation_y(angle);
     draw a;
 }
-

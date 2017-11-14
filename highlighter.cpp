@@ -7,7 +7,7 @@ Highlighter::Highlighter(QTextDocument *parent): QSyntaxHighlighter(parent)
     keywordFormat.setForeground(Qt::darkBlue);
     keywordFormat.setFontWeight(QFont::Bold);
     QStringList keywordPatterns;
-    keywordPatterns << "\\buse\\b" << "\\ballocate\\b" << "\\bdraw\\b";
+    keywordPatterns << "\\buse\\b" << "\\ballocate\\b" << "\\bdraw\\b" << "\\btrue\\b" << "\\bfalse\\b" << "\\band\\b" << "\\bor\\b";
 
     foreach(const QString &pattern, keywordPatterns) {
         rule.pattern = QRegularExpression(pattern);

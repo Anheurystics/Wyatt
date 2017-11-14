@@ -66,7 +66,7 @@ void yyerror( std::map<std::string, ShaderPair*> *shaders, std::map<std::string,
 
 %type<inval> invoke;
 
-%type<eval> expr bool index
+%type<eval> expr index
 %type<v2val> vec2
 %type<v3val> vec3
 %type<v4val> vec4
@@ -130,13 +130,13 @@ function: T_FUNC T_IDENTIFIER T_OPEN_PAREN param_list T_CLOSE_PAREN block { $$ =
 
 expr: T_INT { $$ = $1; set_lines($$,@1,@1); }
     | T_FLOAT { $$ = $1; set_lines($$, @1, @1); }
+    | T_BOOL { $$ = $1; set_lines($$, @1, @1); }
+    | T_IDENTIFIER { $$ = $1; set_lines($$, @1, @1); }
     | vec2 { $$ = $1; set_lines($$, @1, @1); }
     | vec3 { $$ = $1; set_lines($$, @1, @1); }
     | vec4 { $$ = $1; set_lines($$, @1, @1); }
-    | bool { $$ = $1; set_lines($$, @1, @1); }
     | invoke { $$ = new FuncExpr($1); set_lines($$, @1, @1); }
     | uniform { $$ = $1; set_lines($$, @1, @1); }
-    | T_IDENTIFIER { $$ = $1; set_lines($$, @1, @1); }
     | index { $$ = $1; set_lines($$, @1, @1); }
     | expr T_PLUS expr { $$ = new Binary($1, OP_PLUS, $3); set_lines($$, @1, @3); }
     | expr T_MINUS expr { $$ = new Binary($1, OP_MINUS, $3); set_lines($$, @1, @3); }
@@ -149,7 +149,10 @@ expr: T_INT { $$ = $1; set_lines($$,@1,@1); }
     | expr T_NEQUAL expr { $$ = new Binary($1, OP_NEQUAL, $3); set_lines($$, @1, @3); }
     | expr T_LEQUAL expr { $$ = new Binary($1, OP_LEQUAL, $3); set_lines($$, @1, @3); }
     | expr T_GEQUAL expr { $$ = new Binary($1, OP_GEQUAL, $3); set_lines($$, @1, @3); }
+    | expr T_OR expr { $$ = new Binary($1, OP_OR, $3); set_lines($$, @1, @3); }
+    | expr T_AND expr { $$ = new Binary($1, OP_AND, $3); set_lines($$, @1, @3); }
     | T_MINUS expr { $$ = new Unary(OP_MINUS, $2); set_lines($$, @1, @2); } %prec UNARY
+    | T_NOT expr { $$ = new Unary(OP_NOT, $2); set_lines($$, @1, @2); } %prec UNARY
     | T_PIPE expr T_PIPE { $$ = new Unary(OP_ABS, $2); set_lines($$, @1, @3); }
     | T_OPEN_PAREN expr T_CLOSE_PAREN { $$ = $2; set_lines($$, @1, @3); }
     ;
@@ -205,12 +208,6 @@ block: T_OPEN_BRACE stmts T_CLOSE_BRACE { $$ = $2; }
 
 upload_list: expr { $$ = new UploadList($1); }
     | upload_list T_COMMA expr { $1->list.insert($1->list.end(), $3); }
-    ;
-
-bool: T_BOOL { $$ = $1; }
-    | bool T_AND bool { $$ = new Binary($1, OP_AND, $3); set_lines($$, @1, @3); }
-    | bool T_OR bool { $$ = new Binary($1, OP_OR, $3); set_lines($$, @1, @3); }
-    | T_NOT bool { $$ = new Unary(OP_NOT, $2); set_lines($$, @1, @2); } %prec UNARY
     ;
 
 vec2: T_OPEN_BRACKET expr T_COMMA expr T_CLOSE_BRACKET { $$ = new Vector2($2, $4); set_lines($$, @1, @5); }
