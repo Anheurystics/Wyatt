@@ -2,6 +2,7 @@
 
 %{
 #include <cstdlib>
+#include <string>
 #include "parser.h"
 
 #define YY_USER_ACTION \
@@ -24,7 +25,8 @@ void yyerror(const char *s);
 %%
 "vert"         { return T_VERTEX; }
 "frag"         { return T_FRAGMENT; }
-"`"(\\.|[^`])*"`" { yylval.idval = new Ident(strdup(yytext)); return T_SHADER; }
+"`"(\\.|[^`])*"`" { std::string str = strdup(yytext); str = str.substr(1, str.length() - 2); yylval.strval = new String(str); return T_SHADER; }
+"\""(\\.|[^\\""])*"\"" { std::string str = strdup(yytext); str = str.substr(1, str.length() - 2); yylval.strval = new String(str); return T_STRING; }
 "//".*         ;
 [ \t\n]        ;
 [0-9]+\.[0-9]+ { yylval.fval = new Float(float(atof(yytext))); return T_FLOAT; }

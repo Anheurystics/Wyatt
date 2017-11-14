@@ -41,6 +41,57 @@ void Interpreter::reset() {
     gl = NULL;
 }
 
+string tostring(Expr* expr) {
+    switch(expr->type) {
+        case NODE_INT:
+            return to_string(resolve_int(expr));
+        case NODE_FLOAT:
+            return to_string(resolve_float(expr));
+        case NODE_BOOL:
+            return ((Bool*)expr)->value? "true" : "false";
+        case NODE_STRING:
+            return ((String*)expr)->value;
+        case NODE_VECTOR2:
+            {
+                Vector2* vec2 = (Vector2*)expr;
+                return "[" + to_string(resolve_scalar(vec2->x)) + ", " + to_string(resolve_scalar(vec2->y)) + "]";
+            }
+        case NODE_VECTOR3:
+            {
+                Vector3* vec3 = (Vector3*)expr;
+                return "[" + to_string(resolve_scalar(vec3->x)) + ", " + to_string(resolve_scalar(vec3->y)) + ", " + to_string(resolve_scalar(vec3->z)) + "]";
+            }
+        case NODE_VECTOR4:
+            {
+                Vector4* vec4 = (Vector4*)expr;
+                return "[" + to_string(resolve_scalar(vec4->x)) + ", " + to_string(resolve_scalar(vec4->y)) + ", " + to_string(resolve_scalar(vec4->z)) + ", " + to_string(resolve_scalar(vec4->w)) + "]";
+            }
+        case NODE_MATRIX2:
+            {
+                Matrix2* mat2 = (Matrix2*)expr;
+                return "|" + to_string(resolve_scalar(mat2->v0->x)) + ", " + to_string(resolve_scalar(mat2->v0->y)) + "|" +
+                       "|" + to_string(resolve_scalar(mat2->v1->x)) + ", " + to_string(resolve_scalar(mat2->v1->y)) + "|";
+            }
+        case NODE_MATRIX3:
+            {
+                Matrix3* mat3 = (Matrix3*)expr;
+                return "|" + to_string(resolve_scalar(mat3->v0->x)) + ", " + to_string(resolve_scalar(mat3->v0->y)) + ", " + to_string(resolve_scalar(mat3->v0->z)) + "|" +
+                       "|" + to_string(resolve_scalar(mat3->v1->x)) + ", " + to_string(resolve_scalar(mat3->v1->y)) + ", " + to_string(resolve_scalar(mat3->v1->z)) + "|" +
+                       "|" + to_string(resolve_scalar(mat3->v2->x)) + ", " + to_string(resolve_scalar(mat3->v2->y)) + ", " + to_string(resolve_scalar(mat3->v2->z)) + "|";
+            }
+        case NODE_MATRIX4:
+            {
+                Matrix4* mat4 = (Matrix4*)expr;
+                return "|" + to_string(resolve_scalar(mat4->v0->x)) + ", " + to_string(resolve_scalar(mat4->v0->y)) + ", " + to_string(resolve_scalar(mat4->v0->z)) + ", " + to_string(resolve_scalar(mat4->v0->w)) + "|" +
+                       "|" + to_string(resolve_scalar(mat4->v1->x)) + ", " + to_string(resolve_scalar(mat4->v1->y)) + ", " + to_string(resolve_scalar(mat4->v1->z)) + ", " + to_string(resolve_scalar(mat4->v1->w)) + "|" +
+                       "|" + to_string(resolve_scalar(mat4->v2->x)) + ", " + to_string(resolve_scalar(mat4->v2->y)) + ", " + to_string(resolve_scalar(mat4->v2->z)) + ", " + to_string(resolve_scalar(mat4->v2->w)) + "|" +
+                       "|" + to_string(resolve_scalar(mat4->v3->x)) + ", " + to_string(resolve_scalar(mat4->v3->y)) + ", " + to_string(resolve_scalar(mat4->v3->z)) + ", " + to_string(resolve_scalar(mat4->v3->w)) + "|";
+            }
+        default:
+            return "";
+    }
+}
+
 Expr* Interpreter::eval_binary(Binary* bin) {
     Expr* lhs = eval_expr(bin->lhs);
     if(!lhs) return NULL;
@@ -120,6 +171,14 @@ Expr* Interpreter::eval_binary(Binary* bin) {
             case OP_GEQUAL: return new Bool(a >= b);
             default: break;
         }
+    }
+
+    if(ltype == NODE_STRING || rtype == NODE_STRING) {
+        bool left = (ltype == NODE_STRING);
+        String* str = (String*)(left? lhs : rhs);
+        Expr* other = eval_expr(left? rhs : lhs);
+
+        return new String(left? (str->value + tostring(other)) : (tostring(other) + str->value));
     }
 
     if(ltype == NODE_VECTOR2 && rtype == NODE_VECTOR2) {
@@ -597,6 +656,9 @@ Expr* Interpreter::eval_expr(Expr* node) {
             return node;
 
         case NODE_FLOAT:
+            return node;
+
+        case NODE_STRING:
             return node;
 
         case NODE_VECTOR2:
@@ -1124,61 +1186,8 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                 if(output == NULL)
                     return NULL;
 
-                switch(output->type) {
-                    case NODE_INT:
-                        logger->log(to_string(resolve_int(output)));
-                        break;
-                    case NODE_FLOAT:
-                        logger->log(to_string(resolve_float(output)));
-                        break;
-                    case NODE_BOOL:
-                        logger->log(((Bool*)output)->value? "true" : "false");
-                        break;
-                    case NODE_VECTOR2:
-                        {
-                            Vector2* vec2 = (Vector2*)output;
-                            logger->log("[" + to_string(resolve_scalar(vec2->x)) + ", " + to_string(resolve_scalar(vec2->y)) + "]");
-                            break;
-                        }
-                    case NODE_VECTOR3:
-                        {
-                            Vector3* vec3 = (Vector3*)output;
-                            logger->log("[" + to_string(resolve_scalar(vec3->x)) + ", " + to_string(resolve_scalar(vec3->y)) + ", " + to_string(resolve_scalar(vec3->z)) + "]");
-                            break;
-                        }
-                    case NODE_VECTOR4:
-                        {
-                            Vector4* vec4 = (Vector4*)output;
-                            logger->log("[" + to_string(resolve_scalar(vec4->x)) + ", " + to_string(resolve_scalar(vec4->y)) + ", " + to_string(resolve_scalar(vec4->z)) + ", " + to_string(resolve_scalar(vec4->w)) + "]");
-                            break;
-                        }
-                    case NODE_MATRIX2:
-                        {
-                            Matrix2* mat2 = (Matrix2*)output;
-                            logger->log("|" + to_string(resolve_scalar(mat2->v0->x)) + ", " + to_string(resolve_scalar(mat2->v0->y)) + "|");
-                            logger->log("|" + to_string(resolve_scalar(mat2->v1->x)) + ", " + to_string(resolve_scalar(mat2->v1->y)) + "|");
-                            break;
-                        }
-                    case NODE_MATRIX3:
-                        {
-                            Matrix3* mat3 = (Matrix3*)output;
-                            logger->log("|" + to_string(resolve_scalar(mat3->v0->x)) + ", " + to_string(resolve_scalar(mat3->v0->y)) + ", " + to_string(resolve_scalar(mat3->v0->z)) + "|");
-                            logger->log("|" + to_string(resolve_scalar(mat3->v1->x)) + ", " + to_string(resolve_scalar(mat3->v1->y)) + ", " + to_string(resolve_scalar(mat3->v1->z)) + "|");
-                            logger->log("|" + to_string(resolve_scalar(mat3->v2->x)) + ", " + to_string(resolve_scalar(mat3->v2->y)) + ", " + to_string(resolve_scalar(mat3->v2->z)) + "|");
-                            break;
-                        }
-                    case NODE_MATRIX4:
-                        {
-                            Matrix4* mat4 = (Matrix4*)output;
-                            logger->log("|" + to_string(resolve_scalar(mat4->v0->x)) + ", " + to_string(resolve_scalar(mat4->v0->y)) + ", " + to_string(resolve_scalar(mat4->v0->z)) + ", " + to_string(resolve_scalar(mat4->v0->w)) + "|");
-                            logger->log("|" + to_string(resolve_scalar(mat4->v1->x)) + ", " + to_string(resolve_scalar(mat4->v1->y)) + ", " + to_string(resolve_scalar(mat4->v1->z)) + ", " + to_string(resolve_scalar(mat4->v1->w)) + "|");
-                            logger->log("|" + to_string(resolve_scalar(mat4->v2->x)) + ", " + to_string(resolve_scalar(mat4->v2->y)) + ", " + to_string(resolve_scalar(mat4->v2->z)) + ", " + to_string(resolve_scalar(mat4->v2->w)) + "|");
-                            logger->log("|" + to_string(resolve_scalar(mat4->v3->x)) + ", " + to_string(resolve_scalar(mat4->v3->y)) + ", " + to_string(resolve_scalar(mat4->v3->z)) + ", " + to_string(resolve_scalar(mat4->v3->w)) + "|");
-                            break;
-                        }
 
-                    default: break;
-                }
+                logger->log(tostring(output));
                 return NULL;
             }
 

@@ -32,6 +32,7 @@ void yyerror( std::map<std::string, ShaderPair*> *shaders, std::map<std::string,
     Int* ival;
     Float* fval;
     Ident* idval;
+    String* strval;
     Vector2* v2val;
     Vector3* v3val;
     Vector4* v4val;
@@ -49,7 +50,8 @@ void yyerror( std::map<std::string, ShaderPair*> *shaders, std::map<std::string,
 %token<bval> T_BOOL
 %token<ival> T_INT
 %token<fval> T_FLOAT
-%token<idval> T_IDENTIFIER T_SHADER
+%token<strval> T_STRING T_SHADER
+%token<idval> T_IDENTIFIER
 
 %token T_SEMICOLON T_OPEN_BRACE T_CLOSE_BRACE
 %token T_PIPE
@@ -119,10 +121,10 @@ program:
     }
     ;
 
-vert_shader: T_VERTEX T_IDENTIFIER T_SHADER T_SEMICOLON { $$ = new ShaderSource($2->name, $3->name, "vert"); }
+vert_shader: T_VERTEX T_IDENTIFIER T_SHADER T_SEMICOLON { $$ = new ShaderSource($2->name, $3->value, "vert"); }
     ;
 
-frag_shader: T_FRAGMENT T_IDENTIFIER T_SHADER T_SEMICOLON { $$ = new ShaderSource($2->name, $3->name, "frag"); }
+frag_shader: T_FRAGMENT T_IDENTIFIER T_SHADER T_SEMICOLON { $$ = new ShaderSource($2->name, $3->value, "frag"); }
     ;
 
 function: T_FUNC T_IDENTIFIER T_OPEN_PAREN param_list T_CLOSE_PAREN block { $$ = new FuncDef($2, $4, $6); set_lines($$, @1, @6); }
@@ -132,6 +134,7 @@ expr: T_INT { $$ = $1; set_lines($$,@1,@1); }
     | T_FLOAT { $$ = $1; set_lines($$, @1, @1); }
     | T_BOOL { $$ = $1; set_lines($$, @1, @1); }
     | T_IDENTIFIER { $$ = $1; set_lines($$, @1, @1); }
+    | T_STRING { $$ = $1; set_lines($$, @1, @1); }
     | vec2 { $$ = $1; set_lines($$, @1, @1); }
     | vec3 { $$ = $1; set_lines($$, @1, @1); }
     | vec4 { $$ = $1; set_lines($$, @1, @1); }

@@ -11,7 +11,7 @@ using namespace std;
 
 enum NodeType {
     NODE_INVOKE,
-    NODE_EXPR, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_VECTOR2, NODE_VECTOR3, NODE_VECTOR4, NODE_MATRIX2, NODE_MATRIX3, NODE_MATRIX4, NODE_IDENT, NODE_UNIFORM,
+    NODE_EXPR, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_STRING, NODE_VECTOR2, NODE_VECTOR3, NODE_VECTOR4, NODE_MATRIX2, NODE_MATRIX3, NODE_MATRIX4, NODE_IDENT, NODE_UNIFORM,
     NODE_UPLOADLIST, NODE_FUNCEXPR, NODE_ARGLIST, NODE_PARAMLIST, NODE_INDEX,
     NODE_STMT, NODE_ASSIGN, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_USE, NODE_FUNCSTMT, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_FOR, NODE_SSOURCE, NODE_PRINT, NODE_FUNCDEF, NODE_RETURN
 };
@@ -130,6 +130,16 @@ class Float: public Expr {
         Float(float value) {
             this->value = value;
             type = NODE_FLOAT; 
+        }
+};
+
+class String: public Expr {
+    public:
+        string value;
+
+        String(string value) {
+            this->value = value;
+            type = NODE_STRING;
         }
 };
 
@@ -574,7 +584,7 @@ class ShaderSource: public Node {
 
         ShaderSource(string name, string code, string shader_type) {
             this->name = name;
-            this->code = code.substr(1, code.length() - 2);
+            this->code = code;
             this->shader_type = shader_type;
             type = NODE_SSOURCE;
 
