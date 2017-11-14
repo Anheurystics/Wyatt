@@ -37,6 +37,8 @@ void yyerror(const char *s);
 "use"          { return T_USE; }
 "if"           { return T_IF; }
 "while"        { return T_WHILE; }
+"for"          { return T_FOR; }
+"in"           { return T_IN; }
 "and"          { return T_AND; }
 "or"           { return T_OR; }
 "true"         { yylval.bval = new Bool(true); return T_BOOL; }

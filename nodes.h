@@ -13,7 +13,7 @@ enum NodeType {
     NODE_INVOKE,
     NODE_EXPR, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_VECTOR2, NODE_VECTOR3, NODE_VECTOR4, NODE_MATRIX2, NODE_MATRIX3, NODE_MATRIX4, NODE_IDENT, NODE_UNIFORM,
     NODE_UPLOADLIST, NODE_FUNCEXPR, NODE_ARGLIST, NODE_PARAMLIST, NODE_INDEX,
-    NODE_STMT, NODE_ASSIGN, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_USE, NODE_FUNCSTMT, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_SSOURCE, NODE_PRINT, NODE_FUNCDEF, NODE_RETURN
+    NODE_STMT, NODE_ASSIGN, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_USE, NODE_FUNCSTMT, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_FOR, NODE_SSOURCE, NODE_PRINT, NODE_FUNCDEF, NODE_RETURN
 };
 
 inline string type_to_name(NodeType type) {
@@ -393,6 +393,30 @@ class While: public Stmt {
             delete block;
         }
 }; 
+
+class For: public Stmt {
+    public:
+        Ident* iterator;
+        Expr *start, *end, *increment;
+        Stmts* block;
+
+        For(Ident* iterator, Expr* start, Expr* end, Expr* increment, Stmts* block) {
+            this->iterator = iterator;
+            this->start = start;
+            this->end = end;
+            this->increment = increment;
+            this->block = block;
+            type = NODE_FOR;
+        }
+
+        ~For() {
+            delete iterator;
+            delete start;
+            delete end;
+            delete increment;
+            delete block;
+        }
+};
 
 class Assign: public Stmt {
     public:

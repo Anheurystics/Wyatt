@@ -1093,6 +1093,29 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
 
                 return NULL;
             }
+        case NODE_FOR:
+            {
+                For* forstmt = (For*)stmt;
+                Ident* iterator = forstmt->iterator;
+                Expr *start = eval_expr(forstmt->start), *end = eval_expr(forstmt->end), *increment = eval_expr(forstmt->increment);
+                if(start->type == NODE_INT && end->type == NODE_INT && increment->type == NODE_INT) {
+                    int s = resolve_int(start), e = resolve_int(end), inc = resolve_int(increment);
+                    time_t start = time(nullptr);
+                    for(int i = s; i < e; i += inc) {
+                        Expr* returnValue = execute_stmts(forstmt->block);
+                        if(returnValue != NULL) {
+                            return returnValue;
+                        }
+
+                        time_t now = time(nullptr);
+
+                        int diff = difftime(now, start);
+                        if(diff > LOOP_TIMEOUT) { break; }
+                    }
+                }
+
+                return NULL;
+            }
         case NODE_PRINT:
             {
                 Print* print = (Print*)stmt;

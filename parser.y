@@ -54,7 +54,7 @@ void yyerror( std::map<std::string, ShaderPair*> *shaders, std::map<std::string,
 %token T_SEMICOLON T_OPEN_BRACE T_CLOSE_BRACE
 %token T_PIPE
 %token T_OPEN_PAREN T_CLOSE_PAREN T_LESS_THAN T_GREATER_THAN T_OPEN_BRACKET T_CLOSE_BRACKET T_COMMA T_PERIOD T_EQUALS T_COMP_PLUS T_COMP_MINUS T_COMP_MULT T_COMP_DIV T_COMP_MOD
-%token T_FUNC T_AND T_OR T_NOT T_IF T_WHILE T_ALLOCATE T_UPLOAD T_DRAW T_VERTEX T_FRAGMENT T_PRINT T_USE T_RETURN
+%token T_FUNC T_AND T_OR T_NOT T_IF T_WHILE T_FOR T_IN T_ALLOCATE T_UPLOAD T_DRAW T_VERTEX T_FRAGMENT T_PRINT T_USE T_RETURN
 
 %left T_PLUS T_MINUS
 %left T_MULT T_DIV T_MOD
@@ -193,6 +193,7 @@ invoke: T_IDENTIFIER T_OPEN_PAREN arg_list T_CLOSE_PAREN { $$ = new Invoke($1, $
 stmt_block: T_IF T_OPEN_PAREN expr T_CLOSE_PAREN block { $$ = new If($3, $5); }
     | T_IF T_OPEN_PAREN expr T_CLOSE_PAREN stmt T_SEMICOLON { $$ = new If($3, new Stmts($5)); }
     | T_WHILE T_OPEN_PAREN expr T_CLOSE_PAREN block { $$ = new While($3, $5); }
+    | T_FOR T_IDENTIFIER T_IN expr T_COMMA expr T_COMMA expr block { $$ = new For($2, $4, $6, $8, $9); }
     ;
 
 stmts: { $$ = new Stmts(0); }
