@@ -22,54 +22,54 @@ void yyerror(const char *s);
 %option nounput
 
 %%
-"vert"         { return VERTEX; }
-"frag"         { return FRAGMENT; }
-"`"(\\.|[^`])*"`" { yylval.idval = new Ident(strdup(yytext)); return SHADER; }
+"vert"         { return T_VERTEX; }
+"frag"         { return T_FRAGMENT; }
+"`"(\\.|[^`])*"`" { yylval.idval = new Ident(strdup(yytext)); return T_SHADER; }
 "//".*         ;
 [ \t\n]        ;
-[0-9]+\.[0-9]+ { yylval.fval = new Float(float(atof(yytext))); return FLOAT; }
-[0-9]+         { yylval.ival = new Int(atoi(yytext)); return INT; }
-"print"        { return PRINT; }
-"allocate"     { return ALLOCATE; }
-"func"         { return FUNC; }
-"return"       { return RETURN; }
-"draw"         { return DRAW; }
-"use"          { return USE; }
-"if"           { return IF; }
-"while"        { return WHILE; }
-"and"          { return AND; }
-"or"           { return OR; }
-"true"         { yylval.bval = new Bool(true); return BOOL; }
-"false"        { yylval.bval = new Bool(false); return BOOL; }
-[a-zA-Z]+[a-zA-Z0-9_]* { yylval.idval = new Ident(strdup(yytext)); return IDENTIFIER; }
-"("            { return OPEN_PAREN; }
-")"            { return CLOSE_PAREN; }
-"<-"           { return UPLOAD; }
-"<"            { return LESS_THAN; }
-">"            { return GREATER_THAN; }
-">="           { return GEQUAL; }
-"<="           { return LEQUAL; }
-"=="           { return EQUAL; }
-"["            { return OPEN_BRACKET; }
-"]"            { return CLOSE_BRACKET; }
-"="            { return EQUALS; }
-"."            { return PERIOD; }
-","            { return COMMA; }
-"+"            { return PLUS; }
-"+="           { return COMP_PLUS; }
-"-"		       { return MINUS; }
-"-="           { return COMP_MINUS; }
-"*"            { return MULT; }
-"*="           { return COMP_MULT; }
-"!"            { return NOT; }
-"/"            { return DIV; }
-"/="           { return COMP_DIV; }
-"|"			   { return PIPE; }
-";"            { return SEMICOLON; }
-"{"            { return OPEN_BRACE; }
-"}"            { return CLOSE_BRACE; }
-"%"            { return MOD; }
-"%="           { return COMP_MOD; }
+[0-9]+\.[0-9]+ { yylval.fval = new Float(float(atof(yytext))); return T_FLOAT; }
+[0-9]+         { yylval.ival = new Int(atoi(yytext)); return T_INT; }
+"print"        { return T_PRINT; }
+"allocate"     { return T_ALLOCATE; }
+"func"         { return T_FUNC; }
+"return"       { return T_RETURN; }
+"draw"         { return T_DRAW; }
+"use"          { return T_USE; }
+"if"           { return T_IF; }
+"while"        { return T_WHILE; }
+"and"          { return T_AND; }
+"or"           { return T_OR; }
+"true"         { yylval.bval = new Bool(true); return T_BOOL; }
+"false"        { yylval.bval = new Bool(false); return T_BOOL; }
+[a-zA-Z]+[a-zA-Z0-9_]* { yylval.idval = new Ident(strdup(yytext)); return T_IDENTIFIER; }
+"("            { return T_OPEN_PAREN; }
+")"            { return T_CLOSE_PAREN; }
+"<-"           { return T_UPLOAD; }
+"<"            { return T_LESS_THAN; }
+">"            { return T_GREATER_THAN; }
+">="           { return T_GEQUAL; }
+"<="           { return T_LEQUAL; }
+"=="           { return T_EQUAL; }
+"["            { return T_OPEN_BRACKET; }
+"]"            { return T_CLOSE_BRACKET; }
+"="            { return T_EQUALS; }
+"."            { return T_PERIOD; }
+","            { return T_COMMA; }
+"+"            { return T_PLUS; }
+"+="           { return T_COMP_PLUS; }
+"-"		       { return T_MINUS; }
+"-="           { return T_COMP_MINUS; }
+"*"            { return T_MULT; }
+"*="           { return T_COMP_MULT; }
+"!"            { return T_NOT; }
+"/"            { return T_DIV; }
+"/="           { return T_COMP_DIV; }
+"|"			   { return T_PIPE; }
+";"            { return T_SEMICOLON; }
+"{"            { return T_OPEN_BRACE; }
+"}"            { return T_CLOSE_BRACE; }
+"%"            { return T_MOD; }
+"%="           { return T_COMP_MOD; }
 .			   { printf("Illegal token!\n"); }
 %%
 

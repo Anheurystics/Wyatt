@@ -46,23 +46,23 @@ void yyerror( std::map<std::string, ShaderPair*> *shaders, std::map<std::string,
     FuncDef* fdval;
 }
 
-%token<bval> BOOL
-%token<ival> INT 
-%token<fval> FLOAT
-%token<idval> IDENTIFIER SHADER
+%token<bval> T_BOOL
+%token<ival> T_INT
+%token<fval> T_FLOAT
+%token<idval> T_IDENTIFIER T_SHADER
 
-%token SEMICOLON OPEN_BRACE CLOSE_BRACE
-%token PIPE
-%token OPEN_PAREN CLOSE_PAREN LESS_THAN GREATER_THAN OPEN_BRACKET CLOSE_BRACKET COMMA PERIOD EQUALS COMP_PLUS COMP_MINUS COMP_MULT COMP_DIV COMP_MOD
-%token FUNC AND OR NOT IF WHILE ALLOCATE UPLOAD DRAW VERTEX FRAGMENT PRINT USE RETURN
+%token T_SEMICOLON T_OPEN_BRACE T_CLOSE_BRACE
+%token T_PIPE
+%token T_OPEN_PAREN T_CLOSE_PAREN T_LESS_THAN T_GREATER_THAN T_OPEN_BRACKET T_CLOSE_BRACKET T_COMMA T_PERIOD T_EQUALS T_COMP_PLUS T_COMP_MINUS T_COMP_MULT T_COMP_DIV T_COMP_MOD
+%token T_FUNC T_AND T_OR T_NOT T_IF T_WHILE T_ALLOCATE T_UPLOAD T_DRAW T_VERTEX T_FRAGMENT T_PRINT T_USE T_RETURN
 
-%left PLUS MINUS
-%left MULT DIV MOD
-%left AND OR
+%left T_PLUS T_MINUS
+%left T_MULT T_DIV T_MOD
+%left T_AND T_OR
 %right UNARY
 
-%nonassoc EQUAL NEQUAL GEQUAL LEQUAL
-%nonassoc LESS_THAN GREATER_THAN
+%nonassoc T_EQUAL T_NEQUAL T_GEQUAL T_LEQUAL
+%nonassoc T_LESS_THAN T_GREATER_THAN
 
 %type<inval> invoke;
 
@@ -119,106 +119,106 @@ program:
     }
     ;
 
-vert_shader: VERTEX IDENTIFIER SHADER SEMICOLON { $$ = new ShaderSource($2->name, $3->name, "vert"); }
+vert_shader: T_VERTEX T_IDENTIFIER T_SHADER T_SEMICOLON { $$ = new ShaderSource($2->name, $3->name, "vert"); }
     ;
 
-frag_shader: FRAGMENT IDENTIFIER SHADER SEMICOLON { $$ = new ShaderSource($2->name, $3->name, "frag"); }
+frag_shader: T_FRAGMENT T_IDENTIFIER T_SHADER T_SEMICOLON { $$ = new ShaderSource($2->name, $3->name, "frag"); }
     ;
 
-function: FUNC IDENTIFIER OPEN_PAREN param_list CLOSE_PAREN block { $$ = new FuncDef($2, $4, $6); set_lines($$, @1, @6); }
+function: T_FUNC T_IDENTIFIER T_OPEN_PAREN param_list T_CLOSE_PAREN block { $$ = new FuncDef($2, $4, $6); set_lines($$, @1, @6); }
     ;
 
-expr: INT { $$ = $1; set_lines($$,@1,@1); }
-    | FLOAT { $$ = $1; set_lines($$, @1, @1); }
+expr: T_INT { $$ = $1; set_lines($$,@1,@1); }
+    | T_FLOAT { $$ = $1; set_lines($$, @1, @1); }
     | vec2 { $$ = $1; set_lines($$, @1, @1); }
     | vec3 { $$ = $1; set_lines($$, @1, @1); }
     | vec4 { $$ = $1; set_lines($$, @1, @1); }
     | bool { $$ = $1; set_lines($$, @1, @1); }
     | invoke { $$ = new FuncExpr($1); set_lines($$, @1, @1); }
     | uniform { $$ = $1; set_lines($$, @1, @1); }
-    | IDENTIFIER { $$ = $1; set_lines($$, @1, @1); }
+    | T_IDENTIFIER { $$ = $1; set_lines($$, @1, @1); }
     | index { $$ = $1; set_lines($$, @1, @1); }
-    | expr PLUS expr { $$ = new Binary($1, OP_PLUS, $3); set_lines($$, @1, @3); }
-    | expr MINUS expr { $$ = new Binary($1, OP_MINUS, $3); set_lines($$, @1, @3); }
-    | expr MULT expr { $$ = new Binary($1, OP_MULT, $3); set_lines($$, @1, @3); }
-    | expr DIV expr { $$ = new Binary($1, OP_DIV, $3); set_lines($$, @1, @3); }
-    | expr MOD expr { $$ = new Binary($1, OP_MOD, $3); set_lines($$, @1, @3); }
-    | expr LESS_THAN expr { $$ = new Binary($1, OP_LESSTHAN, $3); set_lines($$, @1, @3);}
-    | expr GREATER_THAN expr { $$ = new Binary($1, OP_GREATERTHAN, $3); set_lines($$, @1, @3); }
-    | expr EQUAL expr { $$ = new Binary($1, OP_EQUAL, $3); set_lines($$, @1, @3); }
-    | expr NEQUAL expr { $$ = new Binary($1, OP_NEQUAL, $3); set_lines($$, @1, @3); }
-    | expr LEQUAL expr { $$ = new Binary($1, OP_LEQUAL, $3); set_lines($$, @1, @3); }
-    | expr GEQUAL expr { $$ = new Binary($1, OP_GEQUAL, $3); set_lines($$, @1, @3); }
-    | MINUS expr { $$ = new Unary(OP_MINUS, $2); set_lines($$, @1, @2); } %prec UNARY
-    | PIPE expr PIPE { $$ = new Unary(OP_ABS, $2); set_lines($$, @1, @3); }
-    | OPEN_PAREN expr CLOSE_PAREN { $$ = $2; set_lines($$, @1, @3); }
+    | expr T_PLUS expr { $$ = new Binary($1, OP_PLUS, $3); set_lines($$, @1, @3); }
+    | expr T_MINUS expr { $$ = new Binary($1, OP_MINUS, $3); set_lines($$, @1, @3); }
+    | expr T_MULT expr { $$ = new Binary($1, OP_MULT, $3); set_lines($$, @1, @3); }
+    | expr T_DIV expr { $$ = new Binary($1, OP_DIV, $3); set_lines($$, @1, @3); }
+    | expr T_MOD expr { $$ = new Binary($1, OP_MOD, $3); set_lines($$, @1, @3); }
+    | expr T_LESS_THAN expr { $$ = new Binary($1, OP_LESSTHAN, $3); set_lines($$, @1, @3);}
+    | expr T_GREATER_THAN expr { $$ = new Binary($1, OP_GREATERTHAN, $3); set_lines($$, @1, @3); }
+    | expr T_EQUAL expr { $$ = new Binary($1, OP_EQUAL, $3); set_lines($$, @1, @3); }
+    | expr T_NEQUAL expr { $$ = new Binary($1, OP_NEQUAL, $3); set_lines($$, @1, @3); }
+    | expr T_LEQUAL expr { $$ = new Binary($1, OP_LEQUAL, $3); set_lines($$, @1, @3); }
+    | expr T_GEQUAL expr { $$ = new Binary($1, OP_GEQUAL, $3); set_lines($$, @1, @3); }
+    | T_MINUS expr { $$ = new Unary(OP_MINUS, $2); set_lines($$, @1, @2); } %prec UNARY
+    | T_PIPE expr T_PIPE { $$ = new Unary(OP_ABS, $2); set_lines($$, @1, @3); }
+    | T_OPEN_PAREN expr T_CLOSE_PAREN { $$ = $2; set_lines($$, @1, @3); }
     ;
 
-index: IDENTIFIER OPEN_BRACKET expr CLOSE_BRACKET { $$ = new Index($1, $3); set_lines($$, @1, @4); }
-    | index OPEN_BRACKET expr CLOSE_BRACKET { $$ = new Index($1, $3); set_lines($$, @1, @4); }
+index: T_IDENTIFIER T_OPEN_BRACKET expr T_CLOSE_BRACKET { $$ = new Index($1, $3); set_lines($$, @1, @4); }
+    | index T_OPEN_BRACKET expr T_CLOSE_BRACKET { $$ = new Index($1, $3); set_lines($$, @1, @4); }
     ;
 
-uniform: IDENTIFIER PERIOD IDENTIFIER { $$ = new Uniform($1, $3); }
+uniform: T_IDENTIFIER T_PERIOD T_IDENTIFIER { $$ = new Uniform($1, $3); }
     ;
 
-stmt: IDENTIFIER EQUALS expr { $$ = new Assign($1, $3); set_lines($$, @1, @3); }
-    | uniform EQUALS expr { $$ = new Assign($1, $3); set_lines($$, @1, @3); }
-    | ALLOCATE IDENTIFIER { $$ = new Alloc($2); set_lines($$, @1, @2); }
-    | IDENTIFIER PERIOD IDENTIFIER UPLOAD upload_list { $$ = new Upload($1, $3, $5); set_lines($$, @1, @5); }
-    | DRAW IDENTIFIER { $$ = new Draw($2); set_lines($$, @1, @2); }
-    | USE IDENTIFIER { $$ = new Use($2); set_lines($$, @1, @2); }
-    | PRINT expr { $$ = new Print($2); set_lines($$, @1, @2); }
-    | RETURN expr { $$ = new Return($2); set_lines($$, @1, @2); }
+stmt: T_IDENTIFIER T_EQUALS expr { $$ = new Assign($1, $3); set_lines($$, @1, @3); }
+    | uniform T_EQUALS expr { $$ = new Assign($1, $3); set_lines($$, @1, @3); }
+    | T_ALLOCATE T_IDENTIFIER { $$ = new Alloc($2); set_lines($$, @1, @2); }
+    | T_IDENTIFIER T_PERIOD T_IDENTIFIER T_UPLOAD upload_list { $$ = new Upload($1, $3, $5); set_lines($$, @1, @5); }
+    | T_DRAW T_IDENTIFIER { $$ = new Draw($2); set_lines($$, @1, @2); }
+    | T_USE T_IDENTIFIER { $$ = new Use($2); set_lines($$, @1, @2); }
+    | T_PRINT expr { $$ = new Print($2); set_lines($$, @1, @2); }
+    | T_RETURN expr { $$ = new Return($2); set_lines($$, @1, @2); }
     | invoke { $$ = new FuncStmt($1); set_lines($$, @1, @1); }
-    | IDENTIFIER COMP_PLUS expr { $$ = new Assign($1, new Binary($1, OP_PLUS, $3)); set_lines($$, @1, @3); }
-    | IDENTIFIER COMP_MINUS expr { $$ = new Assign($1, new Binary($1, OP_MINUS, $3)); set_lines($$, @1, @3); }
-    | IDENTIFIER COMP_MULT expr { $$ = new Assign($1, new Binary($1, OP_MULT, $3)); set_lines($$, @1, @3);}
-    | IDENTIFIER COMP_DIV expr { $$ = new Assign($1, new Binary($1, OP_DIV, $3)); set_lines($$, @1, @3); }
-    | IDENTIFIER COMP_MOD expr { $$ = new Assign($1, new Binary($1, OP_MOD, $3)); set_lines($$, @1, @3);}
+    | T_IDENTIFIER T_COMP_PLUS expr { $$ = new Assign($1, new Binary($1, OP_PLUS, $3)); set_lines($$, @1, @3); }
+    | T_IDENTIFIER T_COMP_MINUS expr { $$ = new Assign($1, new Binary($1, OP_MINUS, $3)); set_lines($$, @1, @3); }
+    | T_IDENTIFIER T_COMP_MULT expr { $$ = new Assign($1, new Binary($1, OP_MULT, $3)); set_lines($$, @1, @3);}
+    | T_IDENTIFIER T_COMP_DIV expr { $$ = new Assign($1, new Binary($1, OP_DIV, $3)); set_lines($$, @1, @3); }
+    | T_IDENTIFIER T_COMP_MOD expr { $$ = new Assign($1, new Binary($1, OP_MOD, $3)); set_lines($$, @1, @3);}
     ;
 
 arg_list: { $$ = new ArgList(0); }
     | expr { $$ = new ArgList($1); }
-    | arg_list COMMA expr { $1->list.push_back($3); }
+    | arg_list T_COMMA expr { $1->list.push_back($3); }
     ;
 
 param_list: { $$ = new ParamList(0); }
-    | IDENTIFIER { $$ = new ParamList($1); }
-    | param_list COMMA IDENTIFIER { $1->list.push_back($3); }
+    | T_IDENTIFIER { $$ = new ParamList($1); }
+    | param_list T_COMMA T_IDENTIFIER { $1->list.push_back($3); }
     ;
 
-invoke: IDENTIFIER OPEN_PAREN arg_list CLOSE_PAREN { $$ = new Invoke($1, $3); set_lines($$, @1, @1); }
+invoke: T_IDENTIFIER T_OPEN_PAREN arg_list T_CLOSE_PAREN { $$ = new Invoke($1, $3); set_lines($$, @1, @1); }
     ;
 
-stmt_block: IF OPEN_PAREN expr CLOSE_PAREN block { $$ = new If($3, $5); }
-    | IF OPEN_PAREN expr CLOSE_PAREN stmt SEMICOLON { $$ = new If($3, new Stmts($5)); }
-    | WHILE OPEN_PAREN expr CLOSE_PAREN block { $$ = new While($3, $5); }
+stmt_block: T_IF T_OPEN_PAREN expr T_CLOSE_PAREN block { $$ = new If($3, $5); }
+    | T_IF T_OPEN_PAREN expr T_CLOSE_PAREN stmt T_SEMICOLON { $$ = new If($3, new Stmts($5)); }
+    | T_WHILE T_OPEN_PAREN expr T_CLOSE_PAREN block { $$ = new While($3, $5); }
     ;
 
 stmts: { $$ = new Stmts(0); }
-    | stmts stmt SEMICOLON { $1->list.insert($1->list.end(), $2); }
+    | stmts stmt T_SEMICOLON { $1->list.insert($1->list.end(), $2); }
     | stmts stmt_block { $1->list.insert($1->list.end(), $2); }
     ;
 
-block: OPEN_BRACE stmts CLOSE_BRACE { $$ = $2; }
+block: T_OPEN_BRACE stmts T_CLOSE_BRACE { $$ = $2; }
 
 upload_list: expr { $$ = new UploadList($1); }
-    | upload_list COMMA expr { $1->list.insert($1->list.end(), $3); }
+    | upload_list T_COMMA expr { $1->list.insert($1->list.end(), $3); }
     ;
 
-bool: BOOL { $$ = $1; }
-    | bool AND bool { $$ = new Binary($1, OP_AND, $3); set_lines($$, @1, @3); }
-    | bool OR bool { $$ = new Binary($1, OP_OR, $3); set_lines($$, @1, @3); }
-    | NOT bool { $$ = new Unary(OP_NOT, $2); set_lines($$, @1, @2); } %prec UNARY
+bool: T_BOOL { $$ = $1; }
+    | bool T_AND bool { $$ = new Binary($1, OP_AND, $3); set_lines($$, @1, @3); }
+    | bool T_OR bool { $$ = new Binary($1, OP_OR, $3); set_lines($$, @1, @3); }
+    | T_NOT bool { $$ = new Unary(OP_NOT, $2); set_lines($$, @1, @2); } %prec UNARY
     ;
 
-vec2: OPEN_BRACKET expr COMMA expr CLOSE_BRACKET { $$ = new Vector2($2, $4); set_lines($$, @1, @5); }
+vec2: T_OPEN_BRACKET expr T_COMMA expr T_CLOSE_BRACKET { $$ = new Vector2($2, $4); set_lines($$, @1, @5); }
     ;
 
-vec3: OPEN_BRACKET expr COMMA expr COMMA expr CLOSE_BRACKET { $$ = new Vector3($2, $4, $6); set_lines($$, @1, @7); }
+vec3: T_OPEN_BRACKET expr T_COMMA expr T_COMMA expr T_CLOSE_BRACKET { $$ = new Vector3($2, $4, $6); set_lines($$, @1, @7); }
     ;
 
-vec4: OPEN_BRACKET expr COMMA expr COMMA expr COMMA expr CLOSE_BRACKET { $$ = new Vector4($2, $4, $6, $8); set_lines($$, @1, @9); }
+vec4: T_OPEN_BRACKET expr T_COMMA expr T_COMMA expr T_COMMA expr T_CLOSE_BRACKET { $$ = new Vector4($2, $4, $6, $8); set_lines($$, @1, @9); }
     ;
 
 %%
