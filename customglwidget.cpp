@@ -32,6 +32,7 @@ void CustomGLWidget::initializeGL()
 void CustomGLWidget::paintGL() {
     glClear(GL_COLOR_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
 
     if(codeChanged) {
         codeChanged = false;

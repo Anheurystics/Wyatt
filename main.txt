@@ -42,22 +42,22 @@ func init() {
     v6 = [-1, -1, -1];
     v7 = [ 1, -1, -1];
 
-    a.pos <- v0, v1, v3, v1, v3, v2;
+    a.pos <- v1, v0, v3, v1, v3, v2;
     a.col <- white, white, white, white, white, white;
 
-    a.pos <- v4, v5, v7, v5, v7, v6;
+    a.pos <- v5, v4, v7, v5, v7, v6;
     a.col <- white, white, white, white, white, white;
 
-    a.pos <- v1, v4, v2, v4, v2, v7;
+    a.pos <- v4, v1, v2, v4, v2, v7;
     a.col <- lgray, lgray, lgray, lgray, lgray, lgray;
 
-    a.pos <- v5, v0, v6, v0, v6, v3;
+    a.pos <- v0, v5, v6, v0, v6, v3;
     a.col <- lgray, lgray, lgray, lgray, lgray, lgray;
 
-    a.pos <- v5, v4, v0, v4, v0, v1;
+    a.pos <- v4, v5, v0, v4, v0, v1;
     a.col <- dgray, dgray, dgray, dgray, dgray, dgray;
 
-    a.pos <- v3, v2, v6, v2, v6, v7;
+    a.pos <- v2, v3, v6, v2, v6, v7;
     a.col <- dgray, dgray, dgray, dgray, dgray, dgray;
 
     angle = 0;
