@@ -25,15 +25,24 @@ Interpreter::Interpreter(LogWindow* logger) {
     for(map<string, FuncDef*>::iterator it = functions.begin(); it != functions.end(); ++it) {
         builtins[it->first] = it->second;
     }
+    functions.clear();
 }
 
+#define clear_map(type, name) \
+    for(map<string, type*>::iterator it = name.begin(); it != name.end(); ++it) { \
+        delete it->second; \
+    } \
+    name.clear(); \
+
 void Interpreter::reset() {
-    buffers.clear();
-    programs.clear();
-    shaders.clear();
-    functions.clear();
+    clear_map(Buffer, buffers);
+    clear_map(Program, programs);
+    clear_map(ShaderPair, shaders);
+    clear_map(FuncDef, functions);
+
     globalScope->clear();
     while(!functionScopeStack.empty()) functionScopeStack.pop();
+
     current_program_name = "";
     current_program = NULL;
     init = NULL;
@@ -882,6 +891,7 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                         if(!functionScopeStack.empty()) {
                             scope = functionScopeStack.top();
                         }
+
                         scope->declare(assign->ident->name, rhs);
                     } else if(ident->type == NODE_UNIFORM) {
                         Uniform* uniform = (Uniform*)ident;

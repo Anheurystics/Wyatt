@@ -279,6 +279,11 @@ class Index: public Expr {
             this->index = index;
             type = NODE_INDEX;
         }
+
+        ~Index() {
+            delete source;
+            delete index;
+        }
 };
 
 class Stmt: public Node {
