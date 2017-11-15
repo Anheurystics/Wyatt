@@ -591,9 +591,9 @@ Expr* Interpreter::eval_expr(Expr* node) {
 
                 return value;
             }
-       case NODE_UNIFORM:
+       case NODE_DOT:
             {
-                Uniform* uniform = (Uniform*)node;
+                Dot* uniform = (Dot*)node;
                 if(current_program->vertSource->name == uniform->shader) {
                     ShaderSource* src = current_program->vertSource;
                     string type = "";
@@ -931,8 +931,8 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                             scope = functionScopeStack.top();
                         }
                         scope->declare(((Ident*)lhs)->name, rhs);
-                    } else if(lhs->type == NODE_UNIFORM) {
-                        Uniform* uniform = (Uniform*)lhs;
+                    } else if(lhs->type == NODE_DOT) {
+                        Dot* uniform = (Dot*)lhs;
                         if(current_program->vertSource->name == uniform->shader) {
                             ShaderSource* src = current_program->vertSource;
                             string type = "";

@@ -73,7 +73,7 @@ void yyerror( std::map<std::string, ShaderPair*> *shaders, std::map<std::string,
 %type<v2val> vec2
 %type<v3val> vec3
 %type<v4val> vec4
-%type<idval> uniform;
+%type<idval> dot;
 %type<lstval> list;
 
 %type<sval> stmt stmt_block
@@ -141,7 +141,7 @@ expr: T_INT { $$ = $1; set_lines($$,@1,@1); }
     | vec3 { $$ = $1; set_lines($$, @1, @1); }
     | vec4 { $$ = $1; set_lines($$, @1, @1); }
     | invoke { $$ = new FuncExpr($1); set_lines($$, @1, @1); }
-    | uniform { $$ = $1; set_lines($$, @1, @1); }
+    | dot { $$ = $1; set_lines($$, @1, @1); }
     | index { $$ = $1; set_lines($$, @1, @1); }
     | T_OPEN_BRACE list T_CLOSE_BRACE { $$ = $2; set_lines($$, @1, @3); }
     | expr T_PLUS expr { $$ = new Binary($1, OP_PLUS, $3); set_lines($$, @1, @3); }
@@ -167,12 +167,12 @@ index: T_IDENTIFIER T_OPEN_BRACKET expr T_CLOSE_BRACKET { $$ = new Index($1, $3)
     | index T_OPEN_BRACKET expr T_CLOSE_BRACKET { $$ = new Index($1, $3); set_lines($$, @1, @4); }
     ;
 
-uniform: T_IDENTIFIER T_PERIOD T_IDENTIFIER { $$ = new Uniform($1, $3); }
+dot: T_IDENTIFIER T_PERIOD T_IDENTIFIER { $$ = new Dot($1, $3); }
     ;
 
 stmt: T_IDENTIFIER T_EQUALS expr { $$ = new Assign($1, $3); set_lines($$, @1, @3); }
     | index T_EQUALS expr { $$ = new Assign($1, $3); set_lines($$, @1, @3); }
-    | uniform T_EQUALS expr { $$ = new Assign($1, $3); set_lines($$, @1, @3); }
+    | dot T_EQUALS expr { $$ = new Assign($1, $3); set_lines($$, @1, @3); }
     | T_ALLOCATE T_IDENTIFIER { $$ = new Alloc($2); set_lines($$, @1, @2); }
     | T_IDENTIFIER T_PERIOD T_IDENTIFIER T_UPLOAD upload_list { $$ = new Upload($1, $3, $5); set_lines($$, @1, @5); }
     | T_DRAW T_IDENTIFIER { $$ = new Draw($2); set_lines($$, @1, @2); }
