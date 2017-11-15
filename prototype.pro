@@ -53,7 +53,5 @@ DISTFILES += \
     parser.y \
     scanner.l \
     main.txt \
-    utils.txt
-
-FLEX_SOURCES = scanner.l
-BISON_SOURCES = parser.y
+    utils.txt \
+    todo
