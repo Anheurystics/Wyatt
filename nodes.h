@@ -35,6 +35,40 @@ enum OpType {
     OP_PLUS, OP_MINUS, OP_MULT, OP_DIV, OP_MOD, OP_ABS, OP_AND, OP_OR, OP_NOT, OP_EQUAL, OP_LESSTHAN, OP_GREATERTHAN, OP_NEQUAL, OP_LEQUAL, OP_GEQUAL
 };
 
+class Node;
+class Expr;
+class Ident;
+class Uniform;
+class Binary;
+class Unary;
+class Bool;
+class Int;
+class Float;
+class String;
+class Vector2;
+class Vector3;
+class Vector4;
+class Matrix2;
+class Matrix3;
+class Matrix4;
+
+typedef shared_ptr<Node> node_ptr;
+typedef shared_ptr<Expr> expr_ptr;
+typedef shared_ptr<Ident> ident_ptr;
+typedef shared_ptr<Uniform> uniform_ptr;
+typedef shared_ptr<Binary> binary_ptr;
+typedef shared_ptr<Unary> unary_ptr;
+typedef shared_ptr<Bool> bool_ptr;
+typedef shared_ptr<Int> int_ptr;
+typedef shared_ptr<Float> float_ptr;
+typedef shared_ptr<String> string_ptr;
+typedef shared_ptr<Vector2> vector2_ptr;
+typedef shared_ptr<Vector3> vector3_ptr;
+typedef shared_ptr<Vector4> vector4_ptr;
+typedef shared_ptr<Matrix2> matrix2_ptr;
+typedef shared_ptr<Matrix3> matrix3_ptr;
+typedef shared_ptr<Matrix4> matrix4_ptr;
+
 class Node {
     public:
         unsigned int first_line, last_line;
