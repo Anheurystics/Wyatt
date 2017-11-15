@@ -205,6 +205,12 @@ class Matrix2: public Expr {
         Matrix2(Vector2* v0, Vector2* v1): v0(v0), v1(v1) {
             type = NODE_MATRIX2;
 
+            generate_columns();
+        }
+
+        void generate_columns() {
+            delete_columns();
+
             c0 = new Vector2(v0->x, v1->x);
             c1 = new Vector2(v0->y, v1->y);
         }
@@ -212,9 +218,16 @@ class Matrix2: public Expr {
         ~Matrix2() {
             delete v0;
             delete v1;
-
-            c0 = NULL;
-            c1 = NULL;
+            delete_columns();
+        }
+    private:
+        void delete_columns() {
+            if(c0 != NULL && c1 != NULL) {
+                c0->x = c0->y = NULL;
+                c1->x = c1->y = NULL;
+                delete c0;
+                delete c1;
+            }
         }
 };
 
@@ -226,6 +239,12 @@ class Matrix3: public Expr {
         Matrix3(Vector3* v0, Vector3* v1, Vector3* v2): v0(v0), v1(v1), v2(v2) {
             type = NODE_MATRIX3;
 
+            generate_columns();
+        }
+
+        void generate_columns() {
+            delete_columns();
+
             c0 = new Vector3(v0->x, v1->x, v2->x);
             c1 = new Vector3(v0->y, v1->y, v2->y);
             c2 = new Vector3(v0->z, v1->z, v2->z);
@@ -236,9 +255,18 @@ class Matrix3: public Expr {
             delete v1;
             delete v2;
 
-            c0 = NULL;
-            c1 = NULL;
-            c2 = NULL;
+            delete_columns();
+        }
+    private:
+        void delete_columns() {
+            if(c0 != NULL && c1 != NULL && c2 != NULL) {
+                c0->x = c0->y = c0->z = NULL;
+                c1->x = c1->y = c1->z = NULL;
+                c2->x = c2->y = c2->z = NULL;
+                delete c0;
+                delete c1;
+                delete c2;
+            }
         }
 };
 
@@ -249,7 +277,10 @@ class Matrix4: public Expr {
 
         Matrix4(Vector4* v0, Vector4* v1, Vector4* v2, Vector4* v3): v0(v0), v1(v1), v2(v2), v3(v3) {
             type = NODE_MATRIX4;
+            generate_columns();
+        }
 
+        void generate_columns() {
             c0 = new Vector4(v0->x, v1->x, v2->x, v3->x);
             c1 = new Vector4(v0->y, v1->y, v2->y, v3->y);
             c2 = new Vector4(v0->z, v1->z, v2->z, v3->z);
@@ -262,10 +293,20 @@ class Matrix4: public Expr {
             delete v2;
             delete v3;
 
-            c0 = NULL;
-            c1 = NULL;
-            c2 = NULL;
-            c3 = NULL;
+            delete_columns();
+        }
+    private:
+        void delete_columns() {
+            if(c0 != NULL && c1 != NULL && c2 != NULL && c3 != NULL) {
+                c0->x = c0->y = c0->z = c0->w = NULL;
+                c1->x = c1->y = c1->z = c1->w = NULL;
+                c2->x = c2->y = c2->z = c2->w = NULL;
+                c3->x = c3->y = c3->z = c3->w = NULL;
+                delete c0;
+                delete c1;
+                delete c2;
+                delete c3;
+            }
         }
 };
 
