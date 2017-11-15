@@ -26,12 +26,12 @@ void main() {
 }
 `;
 
-func basic(input) {
+func vert_basic(input) {
     output.FinalPosition = proj * view * model * [input.pos, 1.0];
     Color = col;
 }
 
-func basic(input) {
+func frag_basic(input) {
     output.FinalColor = [input.Color, 1.0];
 }
 

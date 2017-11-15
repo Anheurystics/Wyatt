@@ -33,6 +33,7 @@ SOURCES += \
     highlighter.cpp \
     logwindow.cpp \
     helper.cpp \
+    glsltranspiler.cpp
 
 HEADERS += \
     mainwindow.h \
@@ -45,6 +46,7 @@ HEADERS += \
     highlighter.h \
     logwindow.h \
     helper.h \
+    glsltranspiler.h
 
 FORMS += \
     mainwindow.ui

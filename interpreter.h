@@ -18,6 +18,7 @@
 #include "scanner.h"
 #include "logwindow.h"
 #include "helper.h"
+#include "glsltranspiler.h"
 
 using namespace std;
 
@@ -115,6 +116,8 @@ class Interpreter {
         Expr* resolve_vector(vector<Expr*>);
 
         LogWindow* logger;
+
+        GLSLTranspiler* transpiler;
 };
 
 #endif //MYPARSER_H

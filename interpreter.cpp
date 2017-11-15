@@ -26,6 +26,8 @@ Interpreter::Interpreter(LogWindow* logger) {
         builtins[it->first] = it->second;
     }
     functions.clear();
+
+    transpiler = new GLSLTranspiler();
 }
 
 #define clear_map(type, name) \
@@ -1457,6 +1459,11 @@ void Interpreter::parse(string code) {
     yylineno = 1;
     status = yyparse(&shaders, &functions);
     yy_delete_buffer(state);
+
+
+    if(functions["vert_basic"] != NULL && functions["frag_basic"] != NULL) {
+        transpiler->transpile(functions["vert_basic"]->stmts, functions["frag_basic"]->stmts);
+    }
 }
 
 void Interpreter::prepare() {
