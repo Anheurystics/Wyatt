@@ -11,7 +11,7 @@ using namespace std;
 
 enum NodeType {
     NODE_INVOKE,
-    NODE_EXPR, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_STRING, NODE_VECTOR2, NODE_VECTOR3, NODE_VECTOR4, NODE_MATRIX2, NODE_MATRIX3, NODE_MATRIX4, NODE_IDENT, NODE_UNIFORM,
+    NODE_EXPR, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_STRING, NODE_VECTOR2, NODE_VECTOR3, NODE_VECTOR4, NODE_MATRIX2, NODE_MATRIX3, NODE_MATRIX4, NODE_IDENT, NODE_UNIFORM, NODE_LIST,
     NODE_UPLOADLIST, NODE_FUNCEXPR, NODE_ARGLIST, NODE_PARAMLIST, NODE_INDEX,
     NODE_STMT, NODE_ASSIGN, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_USE, NODE_FUNCSTMT, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_FOR, NODE_SSOURCE, NODE_PRINT, NODE_FUNCDEF, NODE_RETURN
 };
@@ -350,6 +350,22 @@ class Stmts: public Node {
         }
 };
 
+class List: public Expr {
+    public:
+        vector<Expr*> list;
+
+        List(Expr* init) {
+            if(init) list.insert(list.begin(), init);
+            type = NODE_LIST;
+        }
+
+        ~List() {
+            for(unsigned int i = 0; i < list.size(); i++) {
+                delete list[i];
+            }
+        }
+};
+
 class ArgList: public Node {
     public:
         vector<Expr*> list;
@@ -476,17 +492,17 @@ class For: public Stmt {
 
 class Assign: public Stmt {
     public:
-        Ident* ident;
+        Expr* lhs;
         Expr* value; 
 
-        Assign(Ident* ident, Expr* value) {
-            this->ident = ident;
+        Assign(Expr* ident, Expr* value) {
+            this->lhs = ident;
             this->value = value;
             type = NODE_ASSIGN;
         }
 
         ~Assign() {
-            delete ident;
+            delete lhs;
             delete value;
         }
 };

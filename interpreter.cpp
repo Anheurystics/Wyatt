@@ -670,6 +670,9 @@ Expr* Interpreter::eval_expr(Expr* node) {
         case NODE_STRING:
             return node;
 
+        case NODE_LIST:
+            return node;
+
         case NODE_VECTOR2:
             {
                 Vector2* vec2 = (Vector2*)node;
@@ -803,6 +806,11 @@ Expr* Interpreter::eval_expr(Expr* node) {
                         float x = resolve_scalar(vec4->x), y = resolve_scalar(vec4->y), z = resolve_scalar(vec4->z), w = resolve_scalar(vec4->w);
                         return new Float(sqrtf(x * x + y * y + z * z + w * w));
                     }
+                    if(rhs->type == NODE_LIST) {
+                        cout << "len list\n";
+                        List* list = (List*)rhs;
+                        return new Int(list->list.size());
+                    }
                     return NULL;
                 }
             }
@@ -863,8 +871,39 @@ Expr* Interpreter::eval_expr(Expr* node) {
                     logger->log(index, "ERROR", "Index out of range for mat2 access");
                     return NULL;
                 }
+                if(source->type == NODE_MATRIX3 && index->type == NODE_INT) {
+                    Matrix3* mat3 = (Matrix3*)source;
+                    int i = resolve_int(index);
+                    if(i == 0) return eval_expr(mat3->v0);
+                    if(i == 1) return eval_expr(mat3->v1);
+                    if(i == 2) return eval_expr(mat3->v2);
 
-                logger->log(index," ERROR", "Invalid use of [] operator");
+                    logger->log(index, "ERROR", "Index out of range for mat3 access");
+                    return NULL;
+                }
+                if(source->type == NODE_MATRIX4 && index->type == NODE_INT) {
+                    Matrix4* mat4 = (Matrix4*)source;
+                    int i = resolve_int(index);
+                    if(i == 0) return eval_expr(mat4->v0);
+                    if(i == 1) return eval_expr(mat4->v1);
+                    if(i == 2) return eval_expr(mat4->v2);
+                    if(i == 3) return eval_expr(mat4->v3);
+
+                    logger->log(index, "ERROR", "Index out of range for mat4 access");
+                    return NULL;
+                }
+                if(source->type == NODE_LIST && index->type == NODE_INT) {
+                    List* list = (List*)source;
+                    int i = resolve_int(index);
+                    if(i >= 0 && i < list->list.size()) {
+                        return eval_expr(list->list[i]);
+                    } else {
+                        logger->log(index, "ERROR", "Index out of range for list of length " + list->list.size());
+                        return NULL;
+                    }
+                }
+
+                logger->log(index,"ERROR", "Invalid use of [] operator");
                 return NULL;
             }
 
@@ -885,16 +924,15 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                 Assign* assign = (Assign*)stmt;
                 Expr* rhs = eval_expr(assign->value);
                 if(rhs != NULL) {
-                    Ident* ident = assign->ident;
-                    if(ident->type == NODE_IDENT) {
+                    Expr* lhs = assign->lhs;
+                    if(lhs->type == NODE_IDENT) {
                         Scope* scope = globalScope;
                         if(!functionScopeStack.empty()) {
                             scope = functionScopeStack.top();
                         }
-
-                        scope->declare(assign->ident->name, rhs);
-                    } else if(ident->type == NODE_UNIFORM) {
-                        Uniform* uniform = (Uniform*)ident;
+                        scope->declare(((Ident*)lhs)->name, rhs);
+                    } else if(lhs->type == NODE_UNIFORM) {
+                        Uniform* uniform = (Uniform*)lhs;
                         if(current_program->vertSource->name == uniform->shader) {
                             ShaderSource* src = current_program->vertSource;
                             string type = "";
@@ -987,6 +1025,113 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                             }
 
                         }
+                    } else if (lhs->type == NODE_INDEX) {
+                        Index* in = (Index*)lhs;
+                        Expr* source = eval_expr(in->source);
+                        Expr* index = eval_expr(in->index);
+
+                        if(source->type == NODE_LIST && index->type == NODE_INT) {
+                            List* list = (List*)source;
+                            int i = resolve_int(index);
+                            if(i >= 0 && i < list->list.size()) {
+                                list->list[i] = rhs;
+                            } else {
+                                logger->log(assign, "ERROR", "Index out of range for list of length " + list->list.size());
+                            }
+                            return NULL;
+                        }
+
+                        bool is_scalar = (rhs->type == NODE_FLOAT || rhs->type == NODE_INT);
+                        cout << source->type << " " << NODE_VECTOR3 << endl;
+                        if(source->type == NODE_VECTOR2 && index->type == NODE_INT) {
+                            if(!is_scalar) {
+                                logger->log(assign, "ERROR", "vec2 component needs to be a float or an int");
+                                return NULL;
+                            }
+                            Vector2* vec2 = (Vector2*)source;
+                            int i = resolve_int(index);
+                            if(i == 0) vec2->x = rhs;
+                            else if(i == 1) vec2->y = rhs;
+                            else logger->log(index, "ERROR", "Index out of range for vec2 access");
+                            return NULL;
+                        } else
+                        if(source->type == NODE_VECTOR3 && index->type == NODE_INT) {
+                            if(!is_scalar) {
+                                logger->log(assign, "ERROR", "vec3 component needs to be a float or an int");
+                                return NULL;
+                            }
+                            Vector3* vec3 = (Vector3*)source;
+                            int i = resolve_int(index);
+                            if(i == 0) vec3->x = rhs;
+                            else if(i == 1) vec3->y = rhs;
+                            else if(i == 2) vec3->z = rhs;
+                            else logger->log(assign, "ERROR", "Index out of range for vec3 access");
+                            return NULL;
+                        }
+                        if(source->type == NODE_VECTOR4 && index->type == NODE_INT) {
+                            if(!is_scalar) {
+                                logger->log(assign, "ERROR", "vec4 component needs to be a float or an int");
+                                return NULL;
+                            }
+                            Vector4* vec4 = (Vector4*)source;
+                            int i = resolve_int(index);
+                            if(i == 0) vec4->x = rhs;
+                            else if(i == 1) vec4->y = rhs;
+                            else if(i == 2) vec4->z = rhs;
+                            else if(i == 4) vec4->w = rhs;
+                            else logger->log(assign, "ERROR", "Index out of range for vec4 access");
+                            return NULL;
+                        }
+
+                        if(source->type == NODE_MATRIX2 && index->type == NODE_INT) {
+                            if(rhs->type != NODE_VECTOR2) {
+                                logger->log(assign, "ERROR", "mat2 component needs to be vec2");
+                                return NULL;
+                            }
+                            Matrix2* mat2 = (Matrix2*)source;
+                            int i = resolve_int(index);
+                            if(i == 0) mat2->v0 = (Vector2*)rhs;
+                            else if(i == 1) mat2->v1 = (Vector2*)rhs;
+                            else { logger->log(assign, "ERROR", "Index out of range for mat2 access"); return NULL; }
+                            mat2->generate_columns();
+                            return NULL;
+                        }
+                        if(source->type == NODE_MATRIX3 && index->type == NODE_INT) {
+                            if(rhs->type != NODE_VECTOR3) {
+                                logger->log(assign, "ERROR", "mat3 component needs to be vec3");
+                                return NULL;
+                            }
+                            Matrix3* mat3 = (Matrix3*)source;
+                            int i = resolve_int(index);
+                            if(i == 0) mat3->v0 = (Vector3*)rhs;
+                            else if(i == 1) mat3->v1 = (Vector3*)rhs;
+                            else if(i == 2) mat3->v2 = (Vector3*)rhs;
+                            else { logger->log(index, "ERROR", "Index out of range for mat3 access"); return NULL; }
+                            mat3->generate_columns();
+                            return NULL;
+                        }
+                        if(source->type == NODE_MATRIX4 && index->type == NODE_INT) {
+                            if(rhs->type != NODE_VECTOR4) {
+                                logger->log(assign, "ERROR", "mat4 component needs to be vec4");
+                                return NULL;
+                            }
+                            Matrix4* mat4 = (Matrix4*)source;
+                            int i = resolve_int(index);
+                            if(i == 0) mat4->v0 =(Vector4*) rhs;
+                            else if(i == 1) mat4->v1 = (Vector4*)rhs;
+                            else if(i == 2) mat4->v2 = (Vector4*)rhs;
+                            else if(i == 3) mat4->v3 = (Vector4*)rhs;
+                            else { logger->log(index, "ERROR", "Index out of range for mat4 access"); return NULL; }
+                            mat4->generate_columns();
+                            return NULL;
+                        }
+
+                        logger->log(index,"ERROR", "Invalid use of [] operator");
+                        return NULL;
+
+                    } else {
+                        logger->log(assign, "ERROR", "Invalid left-hand side expression in assignment");
+                        return NULL;
                     }
                 } else {
                     logger->log("ERROR: Invalid assignment");
@@ -1325,4 +1470,3 @@ void Interpreter::prepare() {
         logger->log("ERROR: loop() function required!");
     }
 }
-

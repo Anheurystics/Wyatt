@@ -36,6 +36,7 @@ void yyerror( std::map<std::string, ShaderPair*> *shaders, std::map<std::string,
     Vector2* v2val;
     Vector3* v3val;
     Vector4* v4val;
+    List* lstval;
     Stmt* sval;
     Stmts* svval;
     Invoke* inval;
@@ -73,6 +74,7 @@ void yyerror( std::map<std::string, ShaderPair*> *shaders, std::map<std::string,
 %type<v3val> vec3
 %type<v4val> vec4
 %type<idval> uniform;
+%type<lstval> list;
 
 %type<sval> stmt stmt_block
 %type<fdval> function
@@ -141,6 +143,7 @@ expr: T_INT { $$ = $1; set_lines($$,@1,@1); }
     | invoke { $$ = new FuncExpr($1); set_lines($$, @1, @1); }
     | uniform { $$ = $1; set_lines($$, @1, @1); }
     | index { $$ = $1; set_lines($$, @1, @1); }
+    | T_OPEN_BRACE list T_CLOSE_BRACE { $$ = $2; set_lines($$, @1, @3); }
     | expr T_PLUS expr { $$ = new Binary($1, OP_PLUS, $3); set_lines($$, @1, @3); }
     | expr T_MINUS expr { $$ = new Binary($1, OP_MINUS, $3); set_lines($$, @1, @3); }
     | expr T_MULT expr { $$ = new Binary($1, OP_MULT, $3); set_lines($$, @1, @3); }
@@ -168,6 +171,7 @@ uniform: T_IDENTIFIER T_PERIOD T_IDENTIFIER { $$ = new Uniform($1, $3); }
     ;
 
 stmt: T_IDENTIFIER T_EQUALS expr { $$ = new Assign($1, $3); set_lines($$, @1, @3); }
+    | index T_EQUALS expr { $$ = new Assign($1, $3); set_lines($$, @1, @3); }
     | uniform T_EQUALS expr { $$ = new Assign($1, $3); set_lines($$, @1, @3); }
     | T_ALLOCATE T_IDENTIFIER { $$ = new Alloc($2); set_lines($$, @1, @2); }
     | T_IDENTIFIER T_PERIOD T_IDENTIFIER T_UPLOAD upload_list { $$ = new Upload($1, $3, $5); set_lines($$, @1, @5); }
@@ -181,6 +185,11 @@ stmt: T_IDENTIFIER T_EQUALS expr { $$ = new Assign($1, $3); set_lines($$, @1, @3
     | T_IDENTIFIER T_COMP_MULT expr { $$ = new Assign($1, new Binary($1, OP_MULT, $3)); set_lines($$, @1, @3);}
     | T_IDENTIFIER T_COMP_DIV expr { $$ = new Assign($1, new Binary($1, OP_DIV, $3)); set_lines($$, @1, @3); }
     | T_IDENTIFIER T_COMP_MOD expr { $$ = new Assign($1, new Binary($1, OP_MOD, $3)); set_lines($$, @1, @3);}
+    | index T_COMP_PLUS expr { $$ = new Assign($1, new Binary($1, OP_PLUS, $3)); set_lines($$, @1, @3); }
+    | index T_COMP_MINUS expr { $$ = new Assign($1, new Binary($1, OP_MINUS, $3)); set_lines($$, @1, @3); }
+    | index T_COMP_MULT expr { $$ = new Assign($1, new Binary($1, OP_MULT, $3)); set_lines($$, @1, @3);}
+    | index T_COMP_DIV expr { $$ = new Assign($1, new Binary($1, OP_DIV, $3)); set_lines($$, @1, @3); }
+    | index T_COMP_MOD expr { $$ = new Assign($1, new Binary($1, OP_MOD, $3)); set_lines($$, @1, @3);}
     ;
 
 arg_list: { $$ = new ArgList(0); }
@@ -191,6 +200,11 @@ arg_list: { $$ = new ArgList(0); }
 param_list: { $$ = new ParamList(0); }
     | T_IDENTIFIER { $$ = new ParamList($1); }
     | param_list T_COMMA T_IDENTIFIER { $1->list.push_back($3); }
+    ;
+
+list: { $$ = new List(0); }
+    | expr { $$ = new List($1); }
+    | list T_COMMA expr { $1->list.push_back($3); }
     ;
 
 invoke: T_IDENTIFIER T_OPEN_PAREN arg_list T_CLOSE_PAREN { $$ = new Invoke($1, $3); set_lines($$, @1, @1); }

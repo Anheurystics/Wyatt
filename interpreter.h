@@ -70,7 +70,10 @@ class Interpreter {
                 }
 
                 void clear() {
-                    variables.clear();
+                    for(map<string, Expr*>::iterator it = variables.begin(); it != variables.end(); ++it) {
+                        variables.erase(it);
+                        delete it->second;
+                    }
                 }
 
                 void declare(string name, Expr* value) {
