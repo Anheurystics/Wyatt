@@ -171,6 +171,8 @@ dot: T_IDENTIFIER T_PERIOD T_IDENTIFIER { $$ = new Dot($1, $3); }
     ;
 
 stmt: T_IDENTIFIER T_EQUALS expr { $$ = new Assign($1, $3); set_lines($$, @1, @3); }
+    | T_IDENTIFIER T_IDENTIFIER { $$ = new Decl($1, $2, NULL); set_lines($$, @1, @2); }
+    | T_IDENTIFIER T_IDENTIFIER T_EQUALS expr { $$ = new Decl($1, $2, $4); set_lines($$, @1, @4); }
     | index T_EQUALS expr { $$ = new Assign($1, $3); set_lines($$, @1, @3); }
     | dot T_EQUALS expr { $$ = new Assign($1, $3); set_lines($$, @1, @3); }
     | T_ALLOCATE T_IDENTIFIER { $$ = new Alloc($2); set_lines($$, @1, @2); }
