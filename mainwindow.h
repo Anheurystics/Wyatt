@@ -28,18 +28,26 @@ private:
     CodeEditor* codeEditor;
     Highlighter* highlighter;
     QString openFileName;
+    QFileInfo openFileInfo;
+
+    void setOpenedFile(QString fileName) {
+        openFileName = fileName;
+        openFileInfo.setFile(fileName);
+        setWindowTitle("Prototype - " + openFileInfo.fileName());
+    }
 
 private slots:
     void newFile() {
-        openFileName = QFileDialog::getSaveFileName(this, tr("New File"), "/");
-        ofstream file;
-        file.open(openFileName.toStdString());
-        file.close();
+        openFileName.clear();
+        openFileInfo.setFile(openFileName);
+        setWindowTitle("Prototype - untitled");
+
         codeEditor->setPlainText("");
     }
 
     void openFile() {
-        openFileName = QFileDialog::getOpenFileName(this, tr("Open File"), "/");
+        setOpenedFile(QFileDialog::getOpenFileName(this, tr("Open File")));
+
         ifstream file;
         file.open(openFileName.toStdString());
         string contents = "";
@@ -52,6 +60,11 @@ private slots:
     }
 
     void saveFile() {
+        if(openFileName.length() == 0) {
+            saveAsFile();
+            return;
+        }
+
         ofstream file;
         file.open(openFileName.toStdString());
         file << codeEditor->document()->toPlainText().toStdString();
@@ -59,7 +72,7 @@ private slots:
     }
 
     void saveAsFile() {
-        openFileName = QFileDialog::getSaveFileName(this, tr("Save As"), "/");
+        setOpenedFile(QFileDialog::getSaveFileName(this, tr("Save As")));
         saveFile();
     }
 };
