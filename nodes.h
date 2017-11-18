@@ -11,9 +11,9 @@ using namespace std;
 
 enum NodeType {
     NODE_INVOKE,
-    NODE_EXPR, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_STRING, NODE_VECTOR2, NODE_VECTOR3, NODE_VECTOR4, NODE_MATRIX2, NODE_MATRIX3, NODE_MATRIX4, NODE_IDENT, NODE_UNIFORM,
-    NODE_UPLOADLIST, NODE_FUNCEXPR, NODE_ARGLIST, NODE_PARAMLIST, NODE_INDEX,
-    NODE_STMT, NODE_ASSIGN, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_USE, NODE_FUNCSTMT, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_FOR, NODE_SSOURCE, NODE_PRINT, NODE_FUNCDEF, NODE_RETURN
+    NODE_EXPR, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_STRING, NODE_VECTOR2, NODE_VECTOR3, NODE_VECTOR4, NODE_MATRIX2, NODE_MATRIX3, NODE_MATRIX4, NODE_IDENT, NODE_DOT,
+    NODE_UPLOADLIST, NODE_FUNCEXPR, NODE_LIST, NODE_ARGLIST, NODE_PARAMLIST, NODE_INDEX,
+    NODE_STMT, NODE_ASSIGN, NODE_DECL, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_USE, NODE_FUNCSTMT, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_FOR, NODE_SSOURCE, NODE_PRINT, NODE_FUNCDEF, NODE_RETURN
 };
 
 inline string type_to_name(NodeType type) {
@@ -93,13 +93,13 @@ class Ident: public Expr {
         }
 };
 
-class Uniform: public Ident {
+class Dot: public Ident {
     public:
         string shader;
 
         Dot(shared_ptr<Ident> shader, shared_ptr<Ident> name): Ident(name->name) {
             this->shader = shader->name;
-            type = NODE_UNIFORM;
+            type = NODE_DOT;
         }
 };
 
@@ -309,8 +309,6 @@ class Stmts: public Node {
         }
 };
 
-<<<<<<< Updated upstream
-=======
 class List: public Expr {
     public:
         vector<shared_ptr<Expr>> list;
@@ -324,7 +322,6 @@ class List: public Expr {
         }
 };
 
->>>>>>> Stashed changes
 class ArgList: public Node {
     public:
         vector<shared_ptr<Expr>> list;

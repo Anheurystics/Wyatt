@@ -3,23 +3,14 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
-<<<<<<< Updated upstream
-%}
-
-%code requires {
-#include <string>
-#include <vector>
-=======
 #include <string>
 
 using namespace std;
 %}
 
 %code requires {
->>>>>>> Stashed changes
 #include "nodes.h"
 #include <memory>
-
 
 int yylex();
 void yyerror( std::map<std::string, std::shared_ptr<ShaderPair>> *shaders, std::map<std::string, std::shared_ptr<FuncDef>> *functions, const char *s);
@@ -130,27 +121,6 @@ expr: T_INT { $$ = $1; set_lines($$,@1,@1); }
     | vec2 { $$ = $1; set_lines($$, @1, @1); }
     | vec3 { $$ = $1; set_lines($$, @1, @1); }
     | vec4 { $$ = $1; set_lines($$, @1, @1); }
-<<<<<<< Updated upstream
-    | invoke { $$ = new FuncExpr($1); set_lines($$, @1, @1); }
-    | uniform { $$ = $1; set_lines($$, @1, @1); }
-    | index { $$ = $1; set_lines($$, @1, @1); }
-    | expr T_PLUS expr { $$ = new Binary($1, OP_PLUS, $3); set_lines($$, @1, @3); }
-    | expr T_MINUS expr { $$ = new Binary($1, OP_MINUS, $3); set_lines($$, @1, @3); }
-    | expr T_MULT expr { $$ = new Binary($1, OP_MULT, $3); set_lines($$, @1, @3); }
-    | expr T_DIV expr { $$ = new Binary($1, OP_DIV, $3); set_lines($$, @1, @3); }
-    | expr T_MOD expr { $$ = new Binary($1, OP_MOD, $3); set_lines($$, @1, @3); }
-    | expr T_LESS_THAN expr { $$ = new Binary($1, OP_LESSTHAN, $3); set_lines($$, @1, @3);}
-    | expr T_GREATER_THAN expr { $$ = new Binary($1, OP_GREATERTHAN, $3); set_lines($$, @1, @3); }
-    | expr T_EQUAL expr { $$ = new Binary($1, OP_EQUAL, $3); set_lines($$, @1, @3); }
-    | expr T_NEQUAL expr { $$ = new Binary($1, OP_NEQUAL, $3); set_lines($$, @1, @3); }
-    | expr T_LEQUAL expr { $$ = new Binary($1, OP_LEQUAL, $3); set_lines($$, @1, @3); }
-    | expr T_GEQUAL expr { $$ = new Binary($1, OP_GEQUAL, $3); set_lines($$, @1, @3); }
-    | expr T_OR expr { $$ = new Binary($1, OP_OR, $3); set_lines($$, @1, @3); }
-    | expr T_AND expr { $$ = new Binary($1, OP_AND, $3); set_lines($$, @1, @3); }
-    | T_MINUS expr { $$ = new Unary(OP_MINUS, $2); set_lines($$, @1, @2); } %prec UNARY
-    | T_NOT expr { $$ = new Unary(OP_NOT, $2); set_lines($$, @1, @2); } %prec UNARY
-    | T_PIPE expr T_PIPE { $$ = new Unary(OP_ABS, $2); set_lines($$, @1, @3); }
-=======
     | invoke { $$ = make_shared<FuncExpr>($1); set_lines($$, @1, @1); }
     | dot { $$ = $1; set_lines($$, @1, @1); }
     | index { $$ = $1; set_lines($$, @1, @1); }
@@ -171,7 +141,6 @@ expr: T_INT { $$ = $1; set_lines($$,@1,@1); }
     | T_MINUS expr { $$ = make_shared<Unary>(OP_MINUS, $2); set_lines($$, @1, @2); } %prec UNARY
     | T_NOT expr { $$ = make_shared<Unary>(OP_NOT, $2); set_lines($$, @1, @2); } %prec UNARY
     | T_PIPE expr T_PIPE { $$ = make_shared<Unary>(OP_ABS, $2); set_lines($$, @1, @3); }
->>>>>>> Stashed changes
     | T_OPEN_PAREN expr T_CLOSE_PAREN { $$ = $2; set_lines($$, @1, @3); }
     ;
 

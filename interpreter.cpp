@@ -591,7 +591,7 @@ shared_ptr<Expr> Interpreter::eval_expr(shared_ptr<Expr> node) {
 
                 return value;
             }
-       case NODE_UNIFORM:
+       case NODE_DOT:
             {
                 shared_ptr<Dot> uniform = static_pointer_cast<Dot>(node);
                 if(current_program->vertSource->name == uniform->shader) {
