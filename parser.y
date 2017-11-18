@@ -1,13 +1,10 @@
-%{
+%code requires {
 #include <cstdio>
 #include <iostream>
 #include <vector>
 #include <cmath>
-%}
-
-%code requires {
+#include <memory>
 #include <string>
-#include <vector>
 #include "nodes.h"
 
 int yylex();
