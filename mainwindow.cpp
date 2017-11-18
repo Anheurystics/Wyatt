@@ -7,24 +7,20 @@ MainWindow::MainWindow(QWidget *parent, std::string startfile) :
 {
     ui->setupUi(this);
 
-    CodeEditor* codeEditor = ui->codeEditor;
+    codeEditor = ui->codeEditor;
     codeEditor->setPlainText(QString::fromStdString(str_from_file(startfile)));
     QObject::connect(codeEditor, SIGNAL(textChanged()), ui->openGLWidget, SLOT(updateCode()));
-
-    QTextCharFormat deffmt = codeEditor->currentCharFormat();
-    deffmt.setUnderlineColor(QColor(Qt::red));
-    deffmt.setUnderlineStyle(QTextCharFormat::WaveUnderline);
-    QTextCursor cursor = codeEditor->textCursor();
-    cursor.movePosition(QTextCursor::End);
-
-    codeEditor->setCurrentCharFormat(deffmt);
-    codeEditor->setType("vertex");
 
     highlighter = new Highlighter(codeEditor->document());
 
     CustomGLWidget* glWidget = ui->openGLWidget;
     glWidget->logger = ui->logWindow;
     glWidget->interpreter = new Interpreter(ui->logWindow);
+
+    connect(ui->actionNew, &QAction::triggered, this, &MainWindow::newFile);
+    connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::openFile);
+    connect(ui->actionSave, &QAction::triggered, this, &MainWindow::saveFile);
+    connect(ui->actionSave_As, &QAction::triggered, this, &MainWindow::saveAsFile);
 }
 
 MainWindow::~MainWindow()
