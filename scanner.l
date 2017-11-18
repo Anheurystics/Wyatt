@@ -3,7 +3,10 @@
 %{
 #include <cstdlib>
 #include <string>
+#include <memory>
 #include "parser.h"
+
+using namespace std;
 
 #define YY_USER_ACTION \
     if(yylloc.first_line != yylineno) yycolumn = 0; \
@@ -25,12 +28,12 @@ void yyerror(const char *s);
 %%
 "vert"         { return T_VERTEX; }
 "frag"         { return T_FRAGMENT; }
-"`"(\\.|[^`])*"`" { std::string str = strdup(yytext); str = str.substr(1, str.length() - 2); yylval.strval = new String(str); return T_SHADER; }
-"\""(\\.|[^\\""])*"\"" { std::string str = strdup(yytext); str = str.substr(1, str.length() - 2); yylval.strval = new String(str); return T_STRING; }
+"`"(\\.|[^`])*"`" { std::string str = strdup(yytext); str = str.substr(1, str.length() - 2); yylval = make_shared<String>(str); return T_SHADER; }
+"\""(\\.|[^\\""])*"\"" { std::string str = strdup(yytext); str = str.substr(1, str.length() - 2); yylval = make_shared<String>(str); return T_STRING; }
 "//".*         ;
 [ \t\n]        ;
-[0-9]+\.[0-9]+ { yylval.fval = new Float(float(atof(yytext))); return T_FLOAT; }
-[0-9]+         { yylval.ival = new Int(atoi(yytext)); return T_INT; }
+[0-9]+\.[0-9]+ { yylval = make_shared<Float>(float(atof(yytext))); return T_FLOAT; }
+[0-9]+         { yylval = make_shared<Int>(atoi(yytext)); return T_INT; }
 "print"        { return T_PRINT; }
 "allocate"     { return T_ALLOCATE; }
 "func"         { return T_FUNC; }
@@ -43,9 +46,9 @@ void yyerror(const char *s);
 "in"           { return T_IN; }
 "and"          { return T_AND; }
 "or"           { return T_OR; }
-"true"         { yylval.bval = new Bool(true); return T_BOOL; }
-"false"        { yylval.bval = new Bool(false); return T_BOOL; }
-[a-zA-Z]+[a-zA-Z0-9_]* { yylval.idval = new Ident(strdup(yytext)); return T_IDENTIFIER; }
+"true"         { yylval = make_shared<Bool>(true); return T_BOOL; }
+"false"        { yylval = make_shared<Bool>(false); return T_BOOL; }
+[a-zA-Z]+[a-zA-Z0-9_]* { yylval = make_shared<Ident>(strdup(yytext)); return T_IDENTIFIER; }
 "("            { return T_OPEN_PAREN; }
 ")"            { return T_CLOSE_PAREN; }
 "<-"           { return T_UPLOAD; }

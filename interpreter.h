@@ -11,6 +11,7 @@
 #include <string>
 #include <ctime>
 #include <regex>
+#include <memory>
 
 #include <QOpenGLFunctions>
 
@@ -28,12 +29,12 @@ class Interpreter {
         int status = -1;
 
         void parse(string);
-        Expr* execute_stmts(Stmts*);
+        shared_ptr<Expr> execute_stmts(shared_ptr<Stmts>);
         void prepare();
         void execute_init();
         void execute_loop();
         void compile_program();
-        void compile_shader(GLuint*, ShaderSource*);
+        void compile_shader(GLuint*, shared_ptr<ShaderSource>);
         void setFunctions(QOpenGLFunctions* gl) {
             this->gl = gl;
         }
@@ -50,15 +51,15 @@ class Interpreter {
             map<string, vector<float>> data;
             map<string, unsigned int> sizes;
 
-            Layout* layout = NULL;
+            shared_ptr<Layout> layout = NULL;
         };
 
         struct Program {
             GLuint handle;
             GLuint vert, frag;
 
-            ShaderSource* vertSource;
-            ShaderSource* fragSource;
+            shared_ptr<ShaderSource> vertSource;
+            shared_ptr<ShaderSource> fragSource;
         };
 
         class Scope {
@@ -70,14 +71,16 @@ class Interpreter {
                 }
 
                 void clear() {
-                    variables.clear();
+                    for(map<string, shared_ptr<Expr>>::iterator it = variables.begin(); it != variables.end(); ++it) {
+                        variables.erase(it);
+                    }
                 }
 
-                void declare(string name, Expr* value) {
+                void declare(string name, shared_ptr<Expr> value) {
                     variables[name] = value;
                 }
 
-                Expr* get(string name) {
+                shared_ptr<Expr> get(string name) {
                     if(variables.find(name) != variables.end()) {
                         return variables[name];
                     }
@@ -86,30 +89,30 @@ class Interpreter {
                 }
 
             private:
-            	map<string, Expr*> variables;
+                map<string, shared_ptr<Expr>> variables;
         };
 
-        Scope* globalScope;
-        stack<Scope*> functionScopeStack;
-        map<string, Buffer*> buffers;
-        map<string, Program*> programs;
-        map<string, ShaderPair*> shaders;
-        map<string, FuncDef*> functions;
+        shared_ptr<Scope> globalScope;
+        stack<shared_ptr<Scope>> functionScopeStack;
+        map<string, shared_ptr<Buffer>> buffers;
+        map<string, shared_ptr<Program>> programs;
+        map<string, shared_ptr<ShaderPair>> shaders;
+        map<string, shared_ptr<FuncDef>> functions;
 
-        map<string, FuncDef*> builtins;
+        map<string, shared_ptr<FuncDef>> builtins;
 
         string current_program_name;
-        Program* current_program = NULL;
+        shared_ptr<Program> current_program = NULL;
 
-        FuncDef* init = NULL;
-        FuncDef* loop = NULL;
+        shared_ptr<FuncDef> init = NULL;
+        shared_ptr<FuncDef> loop = NULL;
         QOpenGLFunctions* gl;
 
-        Expr* eval_expr(Expr*);
-        Expr* eval_binary(Binary*);
-        Expr* invoke(Invoke*);
-        Expr* eval_stmt(Stmt*);
-        Expr* resolve_vector(vector<Expr*>);
+        shared_ptr<Expr> eval_expr(shared_ptr<Expr>);
+        shared_ptr<Expr> eval_binary(shared_ptr<Binary>);
+        shared_ptr<Expr> invoke(shared_ptr<Invoke>);
+        shared_ptr<Expr> eval_stmt(shared_ptr<Stmt>);
+        shared_ptr<Expr> resolve_vector(vector<shared_ptr<Expr>>);
 
         LogWindow* logger;
 };
