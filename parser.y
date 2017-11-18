@@ -1,11 +1,12 @@
 %code requires {
-#include <cstdio>
 #include <iostream>
 #include <vector>
 #include <cmath>
 #include <memory>
 #include <string>
 #include "nodes.h"
+
+using namespace std;
 
 int yylex();
 void yyerror( std::map<std::string, ShaderPair*> *shaders, std::map<std::string, FuncDef*> *functions, const char *s);
@@ -239,5 +240,5 @@ vec4: T_OPEN_BRACKET expr T_COMMA expr T_COMMA expr T_COMMA expr T_CLOSE_BRACKET
 
 void yyerror(std::map<std::string, ShaderPair*> *shaders, std::map<std::string, FuncDef*> *functions, const char* s) {
     std::cerr << "shaders: " << shaders << "\nfunctions: " << functions << std::endl;
-    fprintf(stderr, "Parse error: %s\n", s);
+    std::cerr << "Parser error: " << s << endl;
 }
