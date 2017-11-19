@@ -18,7 +18,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0, std::string startfile = "main.txt");
+    explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
     void updateCode();
@@ -28,7 +28,9 @@ private:
     CodeEditor* codeEditor;
     Highlighter* highlighter;
     QString openFileName;
+
     QFileInfo openFileInfo;
+    QString txtFilter;
 
     void setOpenedFile(QString fileName) {
         openFileName = fileName;
@@ -46,7 +48,7 @@ private slots:
     }
 
     void openFile() {
-        QString selected = QFileDialog::getOpenFileName(this, tr("Open File"));
+        QString selected = QFileDialog::getOpenFileName(this, tr("Open File"), Q_NULLPTR, txtFilter);
         if(selected == Q_NULLPTR) {
             return;
         }
@@ -77,7 +79,7 @@ private slots:
     }
 
     void saveAsFile() {
-        QString selected = QFileDialog::getSaveFileName(this, tr("Save As"));
+        QString selected = QFileDialog::getSaveFileName(this, tr("Save As"), Q_NULLPTR, txtFilter);
         if(selected == Q_NULLPTR) {
             return;
         }

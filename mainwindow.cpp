@@ -1,14 +1,13 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-MainWindow::MainWindow(QWidget *parent, std::string startfile) :
+MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 
     codeEditor = ui->codeEditor;
-    codeEditor->setPlainText(QString::fromStdString(str_from_file(startfile)));
     QObject::connect(codeEditor, SIGNAL(textChanged()), ui->openGLWidget, SLOT(updateCode()));
 
     highlighter = new Highlighter(codeEditor->document());
@@ -22,6 +21,8 @@ MainWindow::MainWindow(QWidget *parent, std::string startfile) :
     connect(ui->actionSave_As, &QAction::triggered, this, &MainWindow::saveAsFile);
 
     glWidget->interpreter = new Prototype::Interpreter(ui->logWindow);
+
+    txtFilter = tr("Text files (*.txt)");
 }
 
 MainWindow::~MainWindow()
