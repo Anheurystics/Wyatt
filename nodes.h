@@ -80,11 +80,6 @@ class Binary: public Expr {
             this->rhs = rhs;
             type = NODE_BINARY; 
         }
-
-        ~Binary() {
-            delete lhs;
-            delete rhs;
-        }
 };
 
 class Unary: public Expr {
@@ -96,10 +91,6 @@ class Unary: public Expr {
             this->op = op;
             this->rhs = rhs;
             type = NODE_UNARY;
-        }
-
-        ~Unary() {
-            delete rhs;
         }
 };
 
@@ -152,11 +143,6 @@ class Vector2: public Expr {
             this->y = y;
             type = NODE_VECTOR2;
         }
-
-        ~Vector2() {
-            delete x;
-            delete y;
-        }
 };
 
 class Vector3: public Expr {
@@ -168,12 +154,6 @@ class Vector3: public Expr {
             this->y = y;
             this->z = z;
             type = NODE_VECTOR3; 
-        }
-
-        ~Vector3() {
-            delete x;
-            delete y;
-            delete z;
         }
 };
 
@@ -187,13 +167,6 @@ class Vector4: public Expr {
             this->z = z;
             this->w = w;
             type = NODE_VECTOR4;
-        }
-
-        ~Vector4() {
-            delete x;
-            delete y;
-            delete z;
-            delete w;
         }
 };
 
@@ -209,25 +182,8 @@ class Matrix2: public Expr {
         }
 
         void generate_columns() {
-            delete_columns();
-
             c0 = new Vector2(v0->x, v1->x);
             c1 = new Vector2(v0->y, v1->y);
-        }
-
-        ~Matrix2() {
-            delete v0;
-            delete v1;
-            delete_columns();
-        }
-    private:
-        void delete_columns() {
-            if(c0 != NULL && c1 != NULL) {
-                c0->x = c0->y = NULL;
-                c1->x = c1->y = NULL;
-                delete c0;
-                delete c1;
-            }
         }
 };
 
@@ -243,30 +199,9 @@ class Matrix3: public Expr {
         }
 
         void generate_columns() {
-            delete_columns();
-
             c0 = new Vector3(v0->x, v1->x, v2->x);
             c1 = new Vector3(v0->y, v1->y, v2->y);
             c2 = new Vector3(v0->z, v1->z, v2->z);
-        }
-
-        ~Matrix3() {
-            delete v0;
-            delete v1;
-            delete v2;
-
-            delete_columns();
-        }
-    private:
-        void delete_columns() {
-            if(c0 != NULL && c1 != NULL && c2 != NULL) {
-                c0->x = c0->y = c0->z = NULL;
-                c1->x = c1->y = c1->z = NULL;
-                c2->x = c2->y = c2->z = NULL;
-                delete c0;
-                delete c1;
-                delete c2;
-            }
         }
 };
 
@@ -286,28 +221,6 @@ class Matrix4: public Expr {
             c2 = new Vector4(v0->z, v1->z, v2->z, v3->z);
             c3 = new Vector4(v0->w, v1->w, v2->w, v3->w);
         }
-
-        ~Matrix4() {
-            delete v0;
-            delete v1;
-            delete v2;
-            delete v3;
-
-            delete_columns();
-        }
-    private:
-        void delete_columns() {
-            if(c0 != NULL && c1 != NULL && c2 != NULL && c3 != NULL) {
-                c0->x = c0->y = c0->z = c0->w = NULL;
-                c1->x = c1->y = c1->z = c1->w = NULL;
-                c2->x = c2->y = c2->z = c2->w = NULL;
-                c3->x = c3->y = c3->z = c3->w = NULL;
-                delete c0;
-                delete c1;
-                delete c2;
-                delete c3;
-            }
-        }
 };
 
 class Index: public Expr {
@@ -319,11 +232,6 @@ class Index: public Expr {
             this->source = source;
             this->index = index;
             type = NODE_INDEX;
-        }
-
-        ~Index() {
-            delete source;
-            delete index;
         }
 };
 
@@ -342,12 +250,6 @@ class Stmts: public Node {
             if(init) list.insert(list.begin(), init);
             type = NODE_STMTS;
         }
-
-        ~Stmts() {
-            for(unsigned int i = 0; i < list.size(); i++) {
-                delete list[i];
-            }
-        }
 };
 
 class List: public Expr {
@@ -357,12 +259,6 @@ class List: public Expr {
         List(Expr* init) {
             if(init) list.insert(list.begin(), init);
             type = NODE_LIST;
-        }
-
-        ~List() {
-            for(unsigned int i = 0; i < list.size(); i++) {
-                delete list[i];
-            }
         }
 };
 
@@ -374,12 +270,6 @@ class ArgList: public Node {
             if(init) list.push_back(init);
             type = NODE_ARGLIST;
         }
-
-        ~ArgList() {
-            for(unsigned int i = 0; i < list.size(); i++) {
-                delete list[i];
-            }
-        }
 };
 
 class ParamList: public Node {
@@ -390,12 +280,6 @@ class ParamList: public Node {
             if(init) list.push_back(init);
             type = NODE_PARAMLIST;
         }
-
-        ~ParamList() {
-            for(unsigned int i = 0; i < list.size(); i++) {
-                delete list[i];
-            }
-        }
 };
 
 class Return: public Stmt {
@@ -405,10 +289,6 @@ class Return: public Stmt {
         Return(Expr* value) {
             this->value = value;
             type = NODE_RETURN;
-        }
-
-        ~Return() {
-            delete value;
         }
 };
 
@@ -424,12 +304,6 @@ class FuncDef: public Stmt {
             this->stmts = stmts;
             type = NODE_FUNCDEF;
         }
-
-        ~FuncDef() {
-            delete ident;
-            delete params;
-            delete stmts;
-        }
 };
 
 class If: public Stmt {
@@ -442,11 +316,6 @@ class If: public Stmt {
             this->block = block;
             type = NODE_IF;
         }
-
-        ~If() {
-            delete condition;
-            delete block;
-        }
 };
 
 class While: public Stmt {
@@ -458,11 +327,6 @@ class While: public Stmt {
             this->condition = condition;
             this->block = block;
             type = NODE_WHILE;
-        }
-
-        ~While() {
-            delete condition;
-            delete block;
         }
 }; 
 
@@ -480,14 +344,6 @@ class For: public Stmt {
             this->block = block;
             type = NODE_FOR;
         }
-
-        ~For() {
-            delete iterator;
-            delete start;
-            delete end;
-            delete increment;
-            delete block;
-        }
 };
 
 class Assign: public Stmt {
@@ -499,11 +355,6 @@ class Assign: public Stmt {
             this->lhs = ident;
             this->value = value;
             type = NODE_ASSIGN;
-        }
-
-        ~Assign() {
-            delete lhs;
-            delete value;
         }
 };
 
@@ -518,12 +369,6 @@ class Decl: public Stmt {
             this->value = value;
             type = NODE_DECL;
         }
-
-        ~Decl() {
-            delete datatype;
-            delete name;
-            delete value;
-        }
 };
 
 class Alloc: public Stmt {
@@ -534,10 +379,6 @@ class Alloc: public Stmt {
             this->ident = ident;
             type = NODE_ALLOC;
         }
-
-        ~Alloc() {
-            delete ident;
-        }
 };
 
 class UploadList: public Expr {
@@ -547,12 +388,6 @@ class UploadList: public Expr {
         UploadList(Expr* init) {
             list.insert(list.begin(), init);
             type = NODE_UPLOADLIST;
-        }
-
-        ~UploadList() {
-            for(unsigned int i = 0; i < list.size(); i++) {
-                delete list[i];
-            }
         }
 };
 
@@ -568,12 +403,6 @@ class Upload: public Stmt {
             this->attrib = attrib;
             this->list = list;
         }
-
-        ~Upload() {
-            delete ident;
-            delete attrib;
-            delete list;
-        }
 };
 
 class Draw: public Stmt {
@@ -584,10 +413,6 @@ class Draw: public Stmt {
             this->ident = ident;
             type = NODE_DRAW;
         }
-
-        ~Draw() {
-            delete ident;
-        }
 };
 
 class Use: public Stmt {
@@ -597,10 +422,6 @@ class Use: public Stmt {
         Use(Ident* ident) {
             this->ident = ident;
             type = NODE_USE;
-        }
-
-        ~Use() {
-            delete ident;
         }
 };
 
@@ -614,11 +435,6 @@ class Invoke: public Node {
             this->args = args;
             type = NODE_INVOKE;
         }
-
-        ~Invoke() {
-            delete ident;
-            delete args;
-        }
 };
 
 class FuncExpr: public Expr {
@@ -628,10 +444,6 @@ class FuncExpr: public Expr {
         FuncExpr(Invoke* invoke) {
             this->invoke = invoke;
             type = NODE_FUNCEXPR;
-        }
-
-        ~FuncExpr() {
-            delete invoke;
         }
 };
 
@@ -643,11 +455,8 @@ class FuncStmt: public Stmt {
             this->invoke = invoke;
             type = NODE_FUNCSTMT;
         }
-
-        ~FuncStmt() {
-            delete invoke;
-        }
 };
+
 
 class ShaderSource: public Node {
     public:
@@ -704,10 +513,6 @@ class Print: public Stmt {
         Print(Expr* expr) {
             this->expr = expr;
             type = NODE_PRINT;
-        }
-
-        ~Print() {
-            delete expr;
         }
 };
 
