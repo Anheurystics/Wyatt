@@ -95,6 +95,11 @@ class Interpreter {
                 map<string, shared_ptr<Expr>> variables;
         };
 
+        typedef shared_ptr<Layout> Layout_ptr;
+        typedef shared_ptr<Program> Program_ptr;
+        typedef shared_ptr<Buffer> Buffer_ptr;
+        typedef shared_ptr<Scope> Scope_ptr;
+
         shared_ptr<Scope> globalScope;
         std::stack<shared_ptr<Scope>> functionScopeStack;
         map<string, shared_ptr<Buffer>> buffers;

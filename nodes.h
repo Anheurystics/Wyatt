@@ -38,7 +38,7 @@ enum OpType {
 class Node;
 class Expr;
 class Ident;
-class Uniform;
+class Dot;
 class Binary;
 class Unary;
 class Bool;
@@ -51,23 +51,71 @@ class Vector4;
 class Matrix2;
 class Matrix3;
 class Matrix4;
+class Index;
+class Stmt;
+class Stmts;
+class List;
+class ArgList;
+class ParamList;
+class Return;
+class FuncDef;
+class If;
+class While;
+class For;
+class Assign;
+class Decl;
+class Alloc;
+class UploadList;
+class Upload;
+class Draw;
+class Use;
+class Invoke;
+class FuncExpr;
+class FuncStmt;
+class ShaderSource;
+struct ShaderPair;
+class Print;
 
-typedef shared_ptr<Node> node_ptr;
-typedef shared_ptr<Expr> expr_ptr;
-typedef shared_ptr<Ident> ident_ptr;
-typedef shared_ptr<Uniform> uniform_ptr;
-typedef shared_ptr<Binary> binary_ptr;
-typedef shared_ptr<Unary> unary_ptr;
-typedef shared_ptr<Bool> bool_ptr;
-typedef shared_ptr<Int> int_ptr;
-typedef shared_ptr<Float> float_ptr;
-typedef shared_ptr<String> string_ptr;
-typedef shared_ptr<Vector2> vector2_ptr;
-typedef shared_ptr<Vector3> vector3_ptr;
-typedef shared_ptr<Vector4> vector4_ptr;
-typedef shared_ptr<Matrix2> matrix2_ptr;
-typedef shared_ptr<Matrix3> matrix3_ptr;
-typedef shared_ptr<Matrix4> matrix4_ptr;
+typedef shared_ptr<Node> Node_ptr;
+typedef shared_ptr<Expr> Expr_ptr;
+typedef shared_ptr<Ident> Ident_ptr;
+typedef shared_ptr<Dot> Dot_ptr;
+typedef shared_ptr<Binary> Binary_ptr;
+typedef shared_ptr<Unary> Unary_ptr;
+typedef shared_ptr<Bool> Bool_ptr;
+typedef shared_ptr<Int> Int_ptr;
+typedef shared_ptr<Float> Float_ptr;
+typedef shared_ptr<String> String_ptr;
+typedef shared_ptr<Vector2> Vector2_ptr;
+typedef shared_ptr<Vector3> Vector3_ptr;
+typedef shared_ptr<Vector4> Vector4_ptr;
+typedef shared_ptr<Matrix2> Matrix2_ptr;
+typedef shared_ptr<Matrix3> Matrix3_ptr;
+typedef shared_ptr<Matrix4> Matrix4_ptr;
+typedef shared_ptr<Index> Index_ptr;
+typedef shared_ptr<Stmt> Stmt_ptr;
+typedef shared_ptr<Stmts> Stmts_ptr;
+typedef shared_ptr<List> List_ptr;
+typedef shared_ptr<ArgList> ArgList_ptr;
+typedef shared_ptr<ParamList> ParamList_ptr;
+typedef shared_ptr<Return> Return_ptr;
+typedef shared_ptr<FuncDef> FuncDef_ptr;
+typedef shared_ptr<If> If_ptr;
+typedef shared_ptr<While> While_ptr;
+typedef shared_ptr<For> For_ptr;
+typedef shared_ptr<Assign> Assign_ptr;
+typedef shared_ptr<Decl> Decl_ptr;
+typedef shared_ptr<Alloc> Alloc_ptr;
+typedef shared_ptr<UploadList> UploadList_ptr;
+typedef shared_ptr<Upload> Upload_ptr;
+typedef shared_ptr<Draw> Draw_ptr;
+typedef shared_ptr<Use> Use_ptr;
+typedef shared_ptr<Invoke> Invoke_ptr;
+typedef shared_ptr<FuncExpr> FuncExpr_ptr;
+typedef shared_ptr<FuncStmt> FuncStmt_ptr;
+typedef shared_ptr<ShaderSource> ShaderSource_ptr;
+typedef shared_ptr<ShaderPair> ShaderPair_ptr;
+typedef shared_ptr<Print> Print_ptr;
 
 class Node {
     public:
@@ -97,7 +145,7 @@ class Dot: public Ident {
     public:
         string shader;
 
-        Dot(shared_ptr<Ident> shader, shared_ptr<Ident> name): Ident(name->name) {
+        Dot(Ident_ptr shader, Ident_ptr name): Ident(name->name) {
             this->shader = shader->name;
             type = NODE_DOT;
         }
@@ -106,9 +154,9 @@ class Dot: public Ident {
 class Binary: public Expr {
     public:
         OpType op;
-        shared_ptr<Expr> lhs, rhs;
+        Expr_ptr lhs, rhs;
 
-        Binary(shared_ptr<Expr> lhs, OpType op, shared_ptr<Expr> rhs) {
+        Binary(Expr_ptr lhs, OpType op, Expr_ptr rhs) {
             this->op = op;
             this->lhs = lhs;
             this->rhs = rhs;
@@ -119,9 +167,9 @@ class Binary: public Expr {
 class Unary: public Expr {
     public:
         OpType op;
-        shared_ptr<Expr> rhs;
+        Expr_ptr rhs;
 
-        Unary(OpType op, shared_ptr<Expr> rhs) {
+        Unary(OpType op, Expr_ptr rhs) {
             this->op = op;
             this->rhs = rhs;
             type = NODE_UNARY;
@@ -170,9 +218,9 @@ class String: public Expr {
 
 class Vector2: public Expr {
     public:
-        shared_ptr<Expr> x, y;
+        Expr_ptr x, y;
 
-        Vector2(shared_ptr<Expr> x, shared_ptr<Expr> y) {
+        Vector2(Expr_ptr x, Expr_ptr y) {
             this->x = x;
             this->y = y;
             type = NODE_VECTOR2;
@@ -181,9 +229,9 @@ class Vector2: public Expr {
 
 class Vector3: public Expr {
     public:
-        shared_ptr<Expr> x, y, z;
+        Expr_ptr x, y, z;
 
-        Vector3(shared_ptr<Expr> x, shared_ptr<Expr> y, shared_ptr<Expr> z) {
+        Vector3(Expr_ptr x, Expr_ptr y, Expr_ptr z) {
             this->x = x;
             this->y = y;
             this->z = z;
@@ -193,9 +241,9 @@ class Vector3: public Expr {
 
 class Vector4: public Expr {
     public:
-        shared_ptr<Expr> x, y, z, w;
+        Expr_ptr x, y, z, w;
 
-        Vector4(shared_ptr<Expr> x, shared_ptr<Expr> y, shared_ptr<Expr> z, shared_ptr<Expr> w) {
+        Vector4(Expr_ptr x, Expr_ptr y, Expr_ptr z, Expr_ptr w) {
             this->x = x;
             this->y = y;
             this->z = z;
@@ -206,62 +254,62 @@ class Vector4: public Expr {
 
 class Matrix2: public Expr {
     public:
-        shared_ptr<Vector2> v0, v1;
-        shared_ptr<Vector2> c0, c1;
+        Vector2_ptr v0, v1;
+        Vector2_ptr c0, c1;
 
-        Matrix2(shared_ptr<Vector2> v0, shared_ptr<Vector2> v1): v0(v0), v1(v1) {
+        Matrix2(Vector2_ptr v0, Vector2_ptr v1): v0(v0), v1(v1) {
             type = NODE_MATRIX2;
             generate_columns();
         }
 
         void generate_columns() {
-            c0 = make_shared<Vector2>(shared_ptr<Expr>(v0->x), shared_ptr<Expr>(v1->x));
-            c1 = make_shared<Vector2>(shared_ptr<Expr>(v0->y), shared_ptr<Expr>(v1->y));
+            c0 = make_shared<Vector2>(Expr_ptr(v0->x), Expr_ptr(v1->x));
+            c1 = make_shared<Vector2>(Expr_ptr(v0->y), Expr_ptr(v1->y));
         }
 };
 
 class Matrix3: public Expr {
     public:
-        shared_ptr<Vector3> v0, v1, v2;
-        shared_ptr<Vector3> c0, c1, c2;
+        Vector3_ptr v0, v1, v2;
+        Vector3_ptr c0, c1, c2;
 
-        Matrix3(shared_ptr<Vector3> v0, shared_ptr<Vector3> v1, shared_ptr<Vector3> v2): v0(v0), v1(v1), v2(v2) {
+        Matrix3(Vector3_ptr v0, Vector3_ptr v1, Vector3_ptr v2): v0(v0), v1(v1), v2(v2) {
             type = NODE_MATRIX3;
 
             generate_columns();
         }
 
         void generate_columns() {
-            c0 = make_shared<Vector3>(shared_ptr<Expr>(v0->x), shared_ptr<Expr>(v1->x), shared_ptr<Expr>(v2->x));
-            c1 = make_shared<Vector3>(shared_ptr<Expr>(v0->y), shared_ptr<Expr>(v1->y), shared_ptr<Expr>(v2->y));
-            c2 = make_shared<Vector3>(shared_ptr<Expr>(v0->z), shared_ptr<Expr>(v1->z), shared_ptr<Expr>(v2->z));
+            c0 = make_shared<Vector3>(Expr_ptr(v0->x), Expr_ptr(v1->x), Expr_ptr(v2->x));
+            c1 = make_shared<Vector3>(Expr_ptr(v0->y), Expr_ptr(v1->y), Expr_ptr(v2->y));
+            c2 = make_shared<Vector3>(Expr_ptr(v0->z), Expr_ptr(v1->z), Expr_ptr(v2->z));
         }
 };
 
 class Matrix4: public Expr {
     public:
-        shared_ptr<Vector4> v0, v1, v2, v3;
-        shared_ptr<Vector4> c0, c1, c2, c3;
+        Vector4_ptr v0, v1, v2, v3;
+        Vector4_ptr c0, c1, c2, c3;
 
-        Matrix4(shared_ptr<Vector4> v0, shared_ptr<Vector4> v1, shared_ptr<Vector4> v2, shared_ptr<Vector4> v3): v0(v0), v1(v1), v2(v2), v3(v3) {
+        Matrix4(Vector4_ptr v0, Vector4_ptr v1, Vector4_ptr v2, Vector4_ptr v3): v0(v0), v1(v1), v2(v2), v3(v3) {
             type = NODE_MATRIX4;
             generate_columns();
         }
 
         void generate_columns() {
-            c0 = make_shared<Vector4>(shared_ptr<Expr>(v0->x), shared_ptr<Expr>(v1->x), shared_ptr<Expr>(v2->x), shared_ptr<Expr>(v3->x));
-            c1 = make_shared<Vector4>(shared_ptr<Expr>(v0->y), shared_ptr<Expr>(v1->y), shared_ptr<Expr>(v2->y), shared_ptr<Expr>(v3->y));
-            c2 = make_shared<Vector4>(shared_ptr<Expr>(v0->z), shared_ptr<Expr>(v1->z), shared_ptr<Expr>(v2->z), shared_ptr<Expr>(v3->z));
-            c3 = make_shared<Vector4>(shared_ptr<Expr>(v0->w), shared_ptr<Expr>(v1->w), shared_ptr<Expr>(v2->w), shared_ptr<Expr>(v3->w));
+            c0 = make_shared<Vector4>(Expr_ptr(v0->x), Expr_ptr(v1->x), Expr_ptr(v2->x), Expr_ptr(v3->x));
+            c1 = make_shared<Vector4>(Expr_ptr(v0->y), Expr_ptr(v1->y), Expr_ptr(v2->y), Expr_ptr(v3->y));
+            c2 = make_shared<Vector4>(Expr_ptr(v0->z), Expr_ptr(v1->z), Expr_ptr(v2->z), Expr_ptr(v3->z));
+            c3 = make_shared<Vector4>(Expr_ptr(v0->w), Expr_ptr(v1->w), Expr_ptr(v2->w), Expr_ptr(v3->w));
         }
 };
 
 class Index: public Expr {
     public:
-        shared_ptr<Expr> source;
-        shared_ptr<Expr> index;
+        Expr_ptr source;
+        Expr_ptr index;
 
-        Index(shared_ptr<Expr> source, shared_ptr<Expr> index) {
+        Index(Expr_ptr source, Expr_ptr index) {
             this->source = source;
             this->index = index;
             type = NODE_INDEX;
@@ -277,9 +325,9 @@ class Stmt: public Node {
 
 class Stmts: public Node {
     public:
-        vector<shared_ptr<Stmt>> list;
+        vector<Stmt_ptr> list;
 
-        Stmts(shared_ptr<Stmt> init) {
+        Stmts(Stmt_ptr init) {
             if(init) list.insert(list.begin(), init);
             type = NODE_STMTS;
         }
@@ -287,9 +335,9 @@ class Stmts: public Node {
 
 class List: public Expr {
     public:
-        vector<shared_ptr<Expr>> list;
+        vector<Expr_ptr> list;
 
-        List(shared_ptr<Expr> init) {
+        List(Expr_ptr init) {
             if(init) list.insert(list.begin(), init);
             type = NODE_LIST;
         }
@@ -297,9 +345,9 @@ class List: public Expr {
 
 class ArgList: public Node {
     public:
-        vector<shared_ptr<Expr>> list;
+        vector<Expr_ptr> list;
 
-        ArgList(shared_ptr<Expr> init) {
+        ArgList(Expr_ptr init) {
             if(init) list.push_back(init);
             type = NODE_ARGLIST;
         }
@@ -307,9 +355,9 @@ class ArgList: public Node {
 
 class ParamList: public Node {
     public:
-        vector<shared_ptr<Ident>> list;
+        vector<Ident_ptr> list;
 
-        ParamList(shared_ptr<Ident> init) {
+        ParamList(Ident_ptr init) {
             if(init) list.push_back(init);
             type = NODE_PARAMLIST;
         }
@@ -317,9 +365,9 @@ class ParamList: public Node {
 
 class Return: public Stmt {
     public:
-        shared_ptr<Expr> value;
+        Expr_ptr value;
 
-        Return(shared_ptr<Expr> value) {
+        Return(Expr_ptr value) {
             this->value = value;
             type = NODE_RETURN;
         }
@@ -327,11 +375,11 @@ class Return: public Stmt {
 
 class FuncDef: public Stmt {
     public:
-        shared_ptr<Ident> ident;
-        shared_ptr<ParamList> params;
-        shared_ptr<Stmts> stmts;
+        Ident_ptr ident;
+        ParamList_ptr params;
+        Stmts_ptr stmts;
 
-        FuncDef(shared_ptr<Ident> ident, shared_ptr<ParamList> params, shared_ptr<Stmts> stmts) {
+        FuncDef(Ident_ptr ident, ParamList_ptr params, Stmts_ptr stmts) {
             this->ident = ident;
             this->params = params;
             this->stmts = stmts;
@@ -341,10 +389,10 @@ class FuncDef: public Stmt {
 
 class If: public Stmt {
     public:
-        shared_ptr<Expr> condition;
-        shared_ptr<Stmts> block;
+        Expr_ptr condition;
+        Stmts_ptr block;
 
-        If(shared_ptr<Expr> condition, shared_ptr<Stmts> block) {
+        If(Expr_ptr condition, Stmts_ptr block) {
             this->condition = condition;
             this->block = block;
             type = NODE_IF;
@@ -353,10 +401,10 @@ class If: public Stmt {
 
 class While: public Stmt {
     public:
-        shared_ptr<Expr> condition;
-        shared_ptr<Stmts> block;
+        Expr_ptr condition;
+        Stmts_ptr block;
 
-        While(shared_ptr<Expr> condition, shared_ptr<Stmts> block) {
+        While(Expr_ptr condition, Stmts_ptr block) {
             this->condition = condition;
             this->block = block;
             type = NODE_WHILE;
@@ -365,11 +413,11 @@ class While: public Stmt {
 
 class For: public Stmt {
     public:
-        shared_ptr<Ident> iterator;
-        shared_ptr<Expr> start, end, increment;
-        shared_ptr<Stmts> block;
+        Ident_ptr iterator;
+        Expr_ptr start, end, increment;
+        Stmts_ptr block;
 
-        For(shared_ptr<Ident> iterator, shared_ptr<Expr> start, shared_ptr<Expr> end, shared_ptr<Expr> increment, shared_ptr<Stmts> block) {
+        For(Ident_ptr iterator, Expr_ptr start, Expr_ptr end, Expr_ptr increment, Stmts_ptr block) {
             this->iterator = iterator;
             this->start = start;
             this->end = end;
@@ -381,10 +429,10 @@ class For: public Stmt {
 
 class Assign: public Stmt {
     public:
-        shared_ptr<Expr> lhs;
-        shared_ptr<Expr> value;
+        Expr_ptr lhs;
+        Expr_ptr value;
 
-        Assign(shared_ptr<Expr> ident, shared_ptr<Expr> value) {
+        Assign(Expr_ptr ident, Expr_ptr value) {
             this->lhs = ident;
             this->value = value;
             type = NODE_ASSIGN;
@@ -393,10 +441,10 @@ class Assign: public Stmt {
 
 class Decl: public Stmt {
     public:
-        shared_ptr<Ident> datatype, name;
-        shared_ptr<Expr> value;
+        Ident_ptr datatype, name;
+        Expr_ptr value;
 
-        Decl(shared_ptr<Ident> datatype, shared_ptr<Ident> name, shared_ptr<Expr> value) {
+        Decl(Ident_ptr datatype, Ident_ptr name, Expr_ptr value) {
             this->datatype= datatype;
             this->name = name;
             this->value = value;
@@ -406,9 +454,9 @@ class Decl: public Stmt {
 
 class Alloc: public Stmt {
     public:
-        shared_ptr<Ident> ident;
+        Ident_ptr ident;
 
-        Alloc(shared_ptr<Ident> ident) {
+        Alloc(Ident_ptr ident) {
             this->ident = ident;
             type = NODE_ALLOC;
         }
@@ -416,9 +464,9 @@ class Alloc: public Stmt {
 
 class UploadList: public Expr {
     public:
-        vector<shared_ptr<Expr>> list;
+        vector<Expr_ptr> list;
 
-        UploadList(shared_ptr<Expr> init) {
+        UploadList(Expr_ptr init) {
             list.insert(list.begin(), init);
             type = NODE_UPLOADLIST;
         }
@@ -426,11 +474,11 @@ class UploadList: public Expr {
 
 class Upload: public Stmt {
     public:
-        shared_ptr<Ident> ident;
-        shared_ptr<Ident> attrib;
-        shared_ptr<UploadList> list;
+        Ident_ptr ident;
+        Ident_ptr attrib;
+        UploadList_ptr list;
 
-        Upload(shared_ptr<Ident> ident, shared_ptr<Ident> attrib, shared_ptr<UploadList> list) {
+        Upload(Ident_ptr ident, Ident_ptr attrib, UploadList_ptr list) {
             type = NODE_UPLOAD;
             this->ident = ident;
             this->attrib = attrib;
@@ -440,9 +488,9 @@ class Upload: public Stmt {
 
 class Draw: public Stmt {
     public:
-        shared_ptr<Ident> ident;
+        Ident_ptr ident;
 
-        Draw(shared_ptr<Ident> ident) {
+        Draw(Ident_ptr ident) {
             this->ident = ident;
             type = NODE_DRAW;
         }
@@ -450,9 +498,9 @@ class Draw: public Stmt {
 
 class Use: public Stmt {
     public:
-        shared_ptr<Ident> ident;
+        Ident_ptr ident;
 
-        Use(shared_ptr<Ident> ident) {
+        Use(Ident_ptr ident) {
             this->ident = ident;
             type = NODE_USE;
         }
@@ -460,10 +508,10 @@ class Use: public Stmt {
 
 class Invoke: public Node {
     public:
-        shared_ptr<Ident> ident;
-        shared_ptr<ArgList> args;
+        Ident_ptr ident;
+        ArgList_ptr args;
 
-        Invoke(shared_ptr<Ident> ident, shared_ptr<ArgList> args) {
+        Invoke(Ident_ptr ident, ArgList_ptr args) {
             this->ident = ident;
             this->args = args;
             type = NODE_INVOKE;
@@ -472,9 +520,9 @@ class Invoke: public Node {
 
 class FuncExpr: public Expr {
     public:
-        shared_ptr<Invoke> invoke;
+        Invoke_ptr invoke;
 
-        FuncExpr(shared_ptr<Invoke> invoke) {
+        FuncExpr(Invoke_ptr invoke) {
             this->invoke = invoke;
             type = NODE_FUNCEXPR;
         }
@@ -482,9 +530,9 @@ class FuncExpr: public Expr {
 
 class FuncStmt: public Stmt {
     public:
-        shared_ptr<Invoke> invoke;
+        Invoke_ptr invoke;
 
-        FuncStmt(shared_ptr<Invoke> invoke) {
+        FuncStmt(Invoke_ptr invoke) {
             this->invoke = invoke;
             type = NODE_FUNCSTMT;
         }
@@ -535,15 +583,15 @@ class ShaderSource: public Node {
 
 struct ShaderPair {
     std::string name;
-    shared_ptr<ShaderSource> vertex = NULL;
-    shared_ptr<ShaderSource> fragment = NULL;
+    ShaderSource_ptr vertex = NULL;
+    ShaderSource_ptr fragment = NULL;
 };
 
 class Print: public Stmt {
     public:
-        shared_ptr<Expr> expr;
+        Expr_ptr expr;
 
-        Print(shared_ptr<Expr> expr) {
+        Print(Expr_ptr expr) {
             this->expr = expr;
             type = NODE_PRINT;
         }
