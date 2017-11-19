@@ -15,13 +15,12 @@
 
 #include <QOpenGLFunctions>
 
-#include "parser.h"
 #include "scanner.h"
+#include "parser.hpp"
 #include "logwindow.h"
 #include "helper.h"
 
-using namespace std;
-
+namespace Prototype {
 class Interpreter {
     public:
         Interpreter(LogWindow*);
@@ -41,8 +40,8 @@ class Interpreter {
         void reset();
 
     private:
-        Scanner scanner;
-        Parser parser;
+        Prototype::Scanner scanner;
+        Prototype::Parser parser;
 
         struct Layout {
             map<string, unsigned int> attributes;
@@ -96,7 +95,7 @@ class Interpreter {
         };
 
         shared_ptr<Scope> globalScope;
-        stack<shared_ptr<Scope>> functionScopeStack;
+        std::stack<shared_ptr<Scope>> functionScopeStack;
         map<string, shared_ptr<Buffer>> buffers;
         map<string, shared_ptr<Program>> programs;
         map<string, shared_ptr<ShaderPair>> shaders;
@@ -119,5 +118,6 @@ class Interpreter {
 
         LogWindow* logger;
 };
+}
 
 #endif //MYPARSER_H

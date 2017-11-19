@@ -24,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent, std::string startfile) :
 
     CustomGLWidget* glWidget = ui->openGLWidget;
     glWidget->logger = ui->logWindow;
-    glWidget->interpreter = new Interpreter(ui->logWindow);
+    glWidget->interpreter = new Prototype::Interpreter(ui->logWindow);
 }
 
 MainWindow::~MainWindow()

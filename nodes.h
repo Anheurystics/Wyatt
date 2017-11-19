@@ -226,7 +226,6 @@ class Matrix2: public Expr {
 
         Matrix2(shared_ptr<Vector2> v0, shared_ptr<Vector2> v1): v0(v0), v1(v1) {
             type = NODE_MATRIX2;
-
             generate_columns();
         }
 
@@ -264,7 +263,9 @@ class Matrix4: public Expr {
 
         Matrix4(shared_ptr<Vector4> v0, shared_ptr<Vector4> v1, shared_ptr<Vector4> v2, shared_ptr<Vector4> v3): v0(v0), v1(v1), v2(v2), v3(v3) {
             type = NODE_MATRIX4;
-	}
+
+            generate_columns();
+        }
 
         void generate_columns() {
             c0 = make_shared<Vector4>(shared_ptr<Expr>(v0->x), shared_ptr<Expr>(v1->x), shared_ptr<Expr>(v2->x), shared_ptr<Expr>(v3->x));

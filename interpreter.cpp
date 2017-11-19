@@ -1,16 +1,30 @@
 #include "interpreter.h"
+#include <sstream>
 #include <memory>
 
-#define resolve_int(n) 1
-#define resolve_float(n) static_pointer_cast<Float>(n)->value
-#define resolve_scalar(n) ((n->type == NODE_INT)? (float)(resolve_int(n)) : resolve_float(n))
+int resolve_int(shared_ptr<Expr> expr) {
+    return static_pointer_cast<Int>(expr)->value;
+}
+
+float resolve_float(shared_ptr<Expr> expr) {
+    return static_pointer_cast<Float>(expr)->value;
+}
+
+float resolve_scalar(shared_ptr<Expr> expr) {
+    if(expr->type == NODE_INT) {
+        return (float)resolve_int(expr);
+    } else {
+        return resolve_float(expr);
+    }
+}
+
 #define resolve_vec2(v) resolve_scalar(v->x), resolve_scalar(v->y)
 #define resolve_vec3(v) resolve_scalar(v->x), resolve_scalar(v->y), resolve_scalar(v->z)
 #define resolve_vec4(v) resolve_scalar(v->x), resolve_scalar(v->y), resolve_scalar(v->z), resolve_scalar(v->w)
 
 #define LOOP_TIMEOUT 5
 
-Interpreter::Interpreter(LogWindow* logger) {
+Prototype::Interpreter::Interpreter(LogWindow* logger): scanner(), parser(scanner, &functions, &shaders) {
     this->logger = logger;
 
     globalScope = make_shared<Scope>("global");
@@ -27,8 +41,6 @@ Interpreter::Interpreter(LogWindow* logger) {
         builtins[it->first] = it->second;
     }
     functions.clear();
-
-    parser(&shaders, &functions);
 }
 
 #define clear_map(type, name) \
@@ -36,7 +48,7 @@ Interpreter::Interpreter(LogWindow* logger) {
         name.erase(it); \
     } \
 
-void Interpreter::reset() {
+void Prototype::Interpreter::reset() {
     clear_map(Buffer, buffers);
     clear_map(Program, programs);
     clear_map(ShaderPair, shaders);
@@ -103,7 +115,7 @@ string tostring(shared_ptr<Expr> expr) {
     }
 }
 
-shared_ptr<Expr> Interpreter::eval_binary(shared_ptr<Binary> bin) {
+shared_ptr<Expr> Prototype::Interpreter::eval_binary(shared_ptr<Binary> bin) {
     shared_ptr<Expr> lhs = eval_expr(bin->lhs);
     if(!lhs) return NULL;
 
@@ -453,7 +465,7 @@ shared_ptr<Expr> Interpreter::eval_binary(shared_ptr<Binary> bin) {
     return NULL;
 }
 
-shared_ptr<Expr> Interpreter::invoke(shared_ptr<Invoke> invoke) {
+shared_ptr<Expr> Prototype::Interpreter::invoke(shared_ptr<Invoke> invoke) {
     string name = invoke->ident->name;
     shared_ptr<FuncDef> def = NULL;
 
@@ -528,7 +540,7 @@ shared_ptr<Expr> Interpreter::invoke(shared_ptr<Invoke> invoke) {
     return NULL;
 }
 
-shared_ptr<Expr> Interpreter::resolve_vector(vector<shared_ptr<Expr>> list) {
+shared_ptr<Expr> Prototype::Interpreter::resolve_vector(vector<shared_ptr<Expr>> list) {
     vector<float> data;
     int n = 0;
 
@@ -573,7 +585,7 @@ shared_ptr<Expr> Interpreter::resolve_vector(vector<shared_ptr<Expr>> list) {
     return NULL;
 }
 
-shared_ptr<Expr> Interpreter::eval_expr(shared_ptr<Expr> node) {
+shared_ptr<Expr> Prototype::Interpreter::eval_expr(shared_ptr<Expr> node) {
     switch(node->type) {
         case NODE_IDENT: 
             {
@@ -908,7 +920,7 @@ shared_ptr<Expr> Interpreter::eval_expr(shared_ptr<Expr> node) {
     }
 }
 
-shared_ptr<Expr> Interpreter::eval_stmt(shared_ptr<Stmt> stmt) {
+shared_ptr<Expr> Prototype::Interpreter::eval_stmt(shared_ptr<Stmt> stmt) {
     switch(stmt->type) {
         case NODE_FUNCSTMT:
             {
@@ -1039,7 +1051,6 @@ shared_ptr<Expr> Interpreter::eval_stmt(shared_ptr<Stmt> stmt) {
                         }
 
                         bool is_scalar = (rhs->type == NODE_FLOAT || rhs->type == NODE_INT);
-                        cout << source->type << " " << NODE_VECTOR3 << endl;
                         if(source->type == NODE_VECTOR2 && index->type == NODE_INT) {
                             if(!is_scalar) {
                                 logger->log(assign, "ERROR", "vec2 component needs to be a float or an int");
@@ -1354,7 +1365,7 @@ shared_ptr<Expr> Interpreter::eval_stmt(shared_ptr<Stmt> stmt) {
     }
 }
 
-shared_ptr<Expr> Interpreter::execute_stmts(shared_ptr<Stmts> stmts) {
+shared_ptr<Expr> Prototype::Interpreter::execute_stmts(shared_ptr<Stmts> stmts) {
     shared_ptr<Expr> returnValue = NULL;
     for(unsigned int it = 0; it < stmts->list.size(); it++) { 
         shared_ptr<Stmt> stmt = stmts->list.at(it);
@@ -1378,7 +1389,7 @@ shared_ptr<Expr> Interpreter::execute_stmts(shared_ptr<Stmts> stmts) {
     }
 }
 
-void Interpreter::compile_shader(GLuint* handle, shared_ptr<ShaderSource> source) {
+void Prototype::Interpreter::compile_shader(GLuint* handle, shared_ptr<ShaderSource> source) {
     const char* src = source->code.c_str();
     gl->glShaderSource(*handle, 1, &src, NULL);
     gl->glCompileShader(*handle);
@@ -1393,7 +1404,7 @@ void Interpreter::compile_shader(GLuint* handle, shared_ptr<ShaderSource> source
     }
 }
 
-void Interpreter::compile_program() {
+void Prototype::Interpreter::compile_program() {
     programs.clear();
     for(map<string, shared_ptr<ShaderPair>>::iterator it = shaders.begin(); it != shaders.end(); ++it) {
         shared_ptr<Program> program = make_shared<Program>();
@@ -1434,7 +1445,7 @@ void Interpreter::compile_program() {
     }
 }
 
-void Interpreter::execute_init() {
+void Prototype::Interpreter::execute_init() {
     if(!init || status) return;
     buffers.clear();
     globalScope->clear();
@@ -1442,20 +1453,21 @@ void Interpreter::execute_init() {
     execute_stmts(init->stmts);
 }
 
-void Interpreter::execute_loop() {
+void Prototype::Interpreter::execute_loop() {
     if(!loop || status) return;
 
     execute_stmts(loop->stmts);
 }
 
-void Interpreter::parse(string code) {
-    sstream ss;
-    ss << code;
-    scanner.switch_stream(ss, NULL);
+void Prototype::Interpreter::parse(string code) {
     reset();
+
+    istringstream ss(code);
+    scanner.switch_streams(&ss, NULL);
+    status = parser.parse();
 }
 
-void Interpreter::prepare() {
+void Prototype::Interpreter::prepare() {
     init = functions["init"];
     if(init == NULL) {
         logger->log("ERROR: init() function required!");

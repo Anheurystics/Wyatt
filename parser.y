@@ -1,12 +1,13 @@
 %skeleton "lalr1.cc"
 %require "3.0"
-%defines "parser.h"
+%defines
 %output "parser.cpp"
 %define parser_class_name { Parser }
+
 %define api.token.constructor
 %define api.value.type variant
 %define parse.assert
-
+%define api.namespace { Prototype }
 %code requires {
 #include <cstdio>
 #include <iostream>
@@ -17,18 +18,34 @@
 
 using namespace std;
 
+namespace Prototype {
+    class Scanner;
+}
+
 #include "nodes.h"
+
+#define set_lines(a, b, c)
 }
 
 %code top {
-    static Parser::symbol_type yylex(Scanner &scanner) {
-        return scanner.get_next_token();
+    #include <iostream>
+    #include "scanner.h"
+    #include "parser.hpp"
+    #include "interpreter.h"
+    #include "location.hh"
+
+    static Prototype::Parser::symbol_type yylex(Prototype::Scanner &scanner) {
+        Prototype::Parser::symbol_type tok = scanner.get_next_token();
+        return tok;
     }
+
+    using namespace Prototype;
 }
 
-%lex-param { Scanner &scanner; }
-%parse-param { std::map<std::string, std::shared_ptr<ShaderPair>> *shaders }
-%parse-param { std::map<std::string, std::shared_ptr<FuncDef>> *functions }
+%lex-param { Prototype::Scanner &scanner }
+%parse-param { Prototype::Scanner &scanner }
+%parse-param { std::map<std::string, std::shared_ptr<FuncDef>>* functions }
+%parse-param { std::map<std::string, std::shared_ptr<ShaderPair>>* shaders }
 %locations
 %define parse.trace
 %define parse.error verbose
@@ -214,17 +231,17 @@ stmt: IDENTIFIER EQUALS expr { $$ = make_shared<Assign>($1, $3); set_lines($$, @
 
 arg_list: { $$ = make_shared<ArgList>(nullptr); }
     | expr { $$ = make_shared<ArgList>($1); }
-    | arg_list COMMA expr { $1->list.push_back($3); }
+    | arg_list COMMA expr { $$ = $1; $1->list.push_back($3); }
     ;
 
 param_list: { $$ = make_shared<ParamList>(nullptr); }
     | IDENTIFIER { $$ = make_shared<ParamList>($1); }
-    | param_list COMMA IDENTIFIER { $1->list.push_back($3); }
+    | param_list COMMA IDENTIFIER { $$ = $1; $1->list.push_back($3); }
     ;
 
 list: { $$ = make_shared<List>(nullptr); }
     | expr { $$ = make_shared<List>($1); }
-    | list COMMA expr { $1->list.push_back($3); }
+    | list COMMA expr { $$ = $1; $1->list.push_back($3); }
     ;
 
 invoke: IDENTIFIER OPEN_PAREN arg_list CLOSE_PAREN { $$ = make_shared<Invoke>($1, $3); set_lines($$, @1, @1); }
@@ -237,14 +254,14 @@ stmt_block: IF OPEN_PAREN expr CLOSE_PAREN block { $$ = make_shared<If>($3, $5);
     ;
 
 stmts: { $$ = make_shared<Stmts>(nullptr); }
-    | stmts stmt SEMICOLON { $1->list.insert($1->list.end(), $2); }
-    | stmts stmt_block { $1->list.insert($1->list.end(), $2); }
+    | stmts stmt SEMICOLON { $$ = $1; $1->list.insert($1->list.end(), $2); }
+    | stmts stmt_block { $$ = $1; $1->list.insert($1->list.end(), $2); }
     ;
 
 block: OPEN_BRACE stmts CLOSE_BRACE { $$ = $2; }
 
 upload_list: expr { $$ = make_shared<UploadList>($1); }
-    | upload_list COMMA expr { $1->list.insert($1->list.end(), $3); }
+    | upload_list COMMA expr { $$ = $1; $1->list.insert($1->list.end(), $3); }
     ;
 
 vec2: OPEN_BRACKET expr COMMA expr CLOSE_BRACKET { $$ = make_shared<Vector2>($2, $4); set_lines($$, @1, @5); }

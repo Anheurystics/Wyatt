@@ -2,28 +2,20 @@
 #include <cstdlib>
 #include <string>
 #include <memory>
-#include "parser.h"
+#include "scanner.h"
+#include "parser.hpp"
+#include "location.hh"
 
 using namespace std;
 
 #define yyterminate() Parser::make_END(location());
-
-#define YY_USER_ACTION \
-    if(yylloc.first_line != yylineno) yycolumn = 0; \
-    yylloc.first_line = yylloc.last_line = yylineno; \
-    yylloc.first_column = yycolumn; yylloc.last_column = yycolumn + yyleng - 1; \
-    yycolumn += yyleng; \
-
-int yycolumn = 0;
 %}
 
-%option nodefault
 %option noyywrap
 %option c++
-%option yyclass="Scanner"
-%option header-file="scanner.h"
 %option outfile="scanner.cpp"
-%option yylineno
+%option yyclass="Scanner"
+%option prefix="Prototype_"
 
 %%
 "vert"         { return Parser::make_VERTEX(location()); }
