@@ -6,7 +6,6 @@ ui_mainwindow.h
 prototype
 parsercli
 scanner.cpp
-scanner.h
 parser.cpp
 parser.hpp
 position.hh
