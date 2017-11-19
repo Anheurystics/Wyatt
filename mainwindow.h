@@ -46,7 +46,12 @@ private slots:
     }
 
     void openFile() {
-        setOpenedFile(QFileDialog::getOpenFileName(this, tr("Open File")));
+        QString selected = QFileDialog::getOpenFileName(this, tr("Open File"));
+        if(selected == Q_NULLPTR) {
+            return;
+        }
+
+        setOpenedFile(selected);
 
         ifstream file;
         file.open(openFileName.toStdString());
@@ -72,7 +77,12 @@ private slots:
     }
 
     void saveAsFile() {
-        setOpenedFile(QFileDialog::getSaveFileName(this, tr("Save As")));
+        QString selected = QFileDialog::getSaveFileName(this, tr("Save As"));
+        if(selected == Q_NULLPTR) {
+            return;
+        }
+
+        setOpenedFile(selected);
         saveFile();
     }
 };
