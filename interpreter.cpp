@@ -27,6 +27,8 @@ Interpreter::Interpreter(LogWindow* logger) {
         builtins[it->first] = it->second;
     }
     functions.clear();
+
+    parser(&shaders, &functions);
 }
 
 #define clear_map(type, name) \
@@ -1447,11 +1449,10 @@ void Interpreter::execute_loop() {
 }
 
 void Interpreter::parse(string code) {
-    YY_BUFFER_STATE state = yy_scan_string(code.c_str());
+    sstream ss;
+    ss << code;
+    scanner.switch_stream(ss, NULL);
     reset();
-    yylineno = 1;
-    status = yyparse(&shaders, &functions);
-    yy_delete_buffer(state);
 }
 
 void Interpreter::prepare() {

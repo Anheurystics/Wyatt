@@ -41,6 +41,9 @@ class Interpreter {
         void reset();
 
     private:
+        Scanner scanner;
+        Parser parser;
+
         struct Layout {
             map<string, unsigned int> attributes;
             vector<string> list;

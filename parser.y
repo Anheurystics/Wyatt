@@ -1,53 +1,90 @@
-%{
+%skeleton "lalr1.cc"
+%require "3.0"
+%defines "parser.h"
+%output "parser.cpp"
+%define parser_class_name { Parser }
+%define api.token.constructor
+%define api.value.type variant
+%define parse.assert
+
+%code requires {
 #include <cstdio>
 #include <iostream>
 #include <vector>
 #include <cmath>
 #include <string>
-
-using namespace std;
-%}
-
-%code requires {
-#include "nodes.h"
 #include <memory>
 
-int yylex();
-void yyerror( std::map<std::string, std::shared_ptr<ShaderPair>> *shaders, std::map<std::string, std::shared_ptr<FuncDef>> *functions, const char *s);
+using namespace std;
 
-#define set_lines(dst, start, end) dst->first_line = start.first_line; dst->last_line = end.last_line;
-#define YYSTYPE shared_ptr<Node>
+#include "nodes.h"
 }
 
-%debug
+%code top {
+    static Parser::symbol_type yylex(Scanner &scanner) {
+        return scanner.get_next_token();
+    }
+}
 
-%language "c++"
-%defines "parser.h"
-%output "parser.cpp"
-%define parse.error verbose
-%define api.value.type variant
+%lex-param { Scanner &scanner; }
+%parse-param { std::map<std::string, std::shared_ptr<ShaderPair>> *shaders }
+%parse-param { std::map<std::string, std::shared_ptr<FuncDef>> *functions }
 %locations
+%define parse.trace
+%define parse.error verbose
 
-%parse-param { std::map<std::string, std::shared_ptr<ShaderPair>> *shaders } { std::map<std::string, std::shared_ptr<FuncDef>> *functions }
+%define api.token.prefix {TOK_}
 
-%token<shared_ptr<Bool>> T_BOOL
-%token<shared_ptr<Int>> T_INT
-%token<shared_ptr<Float>> T_FLOAT
-%token<shared_ptr<String>> T_STRING T_SHADER
-%token<shared_ptr<Ident>> T_IDENTIFIER
+%token<shared_ptr<Bool>> BOOL;
+%token<shared_ptr<Int>> INT;
+%token<shared_ptr<Float>> FLOAT;
+%token<shared_ptr<String>> STRING;
+%token<shared_ptr<String>> SHADER;
+%token<shared_ptr<Ident>> IDENTIFIER;
 
-%token T_SEMICOLON T_OPEN_BRACE T_CLOSE_BRACE
-%token T_PIPE
-%token T_OPEN_PAREN T_CLOSE_PAREN T_LESS_THAN T_GREATER_THAN T_OPEN_BRACKET T_CLOSE_BRACKET T_COMMA T_PERIOD T_EQUALS T_COMP_PLUS T_COMP_MINUS T_COMP_MULT T_COMP_DIV T_COMP_MOD
-%token T_FUNC T_AND T_OR T_NOT T_IF T_WHILE T_FOR T_IN T_ALLOCATE T_UPLOAD T_DRAW T_VERTEX T_FRAGMENT T_PRINT T_USE T_RETURN
+%token END 0 "eof";
+%token SEMICOLON ";";
+%token OPEN_BRACE "{";
+%token CLOSE_BRACE "}";
+%token PIPE "|";
+%token OPEN_PAREN "(";
+%token CLOSE_PAREN ")";
+%token LESS_THAN "<";
+%token GREATER_THAN ">";
+%token OPEN_BRACKET "[";
+%token CLOSE_BRACKET "]";
+%token COMMA ",";
+%token PERIOD  ".";
+%token EQUALS "=";
+%token COMP_PLUS "+=";
+%token COMP_MINUS "-=";
+%token COMP_MULT "*=";
+%token COMP_DIV "/=";
+%token COMP_MOD "%="; 
+%token FUNC "func";
+%token AND "and";
+%token OR "or";
+%token NOT "not";
+%token IF "if";
+%token WHILE "while";
+%token FOR "for";
+%token IN "in";
+%token ALLOCATE "allocate"; 
+%token UPLOAD "<-";
+%token DRAW "draw";
+%token VERTEX "vert";
+%token FRAGMENT "frag";
+%token PRINT "print";
+%token USE "use";
+%token RETURN "return";
 
-%left T_PLUS T_MINUS
-%left T_MULT T_DIV T_MOD
-%left T_AND T_OR
+%left PLUS MINUS
+%left MULT DIV MOD
+%left AND OR
 %right UNARY
 
-%nonassoc T_EQUAL T_NEQUAL T_GEQUAL T_LEQUAL
-%nonassoc T_LESS_THAN T_GREATER_THAN
+%nonassoc EQUAL NEQUAL GEQUAL LEQUAL
+%nonassoc LESS_THAN GREATER_THAN
 
 %type<shared_ptr<Invoke>> invoke;
 %type<shared_ptr<Expr>> expr index
@@ -104,124 +141,124 @@ program:
     }
     ;
 
-vert_shader: T_VERTEX T_IDENTIFIER T_SHADER T_SEMICOLON { $$ = make_shared<ShaderSource>($2->name, $3->value, "vert"); }
+vert_shader: VERTEX IDENTIFIER SHADER SEMICOLON { $$ = make_shared<ShaderSource>($2->name, $3->value, "vert"); }
     ;
 
-frag_shader: T_FRAGMENT T_IDENTIFIER T_SHADER T_SEMICOLON { $$ = make_shared<ShaderSource>($2->name, $3->value, "frag"); }
+frag_shader: FRAGMENT IDENTIFIER SHADER SEMICOLON { $$ = make_shared<ShaderSource>($2->name, $3->value, "frag"); }
     ;
 
-function: T_FUNC T_IDENTIFIER T_OPEN_PAREN param_list T_CLOSE_PAREN block { $$ = make_shared<FuncDef>($2, $4, $6); set_lines($$, @1, @6); }
+function: FUNC IDENTIFIER OPEN_PAREN param_list CLOSE_PAREN block { $$ = make_shared<FuncDef>($2, $4, $6); set_lines($$, @1, @6); }
     ;
 
-expr: T_INT { $$ = $1; set_lines($$,@1,@1); }
-    | T_FLOAT { $$ = $1; set_lines($$, @1, @1); }
-    | T_BOOL { $$ = $1; set_lines($$, @1, @1); }
-    | T_IDENTIFIER { $$ = $1; set_lines($$, @1, @1); }
-    | T_STRING { $$ = $1; set_lines($$, @1, @1); }
+expr: INT { $$ = $1; set_lines($$,@1,@1); }
+    | FLOAT { $$ = $1; set_lines($$, @1, @1); }
+    | BOOL { $$ = $1; set_lines($$, @1, @1); }
+    | IDENTIFIER { $$ = $1; set_lines($$, @1, @1); }
+    | STRING { $$ = $1; set_lines($$, @1, @1); }
     | vec2 { $$ = $1; set_lines($$, @1, @1); }
     | vec3 { $$ = $1; set_lines($$, @1, @1); }
     | vec4 { $$ = $1; set_lines($$, @1, @1); }
     | invoke { $$ = make_shared<FuncExpr>($1); set_lines($$, @1, @1); }
     | dot { $$ = $1; set_lines($$, @1, @1); }
     | index { $$ = $1; set_lines($$, @1, @1); }
-    | T_OPEN_BRACE list T_CLOSE_BRACE { $$ = $2; set_lines($$, @1, @3); }
-    | expr T_PLUS expr { $$ = make_shared<Binary>($1, OP_PLUS, $3); set_lines($$, @1, @3); }
-    | expr T_MINUS expr { $$ = make_shared<Binary>($1, OP_MINUS, $3); set_lines($$, @1, @3); }
-    | expr T_MULT expr { $$ = make_shared<Binary>($1, OP_MULT, $3); set_lines($$, @1, @3); }
-    | expr T_DIV expr { $$ = make_shared<Binary>($1, OP_DIV, $3); set_lines($$, @1, @3); }
-    | expr T_MOD expr { $$ = make_shared<Binary>($1, OP_MOD, $3); set_lines($$, @1, @3); }
-    | expr T_LESS_THAN expr { $$ = make_shared<Binary>($1, OP_LESSTHAN, $3); set_lines($$, @1, @3);}
-    | expr T_GREATER_THAN expr { $$ = make_shared<Binary>($1, OP_GREATERTHAN, $3); set_lines($$, @1, @3); }
-    | expr T_EQUAL expr { $$ = make_shared<Binary>($1, OP_EQUAL, $3); set_lines($$, @1, @3); }
-    | expr T_NEQUAL expr { $$ = make_shared<Binary>($1, OP_NEQUAL, $3); set_lines($$, @1, @3); }
-    | expr T_LEQUAL expr { $$ = make_shared<Binary>($1, OP_LEQUAL, $3); set_lines($$, @1, @3); }
-    | expr T_GEQUAL expr { $$ = make_shared<Binary>($1, OP_GEQUAL, $3); set_lines($$, @1, @3); }
-    | expr T_OR expr { $$ = make_shared<Binary>($1, OP_OR, $3); set_lines($$, @1, @3); }
-    | expr T_AND expr { $$ = make_shared<Binary>($1, OP_AND, $3); set_lines($$, @1, @3); }
-    | T_MINUS expr { $$ = make_shared<Unary>(OP_MINUS, $2); set_lines($$, @1, @2); } %prec UNARY
-    | T_NOT expr { $$ = make_shared<Unary>(OP_NOT, $2); set_lines($$, @1, @2); } %prec UNARY
-    | T_PIPE expr T_PIPE { $$ = make_shared<Unary>(OP_ABS, $2); set_lines($$, @1, @3); }
-    | T_OPEN_PAREN expr T_CLOSE_PAREN { $$ = $2; set_lines($$, @1, @3); }
+    | OPEN_BRACE list CLOSE_BRACE { $$ = $2; set_lines($$, @1, @3); }
+    | expr PLUS expr { $$ = make_shared<Binary>($1, OP_PLUS, $3); set_lines($$, @1, @3); }
+    | expr MINUS expr { $$ = make_shared<Binary>($1, OP_MINUS, $3); set_lines($$, @1, @3); }
+    | expr MULT expr { $$ = make_shared<Binary>($1, OP_MULT, $3); set_lines($$, @1, @3); }
+    | expr DIV expr { $$ = make_shared<Binary>($1, OP_DIV, $3); set_lines($$, @1, @3); }
+    | expr MOD expr { $$ = make_shared<Binary>($1, OP_MOD, $3); set_lines($$, @1, @3); }
+    | expr LESS_THAN expr { $$ = make_shared<Binary>($1, OP_LESSTHAN, $3); set_lines($$, @1, @3);}
+    | expr GREATER_THAN expr { $$ = make_shared<Binary>($1, OP_GREATERTHAN, $3); set_lines($$, @1, @3); }
+    | expr EQUAL expr { $$ = make_shared<Binary>($1, OP_EQUAL, $3); set_lines($$, @1, @3); }
+    | expr NEQUAL expr { $$ = make_shared<Binary>($1, OP_NEQUAL, $3); set_lines($$, @1, @3); }
+    | expr LEQUAL expr { $$ = make_shared<Binary>($1, OP_LEQUAL, $3); set_lines($$, @1, @3); }
+    | expr GEQUAL expr { $$ = make_shared<Binary>($1, OP_GEQUAL, $3); set_lines($$, @1, @3); }
+    | expr OR expr { $$ = make_shared<Binary>($1, OP_OR, $3); set_lines($$, @1, @3); }
+    | expr AND expr { $$ = make_shared<Binary>($1, OP_AND, $3); set_lines($$, @1, @3); }
+    | MINUS expr { $$ = make_shared<Unary>(OP_MINUS, $2); set_lines($$, @1, @2); } %prec UNARY
+    | NOT expr { $$ = make_shared<Unary>(OP_NOT, $2); set_lines($$, @1, @2); } %prec UNARY
+    | PIPE expr PIPE { $$ = make_shared<Unary>(OP_ABS, $2); set_lines($$, @1, @3); }
+    | OPEN_PAREN expr CLOSE_PAREN { $$ = $2; set_lines($$, @1, @3); }
     ;
 
-index: T_IDENTIFIER T_OPEN_BRACKET expr T_CLOSE_BRACKET { $$ = make_shared<Index>($1, $3); set_lines($$, @1, @4); }
-    | index T_OPEN_BRACKET expr T_CLOSE_BRACKET { $$ = make_shared<Index>($1, $3); set_lines($$, @1, @4); }
+index: IDENTIFIER OPEN_BRACKET expr CLOSE_BRACKET { $$ = make_shared<Index>($1, $3); set_lines($$, @1, @4); }
+    | index OPEN_BRACKET expr CLOSE_BRACKET { $$ = make_shared<Index>($1, $3); set_lines($$, @1, @4); }
     ;
 
-dot: T_IDENTIFIER T_PERIOD T_IDENTIFIER { $$ = make_shared<Dot>($1, $3); }
+dot: IDENTIFIER PERIOD IDENTIFIER { $$ = make_shared<Dot>($1, $3); }
     ;
 
-stmt: T_IDENTIFIER T_EQUALS expr { $$ = make_shared<Assign>($1, $3); set_lines($$, @1, @3); }
-    | T_IDENTIFIER T_IDENTIFIER { $$ = make_shared<Decl>($1, $2, nullptr); set_lines($$, @1, @2); }
-    | T_IDENTIFIER T_IDENTIFIER T_EQUALS expr { $$ = make_shared<Decl>($1, $2, $4); set_lines($$, @1, @4); }
-    | index T_EQUALS expr { $$ = make_shared<Assign>($1, $3); set_lines($$, @1, @3); }
-    | dot T_EQUALS expr { $$ = make_shared<Assign>($1, $3); set_lines($$, @1, @3); }
-    | T_ALLOCATE T_IDENTIFIER { $$ = make_shared<Alloc>($2); set_lines($$, @1, @2); }
-    | T_IDENTIFIER T_PERIOD T_IDENTIFIER T_UPLOAD upload_list { $$ = make_shared<Upload>($1, $3, $5); set_lines($$, @1, @5); }
-    | T_DRAW T_IDENTIFIER { $$ = make_shared<Draw>($2); set_lines($$, @1, @2); }
-    | T_USE T_IDENTIFIER { $$ = make_shared<Use>($2); set_lines($$, @1, @2); }
-    | T_PRINT expr { $$ = make_shared<Print>($2); set_lines($$, @1, @2); }
-    | T_RETURN expr { $$ = make_shared<Return>($2); set_lines($$, @1, @2); }
+stmt: IDENTIFIER EQUALS expr { $$ = make_shared<Assign>($1, $3); set_lines($$, @1, @3); }
+    | IDENTIFIER IDENTIFIER { $$ = make_shared<Decl>($1, $2, nullptr); set_lines($$, @1, @2); }
+    | IDENTIFIER IDENTIFIER EQUALS expr { $$ = make_shared<Decl>($1, $2, $4); set_lines($$, @1, @4); }
+    | index EQUALS expr { $$ = make_shared<Assign>($1, $3); set_lines($$, @1, @3); }
+    | dot EQUALS expr { $$ = make_shared<Assign>($1, $3); set_lines($$, @1, @3); }
+    | ALLOCATE IDENTIFIER { $$ = make_shared<Alloc>($2); set_lines($$, @1, @2); }
+    | IDENTIFIER PERIOD IDENTIFIER UPLOAD upload_list { $$ = make_shared<Upload>($1, $3, $5); set_lines($$, @1, @5); }
+    | DRAW IDENTIFIER { $$ = make_shared<Draw>($2); set_lines($$, @1, @2); }
+    | USE IDENTIFIER { $$ = make_shared<Use>($2); set_lines($$, @1, @2); }
+    | PRINT expr { $$ = make_shared<Print>($2); set_lines($$, @1, @2); }
+    | RETURN expr { $$ = make_shared<Return>($2); set_lines($$, @1, @2); }
     | invoke { $$ = make_shared<FuncStmt>($1); set_lines($$, @1, @1); }
-    | T_IDENTIFIER T_COMP_PLUS expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_PLUS, $3)); set_lines($$, @1, @3); }
-    | T_IDENTIFIER T_COMP_MINUS expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_MINUS, $3)); set_lines($$, @1, @3); }
-    | T_IDENTIFIER T_COMP_MULT expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_MULT, $3)); set_lines($$, @1, @3);}
-    | T_IDENTIFIER T_COMP_DIV expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_DIV, $3)); set_lines($$, @1, @3); }
-    | T_IDENTIFIER T_COMP_MOD expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_MOD, $3)); set_lines($$, @1, @3);}
-    | index T_COMP_PLUS expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_PLUS, $3)); set_lines($$, @1, @3); }
-    | index T_COMP_MINUS expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_MINUS, $3)); set_lines($$, @1, @3); }
-    | index T_COMP_MULT expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_MULT, $3)); set_lines($$, @1, @3);}
-    | index T_COMP_DIV expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_DIV, $3)); set_lines($$, @1, @3); }
-    | index T_COMP_MOD expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_MOD, $3)); set_lines($$, @1, @3);}
+    | IDENTIFIER COMP_PLUS expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_PLUS, $3)); set_lines($$, @1, @3); }
+    | IDENTIFIER COMP_MINUS expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_MINUS, $3)); set_lines($$, @1, @3); }
+    | IDENTIFIER COMP_MULT expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_MULT, $3)); set_lines($$, @1, @3);}
+    | IDENTIFIER COMP_DIV expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_DIV, $3)); set_lines($$, @1, @3); }
+    | IDENTIFIER COMP_MOD expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_MOD, $3)); set_lines($$, @1, @3);}
+    | index COMP_PLUS expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_PLUS, $3)); set_lines($$, @1, @3); }
+    | index COMP_MINUS expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_MINUS, $3)); set_lines($$, @1, @3); }
+    | index COMP_MULT expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_MULT, $3)); set_lines($$, @1, @3);}
+    | index COMP_DIV expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_DIV, $3)); set_lines($$, @1, @3); }
+    | index COMP_MOD expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_MOD, $3)); set_lines($$, @1, @3);}
     ;
 
 arg_list: { $$ = make_shared<ArgList>(nullptr); }
     | expr { $$ = make_shared<ArgList>($1); }
-    | arg_list T_COMMA expr { $1->list.push_back($3); }
+    | arg_list COMMA expr { $1->list.push_back($3); }
     ;
 
 param_list: { $$ = make_shared<ParamList>(nullptr); }
-    | T_IDENTIFIER { $$ = make_shared<ParamList>($1); }
-    | param_list T_COMMA T_IDENTIFIER { $1->list.push_back($3); }
+    | IDENTIFIER { $$ = make_shared<ParamList>($1); }
+    | param_list COMMA IDENTIFIER { $1->list.push_back($3); }
     ;
 
 list: { $$ = make_shared<List>(nullptr); }
     | expr { $$ = make_shared<List>($1); }
-    | list T_COMMA expr { $1->list.push_back($3); }
+    | list COMMA expr { $1->list.push_back($3); }
     ;
 
-invoke: T_IDENTIFIER T_OPEN_PAREN arg_list T_CLOSE_PAREN { $$ = make_shared<Invoke>($1, $3); set_lines($$, @1, @1); }
+invoke: IDENTIFIER OPEN_PAREN arg_list CLOSE_PAREN { $$ = make_shared<Invoke>($1, $3); set_lines($$, @1, @1); }
     ;
 
-stmt_block: T_IF T_OPEN_PAREN expr T_CLOSE_PAREN block { $$ = make_shared<If>($3, $5); }
-    | T_IF T_OPEN_PAREN expr T_CLOSE_PAREN stmt T_SEMICOLON { $$ = make_shared<If>($3, make_shared<Stmts>($5)); }
-    | T_WHILE T_OPEN_PAREN expr T_CLOSE_PAREN block { $$ = make_shared<While>($3, $5); }
-    | T_FOR T_OPEN_PAREN T_IDENTIFIER T_IN expr T_COMMA expr T_COMMA expr T_CLOSE_PAREN block { $$ = make_shared<For>($3, $5, $7, $9, $11); }
+stmt_block: IF OPEN_PAREN expr CLOSE_PAREN block { $$ = make_shared<If>($3, $5); }
+    | IF OPEN_PAREN expr CLOSE_PAREN stmt SEMICOLON { $$ = make_shared<If>($3, make_shared<Stmts>($5)); }
+    | WHILE OPEN_PAREN expr CLOSE_PAREN block { $$ = make_shared<While>($3, $5); }
+    | FOR OPEN_PAREN IDENTIFIER IN expr COMMA expr COMMA expr CLOSE_PAREN block { $$ = make_shared<For>($3, $5, $7, $9, $11); }
     ;
 
 stmts: { $$ = make_shared<Stmts>(nullptr); }
-    | stmts stmt T_SEMICOLON { $1->list.insert($1->list.end(), $2); }
+    | stmts stmt SEMICOLON { $1->list.insert($1->list.end(), $2); }
     | stmts stmt_block { $1->list.insert($1->list.end(), $2); }
     ;
 
-block: T_OPEN_BRACE stmts T_CLOSE_BRACE { $$ = $2; }
+block: OPEN_BRACE stmts CLOSE_BRACE { $$ = $2; }
 
 upload_list: expr { $$ = make_shared<UploadList>($1); }
-    | upload_list T_COMMA expr { $1->list.insert($1->list.end(), $3); }
+    | upload_list COMMA expr { $1->list.insert($1->list.end(), $3); }
     ;
 
-vec2: T_OPEN_BRACKET expr T_COMMA expr T_CLOSE_BRACKET { $$ = make_shared<Vector2>($2, $4); set_lines($$, @1, @5); }
+vec2: OPEN_BRACKET expr COMMA expr CLOSE_BRACKET { $$ = make_shared<Vector2>($2, $4); set_lines($$, @1, @5); }
     ;
 
-vec3: T_OPEN_BRACKET expr T_COMMA expr T_COMMA expr T_CLOSE_BRACKET { $$ = make_shared<Vector3>($2, $4, $6); set_lines($$, @1, @7); }
+vec3: OPEN_BRACKET expr COMMA expr COMMA expr CLOSE_BRACKET { $$ = make_shared<Vector3>($2, $4, $6); set_lines($$, @1, @7); }
     ;
 
-vec4: T_OPEN_BRACKET expr T_COMMA expr T_COMMA expr T_COMMA expr T_CLOSE_BRACKET { $$ = make_shared<Vector4>($2, $4, $6, $8); set_lines($$, @1, @9); }
+vec4: OPEN_BRACKET expr COMMA expr COMMA expr COMMA expr CLOSE_BRACKET { $$ = make_shared<Vector4>($2, $4, $6, $8); set_lines($$, @1, @9); }
     ;
 
 %%
 
-void yyerror(std::map<std::string, std::shared_ptr<ShaderPair>> *shaders, std::map<std::string, std::shared_ptr<FuncDef>> *functions, const std::shared_ptr<char> s) {
-    std::cerr << "shaders: " << shaders << "\nfunctions: " << functions << std::endl;
-    fprintf(stderr, "Parse error: %s\n", s);
+void Parser::error(const location &loc, const string &message) {
+    cerr << "Error: " << message << " at " << loc << endl;
 }
+
