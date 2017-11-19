@@ -15,12 +15,13 @@ MainWindow::MainWindow(QWidget *parent, std::string startfile) :
 
     CustomGLWidget* glWidget = ui->openGLWidget;
     glWidget->logger = ui->logWindow;
-    glWidget->interpreter = new Interpreter(ui->logWindow);
 
     connect(ui->actionNew, &QAction::triggered, this, &MainWindow::newFile);
     connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::openFile);
     connect(ui->actionSave, &QAction::triggered, this, &MainWindow::saveFile);
     connect(ui->actionSave_As, &QAction::triggered, this, &MainWindow::saveAsFile);
+
+    glWidget->interpreter = new Prototype::Interpreter(ui->logWindow);
 }
 
 MainWindow::~MainWindow()

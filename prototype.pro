@@ -40,7 +40,10 @@ HEADERS += \
     customglwidget.h \
 	interpreter.h \
     scanner.h \
-    parser.h \
+    parser.hpp \
+    location.hh \
+    stack.hh \
+    position.hh \
     nodes.h \
     codeeditor.h \
     highlighter.h \

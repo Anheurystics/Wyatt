@@ -11,11 +11,11 @@ class GLSLTranspiler
 {
     public:
         GLSLTranspiler();
-        void transpile(Stmts*, Stmts*);
+        void transpile(shared_ptr<Stmts>, shared_ptr<Stmts>);
 
-        string eval_expr(Expr*);
-        string eval_binary(Binary*);
-        string eval_stmt(Stmt*);
+        string eval_expr(shared_ptr<Expr>);
+        string eval_binary(shared_ptr<Binary>);
+        string eval_stmt(shared_ptr<Stmt>);
 
         string vertSource = "";
         string fragSource = "";

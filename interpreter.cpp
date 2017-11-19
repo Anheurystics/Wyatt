@@ -1,18 +1,33 @@
 #include "interpreter.h"
+#include <sstream>
+#include <memory>
 
-#define resolve_int(n) ((Int*)n)->value
-#define resolve_float(n) ((Float*)n)->value
-#define resolve_scalar(n) ((n->type == NODE_INT)? (float)(resolve_int(n)) : resolve_float(n))
+int resolve_int(shared_ptr<Expr> expr) {
+    return static_pointer_cast<Int>(expr)->value;
+}
+
+float resolve_float(shared_ptr<Expr> expr) {
+    return static_pointer_cast<Float>(expr)->value;
+}
+
+float resolve_scalar(shared_ptr<Expr> expr) {
+    if(expr->type == NODE_INT) {
+        return (float)resolve_int(expr);
+    } else {
+        return resolve_float(expr);
+    }
+}
+
 #define resolve_vec2(v) resolve_scalar(v->x), resolve_scalar(v->y)
 #define resolve_vec3(v) resolve_scalar(v->x), resolve_scalar(v->y), resolve_scalar(v->z)
 #define resolve_vec4(v) resolve_scalar(v->x), resolve_scalar(v->y), resolve_scalar(v->z), resolve_scalar(v->w)
 
 #define LOOP_TIMEOUT 5
 
-Interpreter::Interpreter(LogWindow* logger) {
+Prototype::Interpreter::Interpreter(LogWindow* logger): scanner(), parser(scanner, &functions, &shaders) {
     this->logger = logger;
 
-    globalScope = new Scope("global");
+    globalScope = make_shared<Scope>("global");
 
     string utilsrc = str_from_file("utils.txt");
     parse(utilsrc);
@@ -22,7 +37,7 @@ Interpreter::Interpreter(LogWindow* logger) {
 
     status = 0;
 
-    for(map<string, FuncDef*>::iterator it = functions.begin(); it != functions.end(); ++it) {
+    for(map<string, shared_ptr<FuncDef>>::iterator it = functions.begin(); it != functions.end(); ++it) {
         builtins[it->first] = it->second;
     }
     functions.clear();
@@ -31,12 +46,11 @@ Interpreter::Interpreter(LogWindow* logger) {
 }
 
 #define clear_map(type, name) \
-    for(map<string, type*>::iterator it = name.begin(); it != name.end(); ++it) { \
-        delete it->second; \
+    for(map<string, shared_ptr<type>>::iterator it = name.begin(); it != name.end(); ++it) { \
+        name.erase(it); \
     } \
-    name.clear(); \
 
-void Interpreter::reset() {
+void Prototype::Interpreter::reset() {
     clear_map(Buffer, buffers);
     clear_map(Program, programs);
     clear_map(ShaderPair, shaders);
@@ -52,47 +66,47 @@ void Interpreter::reset() {
     gl = NULL;
 }
 
-string tostring(Expr* expr) {
+string tostring(shared_ptr<Expr> expr) {
     switch(expr->type) {
         case NODE_INT:
             return to_string(resolve_int(expr));
         case NODE_FLOAT:
             return to_string(resolve_float(expr));
         case NODE_BOOL:
-            return ((Bool*)expr)->value? "true" : "false";
+            return static_pointer_cast<Bool>(expr)->value? "true" : "false";
         case NODE_STRING:
-            return ((String*)expr)->value;
+            return static_pointer_cast<String>(expr)->value;
         case NODE_VECTOR2:
             {
-                Vector2* vec2 = (Vector2*)expr;
+                shared_ptr<Vector2> vec2 = static_pointer_cast<Vector2>(expr);
                 return "[" + to_string(resolve_scalar(vec2->x)) + ", " + to_string(resolve_scalar(vec2->y)) + "]";
             }
         case NODE_VECTOR3:
             {
-                Vector3* vec3 = (Vector3*)expr;
+                shared_ptr<Vector3> vec3 = static_pointer_cast<Vector3>(expr);
                 return "[" + to_string(resolve_scalar(vec3->x)) + ", " + to_string(resolve_scalar(vec3->y)) + ", " + to_string(resolve_scalar(vec3->z)) + "]";
             }
         case NODE_VECTOR4:
             {
-                Vector4* vec4 = (Vector4*)expr;
+                shared_ptr<Vector4> vec4 = static_pointer_cast<Vector4>(expr);
                 return "[" + to_string(resolve_scalar(vec4->x)) + ", " + to_string(resolve_scalar(vec4->y)) + ", " + to_string(resolve_scalar(vec4->z)) + ", " + to_string(resolve_scalar(vec4->w)) + "]";
             }
         case NODE_MATRIX2:
             {
-                Matrix2* mat2 = (Matrix2*)expr;
+                shared_ptr<Matrix2> mat2 = static_pointer_cast<Matrix2>(expr);
                 return "|" + to_string(resolve_scalar(mat2->v0->x)) + ", " + to_string(resolve_scalar(mat2->v0->y)) + "|\n" +
                        "|" + to_string(resolve_scalar(mat2->v1->x)) + ", " + to_string(resolve_scalar(mat2->v1->y)) + "|";
             }
         case NODE_MATRIX3:
             {
-                Matrix3* mat3 = (Matrix3*)expr;
+                shared_ptr<Matrix3> mat3 = static_pointer_cast<Matrix3>(expr);
                 return "|" + to_string(resolve_scalar(mat3->v0->x)) + ", " + to_string(resolve_scalar(mat3->v0->y)) + ", " + to_string(resolve_scalar(mat3->v0->z)) + "|\n" +
                        "|" + to_string(resolve_scalar(mat3->v1->x)) + ", " + to_string(resolve_scalar(mat3->v1->y)) + ", " + to_string(resolve_scalar(mat3->v1->z)) + "|\n" +
                        "|" + to_string(resolve_scalar(mat3->v2->x)) + ", " + to_string(resolve_scalar(mat3->v2->y)) + ", " + to_string(resolve_scalar(mat3->v2->z)) + "|";
             }
         case NODE_MATRIX4:
             {
-                Matrix4* mat4 = (Matrix4*)expr;
+                shared_ptr<Matrix4> mat4 = static_pointer_cast<Matrix4>(expr);
                 return "|" + to_string(resolve_scalar(mat4->v0->x)) + ", " + to_string(resolve_scalar(mat4->v0->y)) + ", " + to_string(resolve_scalar(mat4->v0->z)) + ", " + to_string(resolve_scalar(mat4->v0->w)) + "|\n" +
                        "|" + to_string(resolve_scalar(mat4->v1->x)) + ", " + to_string(resolve_scalar(mat4->v1->y)) + ", " + to_string(resolve_scalar(mat4->v1->z)) + ", " + to_string(resolve_scalar(mat4->v1->w)) + "|\n" +
                        "|" + to_string(resolve_scalar(mat4->v2->x)) + ", " + to_string(resolve_scalar(mat4->v2->y)) + ", " + to_string(resolve_scalar(mat4->v2->z)) + ", " + to_string(resolve_scalar(mat4->v2->w)) + "|\n" +
@@ -103,25 +117,25 @@ string tostring(Expr* expr) {
     }
 }
 
-Expr* Interpreter::eval_binary(Binary* bin) {
-    Expr* lhs = eval_expr(bin->lhs);
+shared_ptr<Expr> Prototype::Interpreter::eval_binary(shared_ptr<Binary> bin) {
+    shared_ptr<Expr> lhs = eval_expr(bin->lhs);
     if(!lhs) return NULL;
 
     OpType op = bin->op;
 
-    Expr* rhs = eval_expr(bin->rhs);
+    shared_ptr<Expr> rhs = eval_expr(bin->rhs);
     if(!rhs) return NULL;
 
     NodeType ltype = lhs->type;
     NodeType rtype = rhs->type;
 
     if(ltype == NODE_BOOL && rtype == NODE_BOOL) {
-        bool a = ((Bool*)lhs)->value;
-        bool b = ((Bool*)rhs)->value;
+        bool a = static_pointer_cast<Bool>(lhs)->value;
+        bool b = static_pointer_cast<Bool>(rhs)->value;
 
         switch(op) {
-            case OP_AND: return new Bool(a && b);
-            case OP_OR: return new Bool(a || b);
+            case OP_AND: return make_shared<Bool>(a && b);
+            case OP_OR: return make_shared<Bool>(a || b);
             default: break;
         }
     }
@@ -131,17 +145,17 @@ Expr* Interpreter::eval_binary(Binary* bin) {
         int b = resolve_int(rhs);
 
         switch(op) {
-            case OP_PLUS: return new Int(a + b);
-            case OP_MINUS: return new Int(a - b);
-            case OP_MULT: return new Int(a * b);
-            case OP_DIV: return new Float(a / (float)b);
-            case OP_MOD: return new Int(a % b);
-            case OP_EQUAL: return new Bool(a == b);
-            case OP_LESSTHAN: return new Bool(a < b);
-            case OP_GREATERTHAN: return new Bool(a > b);
-            case OP_NEQUAL: return new Bool(a != b);
-            case OP_LEQUAL: return new Bool(a <= b);
-            case OP_GEQUAL: return new Bool(a >= b);
+            case OP_PLUS: return make_shared<Int>(a + b);
+            case OP_MINUS: return make_shared<Int>(a - b);
+            case OP_MULT: return make_shared<Int>(a * b);
+            case OP_DIV: return make_shared<Float>(a / (float)b);
+            case OP_MOD: return make_shared<Int>(a % b);
+            case OP_EQUAL: return make_shared<Bool>(a == b);
+            case OP_LESSTHAN: return make_shared<Bool>(a < b);
+            case OP_GREATERTHAN: return make_shared<Bool>(a > b);
+            case OP_NEQUAL: return make_shared<Bool>(a != b);
+            case OP_LEQUAL: return make_shared<Bool>(a <= b);
+            case OP_GEQUAL: return make_shared<Bool>(a >= b);
             default: break;
         }
     }
@@ -151,16 +165,16 @@ Expr* Interpreter::eval_binary(Binary* bin) {
         float b = resolve_float(rhs);
 
         switch(op) {
-            case OP_PLUS: return new Float(a + b);
-            case OP_MINUS: return new Float(a - b);
-            case OP_MULT: return new Float(a * b);
-            case OP_DIV: return new Float(a / b);
-            case OP_EQUAL: return new Bool(a == b);
-            case OP_LESSTHAN: return new Bool(a < b);
-            case OP_GREATERTHAN: return new Bool(a > b);
-            case OP_NEQUAL: return new Bool(a != b);
-            case OP_LEQUAL: return new Bool(a <= b);
-            case OP_GEQUAL: return new Bool(a >= b);
+            case OP_PLUS: return make_shared<Float>(a + b);
+            case OP_MINUS: return make_shared<Float>(a - b);
+            case OP_MULT: return make_shared<Float>(a * b);
+            case OP_DIV: return make_shared<Float>(a / b);
+            case OP_EQUAL: return make_shared<Bool>(a == b);
+            case OP_LESSTHAN: return make_shared<Bool>(a < b);
+            case OP_GREATERTHAN: return make_shared<Bool>(a > b);
+            case OP_NEQUAL: return make_shared<Bool>(a != b);
+            case OP_LEQUAL: return make_shared<Bool>(a <= b);
+            case OP_GEQUAL: return make_shared<Bool>(a >= b);
             default: break;
         }
     }
@@ -170,31 +184,31 @@ Expr* Interpreter::eval_binary(Binary* bin) {
         float b = resolve_scalar(rhs);
 
         switch(op) {
-            case OP_PLUS: return new Float(a + b);
-            case OP_MINUS: return new Float(a - b);
-            case OP_MULT: return new Float(a * b);
-            case OP_DIV: return new Float(a / b);
-            case OP_EQUAL: return new Bool(a == b);
-            case OP_LESSTHAN: return new Bool(a < b);
-            case OP_GREATERTHAN: return new Bool(a > b);
-            case OP_NEQUAL: return new Bool(a != b);
-            case OP_LEQUAL: return new Bool(a <= b);
-            case OP_GEQUAL: return new Bool(a >= b);
+            case OP_PLUS: return make_shared<Float>(a + b);
+            case OP_MINUS: return make_shared<Float>(a - b);
+            case OP_MULT: return make_shared<Float>(a * b);
+            case OP_DIV: return make_shared<Float>(a / b);
+            case OP_EQUAL: return make_shared<Bool>(a == b);
+            case OP_LESSTHAN: return make_shared<Bool>(a < b);
+            case OP_GREATERTHAN: return make_shared<Bool>(a > b);
+            case OP_NEQUAL: return make_shared<Bool>(a != b);
+            case OP_LEQUAL: return make_shared<Bool>(a <= b);
+            case OP_GEQUAL: return make_shared<Bool>(a >= b);
             default: break;
         }
     }
 
     if(ltype == NODE_STRING || rtype == NODE_STRING) {
         bool left = (ltype == NODE_STRING);
-        String* str = (String*)(left? lhs : rhs);
-        Expr* other = eval_expr(left? rhs : lhs);
+        shared_ptr<String> str = shared_ptr<String>(left? static_pointer_cast<String>(lhs) : static_pointer_cast<String>(rhs));
+        shared_ptr<Expr> other = eval_expr(left? lhs : rhs);
 
-        return new String(left? (str->value + tostring(other)) : (tostring(other) + str->value));
+        return make_shared<String>(left? (str->value + tostring(other)) : (tostring(other) + str->value));
     }
 
     if(ltype == NODE_VECTOR2 && rtype == NODE_VECTOR2) {
-        Vector2* a = (Vector2*)eval_expr(lhs);
-        Vector2* b = (Vector2*)eval_expr(rhs);
+        shared_ptr<Vector2> a = static_pointer_cast<Vector2>(eval_expr(lhs));
+        shared_ptr<Vector2> b = static_pointer_cast<Vector2>(eval_expr(rhs));
 
         float ax = resolve_scalar(a->x);
         float ay = resolve_scalar(a->y);
@@ -202,40 +216,40 @@ Expr* Interpreter::eval_binary(Binary* bin) {
         float by = resolve_scalar(b->y);
 
         switch(op) {
-            case OP_PLUS: return new Vector2(new Float(ax+bx), new Float(ay+by));
-            case OP_MINUS: return new Vector2(new Float(ax-bx), new Float(ay-by));
-            case OP_MULT: return new Float(ax*bx + ay*by);
-            case OP_MOD: return new Float(ax*by - ay*bx);
+            case OP_PLUS: return make_shared<Vector2>(make_shared<Float>(ax+bx), make_shared<Float>(ay+by));
+            case OP_MINUS: return make_shared<Vector2>(make_shared<Float>(ax-bx), make_shared<Float>(ay-by));
+            case OP_MULT: return make_shared<Float>(ax*bx + ay*by);
+            case OP_MOD: return make_shared<Float>(ax*by - ay*bx);
             default: break;
         }
     }
 
     if(ltype == NODE_VECTOR2 && (rtype == NODE_INT || rtype == NODE_FLOAT)) {
-        Vector2* a = (Vector2*)eval_expr(lhs);
+        shared_ptr<Vector2> a = static_pointer_cast<Vector2>(eval_expr(lhs));
         float ax = resolve_scalar(a->x), ay = resolve_scalar(a->y);
         float b = resolve_scalar(rhs);
 
         switch(op) {
-            case OP_MULT: return new Vector2(new Float(ax*b), new Float(ay*b));
-            case OP_DIV: return new Vector2(new Float(ax/b), new Float(ay/b));
+            case OP_MULT: return make_shared<Vector2>(make_shared<Float>(ax*b), make_shared<Float>(ay*b));
+            case OP_DIV: return make_shared<Vector2>(make_shared<Float>(ax/b), make_shared<Float>(ay/b));
             default: break;
         }
     }
 
     if((ltype == NODE_INT || ltype == NODE_FLOAT) && rtype == NODE_VECTOR2) {
         float a = resolve_scalar(lhs);
-        Vector2* b = (Vector2*)eval_expr(rhs);
+        shared_ptr<Vector2> b = static_pointer_cast<Vector2>(eval_expr(rhs));
         float bx = resolve_scalar(b->x), by = resolve_scalar(b->y);
 
         switch(op) {
-            case OP_MULT: return new Vector2(new Float(bx*a), new Float(by*a));
+            case OP_MULT: return make_shared<Vector2>(make_shared<Float>(bx*a), make_shared<Float>(by*a));
             default: break;
         }
     }
 
     if(ltype == NODE_VECTOR3 && rtype == NODE_VECTOR3) {
-        Vector3* a = (Vector3*)eval_expr(lhs);
-        Vector3* b = (Vector3*)eval_expr(rhs);
+        shared_ptr<Vector3> a = static_pointer_cast<Vector3>(eval_expr(lhs));
+        shared_ptr<Vector3> b = static_pointer_cast<Vector3>(eval_expr(rhs));
 
         float ax = resolve_scalar(a->x); 
         float ay = resolve_scalar(a->y);
@@ -245,40 +259,40 @@ Expr* Interpreter::eval_binary(Binary* bin) {
         float bz = resolve_scalar(b->z);
 
         switch(op) {
-            case OP_PLUS: return new Vector3(new Float(ax+bx), new Float(ay+by), new Float(az+bz));
-            case OP_MINUS: return new Vector3(new Float(ax-bx), new Float(ay-by), new Float(az-bz));
-            case OP_MULT: return new Float(ax*bx + ay*by + az*bz);
-            case OP_MOD: return new Vector3(new Float(ay*bz-az*by), new Float(az*bx-ax*bz), new Float(ax*by-ay*bx));
+            case OP_PLUS: return make_shared<Vector3>(make_shared<Float>(ax+bx), make_shared<Float>(ay+by), make_shared<Float>(az+bz));
+            case OP_MINUS: return make_shared<Vector3>(make_shared<Float>(ax-bx), make_shared<Float>(ay-by), make_shared<Float>(az-bz));
+            case OP_MULT: return make_shared<Float>(ax*bx + ay*by + az*bz);
+            case OP_MOD: return make_shared<Vector3>(make_shared<Float>(ay*bz-az*by), make_shared<Float>(az*bx-ax*bz), make_shared<Float>(ax*by-ay*bx));
             default: break;
         }
     }
 
     if(ltype == NODE_VECTOR3 && (rtype == NODE_INT || rtype == NODE_FLOAT)) {
-        Vector3* a = (Vector3*)eval_expr(lhs);
+        shared_ptr<Vector3> a = static_pointer_cast<Vector3>(eval_expr(lhs));
         float ax = resolve_scalar(a->x), ay = resolve_scalar(a->y), az = resolve_scalar(a->z);
         float b = resolve_scalar(rhs);
 
         switch(op) {
-            case OP_MULT: return new Vector3(new Float(ax*b), new Float(ay*b), new Float(az*b));
-            case OP_DIV: return new Vector3(new Float(ax/b), new Float(ay/b), new Float(az/b));
+            case OP_MULT: return make_shared<Vector3>(make_shared<Float>(ax*b), make_shared<Float>(ay*b), make_shared<Float>(az*b));
+            case OP_DIV: return make_shared<Vector3>(make_shared<Float>(ax/b), make_shared<Float>(ay/b), make_shared<Float>(az/b));
             default: break;
         }
     }
 
     if((ltype == NODE_INT || ltype == NODE_FLOAT) && rtype == NODE_VECTOR3) {
         float a = resolve_scalar(lhs);
-        Vector3* b = (Vector3*)eval_expr(rhs);
+        shared_ptr<Vector3> b = static_pointer_cast<Vector3>(eval_expr(rhs));
         float bx = resolve_scalar(b->x), by = resolve_scalar(b->y), bz = resolve_scalar(b->z);
 
         switch(op) {
-            case OP_MULT: return new Vector3(new Float(bx*a), new Float(by*a), new Float(bz*a));
+            case OP_MULT: return make_shared<Vector3>(make_shared<Float>(bx*a), make_shared<Float>(by*a), make_shared<Float>(bz*a));
             default: break;
         }
     }
 
     if(ltype == NODE_VECTOR4 && rtype == NODE_VECTOR4) {
-        Vector4* a = (Vector4*)eval_expr(lhs);
-        Vector4* b = (Vector4*)eval_expr(rhs);
+        shared_ptr<Vector4> a = static_pointer_cast<Vector4>(eval_expr(lhs));
+        shared_ptr<Vector4> b = static_pointer_cast<Vector4>(eval_expr(rhs));
 
         float ax = resolve_scalar(a->x); 
         float ay = resolve_scalar(a->y);
@@ -290,162 +304,162 @@ Expr* Interpreter::eval_binary(Binary* bin) {
         float bw = resolve_scalar(b->w);
 
         switch(op) {
-            case OP_PLUS: return new Vector4(new Float(ax+bx), new Float(ay+by), new Float(az+bz), new Float(aw+bw));
-            case OP_MINUS: return new Vector4(new Float(ax-bx), new Float(ay-by), new Float(az-bz), new Float(aw-bw));
-            case OP_MULT: return new Float(ax*bx + ay*by + az*bz + aw*bw);
+            case OP_PLUS: return make_shared<Vector4>(make_shared<Float>(ax+bx), make_shared<Float>(ay+by), make_shared<Float>(az+bz), make_shared<Float>(aw+bw));
+            case OP_MINUS: return make_shared<Vector4>(make_shared<Float>(ax-bx), make_shared<Float>(ay-by), make_shared<Float>(az-bz), make_shared<Float>(aw-bw));
+            case OP_MULT: return make_shared<Float>(ax*bx + ay*by + az*bz + aw*bw);
             default: break;
         }
     }
 
     if(ltype == NODE_VECTOR4 && (rtype == NODE_INT || rtype == NODE_FLOAT)) {
-        Vector4* a = (Vector4*)eval_expr(lhs);
+        shared_ptr<Vector4> a = static_pointer_cast<Vector4>(eval_expr(lhs));
         float ax = resolve_scalar(a->x), ay = resolve_scalar(a->y), az = resolve_scalar(a->z), aw = resolve_scalar(a->w);
         float b = resolve_scalar(rhs);
 
         switch(op) {
-            case OP_MULT: return new Vector4(new Float(ax*b), new Float(ay*b), new Float(az*b), new Float(aw*b));
-            case OP_DIV: return new Vector4(new Float(ax/b), new Float(ay/b), new Float(az/b), new Float(aw/b));
+            case OP_MULT: return make_shared<Vector4>(make_shared<Float>(ax*b), make_shared<Float>(ay*b), make_shared<Float>(az*b), make_shared<Float>(aw*b));
+            case OP_DIV: return make_shared<Vector4>(make_shared<Float>(ax/b), make_shared<Float>(ay/b), make_shared<Float>(az/b), make_shared<Float>(aw/b));
             default: break;
         }
     }
 
     if((ltype == NODE_INT || ltype == NODE_FLOAT) && rtype == NODE_VECTOR4) {
         float a = resolve_scalar(lhs);
-        Vector4* b = (Vector4*)eval_expr(rhs);
+        shared_ptr<Vector4> b = static_pointer_cast<Vector4>(eval_expr(rhs));
         float bx = resolve_scalar(b->x), by = resolve_scalar(b->y), bz = resolve_scalar(b->z), bw = resolve_scalar(b->w);
 
         switch(op) {
-            case OP_MULT: return new Vector4(new Float(bx*a), new Float(by*a), new Float(bz*a), new Float(bw*a));
+            case OP_MULT: return make_shared<Vector4>(make_shared<Float>(bx*a), make_shared<Float>(by*a), make_shared<Float>(bz*a), make_shared<Float>(bw*a));
             default: break;
         }
     }
 
     if(ltype == NODE_MATRIX2 && (rtype == NODE_INT || rtype == NODE_FLOAT)) {
-        Matrix2* a = (Matrix2*)eval_expr(lhs);
+        shared_ptr<Matrix2> a = static_pointer_cast<Matrix2>(eval_expr(lhs));
 
         if(op == OP_MULT || op == OP_DIV) {
-            Vector2* v0 = (Vector2*)eval_binary(new Binary(a->v0, op, rhs));
-            Vector2* v1 = (Vector2*)eval_binary(new Binary(a->v1, op, rhs));
-            return new Matrix2(v0, v1);
+            shared_ptr<Vector2> v0 = static_pointer_cast<Vector2>(eval_binary(make_shared<Binary>(a->v0, op, rhs)));
+            shared_ptr<Vector2> v1 = static_pointer_cast<Vector2>(eval_binary(make_shared<Binary>(a->v1, op, rhs)));
+            return make_shared<Matrix2>(v0, v1);
         }
     }
 
     if((ltype == NODE_INT || ltype == NODE_FLOAT) && (rtype == NODE_MATRIX2)) {
-        Matrix2* a = (Matrix2*)eval_expr(rhs);
+        shared_ptr<Matrix2> a = static_pointer_cast<Matrix2>(eval_expr(rhs));
 
         if(op == OP_MULT) {
-            Vector2* v0 = (Vector2*)eval_binary(new Binary(a->v0, op, lhs));
-            Vector2* v1 = (Vector2*)eval_binary(new Binary(a->v1, op, lhs));
-            return new Matrix2(v0, v1);
+            shared_ptr<Vector2> v0 = static_pointer_cast<Vector2>(eval_binary(make_shared<Binary>(a->v0, op, lhs)));
+            shared_ptr<Vector2> v1 = static_pointer_cast<Vector2>(eval_binary(make_shared<Binary>(a->v1, op, lhs)));
+            return make_shared<Matrix2>(v0, v1);
         }
     }
 
     if(ltype == NODE_MATRIX2 && rtype == NODE_MATRIX2) {
-        Matrix2* a = (Matrix2*)eval_expr(lhs);
-        Matrix2* b = (Matrix2*)eval_expr(rhs);
+        shared_ptr<Matrix2> a = static_pointer_cast<Matrix2>(eval_expr(lhs));
+        shared_ptr<Matrix2> b = static_pointer_cast<Matrix2>(eval_expr(rhs));
 
         if(op == OP_MULT) {
-            Vector2* r0 = new Vector2(new Binary(a->v0, OP_MULT, b->c0), new Binary(a->v0, OP_MULT, b->c1));
-            Vector2* r1 = new Vector2(new Binary(a->v1, OP_MULT, b->c0), new Binary(a->v1, OP_MULT, b->c1));
-            return eval_expr(new Matrix2(r0, r1));
+            shared_ptr<Vector2> r0 = make_shared<Vector2>(make_shared<Binary>(a->v0, OP_MULT, b->c0), make_shared<Binary>(a->v0, OP_MULT, b->c1));
+            shared_ptr<Vector2> r1 = make_shared<Vector2>(make_shared<Binary>(a->v1, OP_MULT, b->c0), make_shared<Binary>(a->v1, OP_MULT, b->c1));
+            return eval_expr(make_shared<Matrix2>(r0, r1));
         }
     }
 
     if(ltype == NODE_VECTOR2 && rtype == NODE_MATRIX2) {
-        Vector2* a = (Vector2*)eval_expr(lhs);
-        Matrix2* b = (Matrix2*)eval_expr(rhs);
+        shared_ptr<Vector2> a = static_pointer_cast<Vector2>(eval_expr(lhs));
+        shared_ptr<Matrix2> b = static_pointer_cast<Matrix2>(eval_expr(rhs));
 
         if(op == OP_MULT) {
-            return eval_expr(new Vector2(new Binary(a, OP_MULT, b->c0), new Binary(a, OP_MULT, b->c1)));
+            return eval_expr(make_shared<Vector2>(make_shared<Binary>(a, OP_MULT, b->c0), make_shared<Binary>(a, OP_MULT, b->c1)));
         }
     }
 
     if(ltype == NODE_MATRIX3 && (rtype == NODE_INT || rtype == NODE_FLOAT)) {
-        Matrix3* a = (Matrix3*)eval_expr(lhs);
+        shared_ptr<Matrix3> a = static_pointer_cast<Matrix3>(eval_expr(lhs));
 
         if(op == OP_MULT || op == OP_DIV) {
-            Vector3* v0 = (Vector3*)eval_binary(new Binary(a->v0, op, rhs));
-            Vector3* v1 = (Vector3*)eval_binary(new Binary(a->v1, op, rhs));
-            Vector3* v2 = (Vector3*)eval_binary(new Binary(a->v2, op, rhs));
-            return new Matrix3(v0, v1, v2);
+            shared_ptr<Vector3> v0 = static_pointer_cast<Vector3>(eval_binary(make_shared<Binary>(a->v0, op, rhs)));
+            shared_ptr<Vector3> v1 = static_pointer_cast<Vector3>(eval_binary(make_shared<Binary>(a->v1, op, rhs)));
+            shared_ptr<Vector3> v2 = static_pointer_cast<Vector3>(eval_binary(make_shared<Binary>(a->v2, op, rhs)));
+            return make_shared<Matrix3>(v0, v1, v2);
         }
     }
 
     if((ltype == NODE_INT || ltype == NODE_FLOAT) && (rtype == NODE_MATRIX3)) {
-        Matrix3* a = (Matrix3*)eval_expr(rhs);
+        shared_ptr<Matrix3> a = static_pointer_cast<Matrix3>(eval_expr(rhs));
 
         if(op == OP_MULT) {
-            Vector3* v0 = (Vector3*)eval_binary(new Binary(a->v0, op, lhs));
-            Vector3* v1 = (Vector3*)eval_binary(new Binary(a->v1, op, lhs));
-            Vector3* v2 = (Vector3*)eval_binary(new Binary(a->v2, op, lhs));
-            return new Matrix3(v0, v1, v2);
+            shared_ptr<Vector3> v0 = static_pointer_cast<Vector3>(eval_binary(make_shared<Binary>(a->v0, op, lhs)));
+            shared_ptr<Vector3> v1 = static_pointer_cast<Vector3>(eval_binary(make_shared<Binary>(a->v1, op, lhs)));
+            shared_ptr<Vector3> v2 = static_pointer_cast<Vector3>(eval_binary(make_shared<Binary>(a->v2, op, lhs)));
+            return make_shared<Matrix3>(v0, v1, v2);
         }
     }
 
     if(ltype == NODE_MATRIX3 && rtype == NODE_MATRIX3) {
-        Matrix3* a = (Matrix3*)eval_expr(lhs);
-        Matrix3* b = (Matrix3*)eval_expr(rhs);
+        shared_ptr<Matrix3> a = static_pointer_cast<Matrix3>(eval_expr(lhs));
+        shared_ptr<Matrix3> b = static_pointer_cast<Matrix3>(eval_expr(rhs));
         
         if(op == OP_MULT) {
-            Vector3* r0 = new Vector3(new Binary(a->v0, OP_MULT, b->c0), new Binary(a->v0, OP_MULT, b->c1), new Binary(a->v0, OP_MULT, b->c2));
-            Vector3* r1 = new Vector3(new Binary(a->v1, OP_MULT, b->c0), new Binary(a->v1, OP_MULT, b->c1), new Binary(a->v1, OP_MULT, b->c2));
-            Vector3* r2 = new Vector3(new Binary(a->v2, OP_MULT, b->c0), new Binary(a->v2, OP_MULT, b->c1), new Binary(a->v2, OP_MULT, b->c2));
-            return eval_expr(new Matrix3(r0, r1, r2));
+            shared_ptr<Vector3> r0 = make_shared<Vector3>(make_shared<Binary>(a->v0, OP_MULT, b->c0), make_shared<Binary>(a->v0, OP_MULT, b->c1), make_shared<Binary>(a->v0, OP_MULT, b->c2));
+            shared_ptr<Vector3> r1 = make_shared<Vector3>(make_shared<Binary>(a->v1, OP_MULT, b->c0), make_shared<Binary>(a->v1, OP_MULT, b->c1), make_shared<Binary>(a->v1, OP_MULT, b->c2));
+            shared_ptr<Vector3> r2 = make_shared<Vector3>(make_shared<Binary>(a->v2, OP_MULT, b->c0), make_shared<Binary>(a->v2, OP_MULT, b->c1), make_shared<Binary>(a->v2, OP_MULT, b->c2));
+            return eval_expr(make_shared<Matrix3>(r0, r1, r2));
         }
     }
 
     if(ltype == NODE_VECTOR3 && rtype == NODE_MATRIX3) {
-        Vector3* a = (Vector3*)eval_expr(lhs);
-        Matrix3* b = (Matrix3*)eval_expr(rhs);
+        shared_ptr<Vector3> a = static_pointer_cast<Vector3>(eval_expr(lhs));
+        shared_ptr<Matrix3> b = static_pointer_cast<Matrix3>(eval_expr(rhs));
 
         if(op == OP_MULT) {
-            return eval_expr(new Vector3(new Binary(a, OP_MULT, b->c0), new Binary(a, OP_MULT, b->c1), new Binary(a, OP_MULT, b->c2)));
+            return eval_expr(make_shared<Vector3>(make_shared<Binary>(a, OP_MULT, b->c0), make_shared<Binary>(a, OP_MULT, b->c1), make_shared<Binary>(a, OP_MULT, b->c2)));
         }
     }
 
     if(ltype == NODE_MATRIX4 && (rtype == NODE_INT || rtype == NODE_FLOAT)) {
-        Matrix4* a = (Matrix4*)eval_expr(lhs);
+        shared_ptr<Matrix4> a = static_pointer_cast<Matrix4>(eval_expr(lhs));
 
         if(op == OP_MULT || op == OP_DIV) {
-            Vector4* v0 = (Vector4*)eval_binary(new Binary(a->v0, op, rhs));
-            Vector4* v1 = (Vector4*)eval_binary(new Binary(a->v1, op, rhs));
-            Vector4* v2 = (Vector4*)eval_binary(new Binary(a->v2, op, rhs));
-            Vector4* v3 = (Vector4*)eval_binary(new Binary(a->v3, op, rhs));
-            return new Matrix4(v0, v1, v2, v3);
+            shared_ptr<Vector4> v0 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v0, op, rhs)));
+            shared_ptr<Vector4> v1 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v1, op, rhs)));
+            shared_ptr<Vector4> v2 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v2, op, rhs)));
+            shared_ptr<Vector4> v3 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v3, op, rhs)));
+            return make_shared<Matrix4>(v0, v1, v2, v3);
         }
     }
 
     if((ltype == NODE_INT || ltype == NODE_FLOAT) && (rtype == NODE_MATRIX4)) {
-        Matrix4* a = (Matrix4*)eval_expr(rhs);
+        shared_ptr<Matrix4> a = static_pointer_cast<Matrix4>(eval_expr(rhs));
 
         if(op == OP_MULT) {
-            Vector4* v0 = (Vector4*)eval_binary(new Binary(a->v0, op, lhs));
-            Vector4* v1 = (Vector4*)eval_binary(new Binary(a->v1, op, lhs));
-            Vector4* v2 = (Vector4*)eval_binary(new Binary(a->v2, op, lhs));
-            Vector4* v3 = (Vector4*)eval_binary(new Binary(a->v3, op, lhs));
-            return new Matrix4(v0, v1, v2, v3);
+            shared_ptr<Vector4> v0 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v0, op, lhs)));
+            shared_ptr<Vector4> v1 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v1, op, lhs)));
+            shared_ptr<Vector4> v2 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v2, op, lhs)));
+            shared_ptr<Vector4> v3 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v3, op, lhs)));
+            return make_shared<Matrix4>(v0, v1, v2, v3);
         }
     }
 
     if(ltype == NODE_MATRIX4 && rtype == NODE_MATRIX4) {
-        Matrix4* a = (Matrix4*)eval_expr(lhs);
-        Matrix4* b = (Matrix4*)eval_expr(rhs);
+        shared_ptr<Matrix4> a = static_pointer_cast<Matrix4>(eval_expr(lhs));
+        shared_ptr<Matrix4> b = static_pointer_cast<Matrix4>(eval_expr(rhs));
         
         if(op == OP_MULT) {
-            Vector4* r0 = new Vector4(new Binary(a->v0, OP_MULT, b->c0), new Binary(a->v0, OP_MULT, b->c1), new Binary(a->v0, OP_MULT, b->c2), new Binary(a->v0, OP_MULT, b->c3));
-            Vector4* r1 = new Vector4(new Binary(a->v1, OP_MULT, b->c0), new Binary(a->v1, OP_MULT, b->c1), new Binary(a->v1, OP_MULT, b->c2), new Binary(a->v1, OP_MULT, b->c3));
-            Vector4* r2 = new Vector4(new Binary(a->v2, OP_MULT, b->c0), new Binary(a->v2, OP_MULT, b->c1), new Binary(a->v2, OP_MULT, b->c2), new Binary(a->v2, OP_MULT, b->c3));
-            Vector4* r3 = new Vector4(new Binary(a->v3, OP_MULT, b->c0), new Binary(a->v3, OP_MULT, b->c1), new Binary(a->v3, OP_MULT, b->c2), new Binary(a->v3, OP_MULT, b->c3));
-            return eval_expr(new Matrix4(r0, r1, r2, r3));
+            shared_ptr<Vector4> r0 = make_shared<Vector4>(make_shared<Binary>(a->v0, OP_MULT, b->c0), make_shared<Binary>(a->v0, OP_MULT, b->c1), make_shared<Binary>(a->v0, OP_MULT, b->c2), make_shared<Binary>(a->v0, OP_MULT, b->c3));
+            shared_ptr<Vector4> r1 = make_shared<Vector4>(make_shared<Binary>(a->v1, OP_MULT, b->c0), make_shared<Binary>(a->v1, OP_MULT, b->c1), make_shared<Binary>(a->v1, OP_MULT, b->c2), make_shared<Binary>(a->v1, OP_MULT, b->c3));
+            shared_ptr<Vector4> r2 = make_shared<Vector4>(make_shared<Binary>(a->v2, OP_MULT, b->c0), make_shared<Binary>(a->v2, OP_MULT, b->c1), make_shared<Binary>(a->v2, OP_MULT, b->c2), make_shared<Binary>(a->v2, OP_MULT, b->c3));
+            shared_ptr<Vector4> r3 = make_shared<Vector4>(make_shared<Binary>(a->v3, OP_MULT, b->c0), make_shared<Binary>(a->v3, OP_MULT, b->c1), make_shared<Binary>(a->v3, OP_MULT, b->c2), make_shared<Binary>(a->v3, OP_MULT, b->c3));
+            return eval_expr(make_shared<Matrix4>(r0, r1, r2, r3));
         }
     }
 
     if(ltype == NODE_VECTOR4 && rtype == NODE_MATRIX4) {
-        Vector4* a = (Vector4*)eval_expr(lhs);
-        Matrix4* b = (Matrix4*)eval_expr(rhs);
+        shared_ptr<Vector4> a = static_pointer_cast<Vector4>(eval_expr(lhs));
+        shared_ptr<Matrix4> b = static_pointer_cast<Matrix4>(eval_expr(rhs));
 
         if(op == OP_MULT) {
-            return eval_expr(new Vector4(new Binary(a, OP_MULT, b->c0), new Binary(a, OP_MULT, b->c1), new Binary(a, OP_MULT, b->c2), new Binary(a, OP_MULT, b->c3)));
+            return eval_expr(make_shared<Vector4>(make_shared<Binary>(a, OP_MULT, b->c0), make_shared<Binary>(a, OP_MULT, b->c1), make_shared<Binary>(a, OP_MULT, b->c2), make_shared<Binary>(a, OP_MULT, b->c3)));
         }
     }
 
@@ -453,40 +467,40 @@ Expr* Interpreter::eval_binary(Binary* bin) {
     return NULL;
 }
 
-Expr* Interpreter::invoke(Invoke* invoke) {
+shared_ptr<Expr> Prototype::Interpreter::invoke(shared_ptr<Invoke> invoke) {
     string name = invoke->ident->name;
-    FuncDef* def = NULL;
+    shared_ptr<FuncDef> def = NULL;
 
     if(name == "cos") {
         if(invoke->args->list.size() == 1) {
-            Expr* v = eval_expr(invoke->args->list[0]);
+            shared_ptr<Expr> v = eval_expr(invoke->args->list[0]);
             if(v->type == NODE_FLOAT || v->type == NODE_INT) {
-                return new Float(cosf(resolve_scalar(v)));
+                return make_shared<Float>(cosf(resolve_scalar(v)));
             }
         }
     }
 
     if(name == "sin") {
         if(invoke->args->list.size() == 1) {
-            Expr* v = eval_expr(invoke->args->list[0]);
+            shared_ptr<Expr> v = eval_expr(invoke->args->list[0]);
             if(v->type == NODE_FLOAT || v->type == NODE_INT) {
-                return new Float(sinf(resolve_scalar(v)));
+                return make_shared<Float>(sinf(resolve_scalar(v)));
             }
         }
     }
 
     if(name == "tan") {
         if(invoke->args->list.size() == 1) {
-            Expr* v = eval_expr(invoke->args->list[0]);
+            shared_ptr<Expr> v = eval_expr(invoke->args->list[0]);
             if(v->type == NODE_FLOAT || v->type == NODE_INT) {
-                return new Float(tanf(resolve_scalar(v)));
+                return make_shared<Float>(tanf(resolve_scalar(v)));
             }
         }
     }
 
     if(name == "pi") {
         if(invoke->args->list.size() == 0) {
-            return new Float(3.14159f);
+            return make_shared<Float>(3.14159f);
         }
     }
 
@@ -499,7 +513,7 @@ Expr* Interpreter::invoke(Invoke* invoke) {
     }
 
     if(def != NULL) {
-        Scope* localScope = new Scope(name);
+        shared_ptr<Scope> localScope = make_shared<Scope>(name);
         unsigned int nParams = def->params->list.size();
         unsigned int nArgs = invoke->args->list.size();
 
@@ -509,7 +523,7 @@ Expr* Interpreter::invoke(Invoke* invoke) {
         }
         if(nParams > 0) {
             for(unsigned int i = 0; i < nParams; i++) {
-                Expr* arg = eval_expr(invoke->args->list[i]);
+                shared_ptr<Expr> arg = eval_expr(invoke->args->list[i]);
                 if(arg == NULL) {
                     logger->log("ERROR: Invalid argument passed on to " + name);
                     return NULL;
@@ -519,7 +533,7 @@ Expr* Interpreter::invoke(Invoke* invoke) {
         }
 
         functionScopeStack.push(localScope);
-        Expr* retValue = execute_stmts(def->stmts);
+        shared_ptr<Expr> retValue = execute_stmts(def->stmts);
         functionScopeStack.pop();
         return retValue;
     } else {
@@ -528,31 +542,31 @@ Expr* Interpreter::invoke(Invoke* invoke) {
     return NULL;
 }
 
-Expr* Interpreter::resolve_vector(vector<Expr*> list) {
+shared_ptr<Expr> Prototype::Interpreter::resolve_vector(vector<shared_ptr<Expr>> list) {
     vector<float> data;
     int n = 0;
 
     for(unsigned int i = 0; i < list.size(); i++) {
-        Expr* expr = list[i];
+        shared_ptr<Expr> expr = list[i];
         if(expr->type == NODE_FLOAT || expr->type == NODE_INT) {
             data.push_back(resolve_scalar(expr));
             n += 1;
         } else
         if(expr->type == NODE_VECTOR2) {
-            Vector2* vec2 = (Vector2*)eval_expr(expr);
+            shared_ptr<Vector2> vec2 = static_pointer_cast<Vector2>(eval_expr(expr));
             data.push_back(resolve_scalar(vec2->x));
             data.push_back(resolve_scalar(vec2->y));
             n += 2;
         } else
         if(expr->type == NODE_VECTOR3) {
-            Vector3* vec3 = (Vector3*)eval_expr(expr);
+            shared_ptr<Vector3> vec3 = static_pointer_cast<Vector3>(eval_expr(expr));
             data.push_back(resolve_scalar(vec3->x));
             data.push_back(resolve_scalar(vec3->y));
             data.push_back(resolve_scalar(vec3->z));
             n += 3;
         } else
         if(expr->type == NODE_VECTOR4) {
-            Vector4* vec4 = (Vector4*)eval_expr(expr);
+            shared_ptr<Vector4> vec4 = static_pointer_cast<Vector4>(eval_expr(expr));
             data.push_back(resolve_scalar(vec4->x));
             data.push_back(resolve_scalar(vec4->y));
             data.push_back(resolve_scalar(vec4->z));
@@ -564,21 +578,21 @@ Expr* Interpreter::resolve_vector(vector<Expr*> list) {
     }
 
     if(data.size() == 3) {
-        return new Vector3(new Float(data[0]), new Float(data[1]), new Float(data[2]));
+        return make_shared<Vector3>(make_shared<Float>(data[0]), make_shared<Float>(data[1]), make_shared<Float>(data[2]));
     }
     if(data.size() == 4) {
-        return new Vector4(new Float(data[0]), new Float(data[1]), new Float(data[2]), new Float(data[3]));
+        return make_shared<Vector4>(make_shared<Float>(data[0]), make_shared<Float>(data[1]), make_shared<Float>(data[2]), make_shared<Float>(data[3]));
     }
 
     return NULL;
 }
 
-Expr* Interpreter::eval_expr(Expr* node) {
+shared_ptr<Expr> Prototype::Interpreter::eval_expr(shared_ptr<Expr> node) {
     switch(node->type) {
         case NODE_IDENT: 
             {
-                Ident* ident = (Ident*)node;
-                Expr* value = NULL;
+                shared_ptr<Ident> ident = static_pointer_cast<Ident>(node);
+                shared_ptr<Expr> value = NULL;
                 if(!functionScopeStack.empty()) {
                     value = functionScopeStack.top()->get(ident->name);
                     if(value != NULL) {
@@ -595,9 +609,9 @@ Expr* Interpreter::eval_expr(Expr* node) {
             }
        case NODE_DOT:
             {
-                Dot* uniform = (Dot*)node;
+                shared_ptr<Dot> uniform = static_pointer_cast<Dot>(node);
                 if(current_program->vertSource->name == uniform->shader) {
-                    ShaderSource* src = current_program->vertSource;
+                    shared_ptr<ShaderSource> src = current_program->vertSource;
                     string type = "";
                     if(src->uniforms.find(uniform->name) != src->uniforms.end()) {
                         type = src->uniforms[uniform->name];
@@ -613,47 +627,47 @@ Expr* Interpreter::eval_expr(Expr* node) {
 
                     GLint loc = gl->glGetUniformLocation(current_program->handle, uniform->name.c_str());
                     if(type == "float") {
-                        Float* f = new Float(0);
+                        shared_ptr<Float> f = make_shared<Float>(0);
                         gl->glGetUniformfv(current_program->handle, loc, &(f->value));
                         return f;
                     } else
                     if(type == "vec2") {
                         float value[2];
                         gl->glGetUniformfv(current_program->handle, loc, &value[0]);
-                        return new Vector2(new Float(value[0]), new Float(value[1]));
+                        return make_shared<Vector2>(make_shared<Float>(value[0]), make_shared<Float>(value[1]));
                     } else 
                     if(type == "vec3") {
                         float value[3];
                         gl->glGetUniformfv(current_program->handle, loc, &value[0]);
-                        return new Vector3(new Float(value[0]), new Float(value[1]), new Float(value[2]));
+                        return make_shared<Vector3>(make_shared<Float>(value[0]), make_shared<Float>(value[1]), make_shared<Float>(value[2]));
                     } else
                     if(type == "vec4") {
                         float value[4];
                         gl->glGetUniformfv(current_program->handle, loc, &value[0]);
-                        return new Vector4(new Float(value[0]), new Float(value[1]), new Float(value[2]), new Float(value[3]));
+                        return make_shared<Vector4>(make_shared<Float>(value[0]), make_shared<Float>(value[1]), make_shared<Float>(value[2]), make_shared<Float>(value[3]));
                     } else 
                     if(type == "mat2") {
                         float value[4];
                         gl->glGetUniformfv(current_program->handle, loc, &value[0]);
-                        return new Matrix2(new Vector2(new Float(value[0]), new Float(value[1])), new Vector2(new Float(value[2]), new Float(value[3])));
+                        return make_shared<Matrix2>(make_shared<Vector2>(make_shared<Float>(value[0]), make_shared<Float>(value[1])), make_shared<Vector2>(make_shared<Float>(value[2]), make_shared<Float>(value[3])));
                     } else
                     if(type == "mat3") {
                         float value[9];
                         gl->glGetUniformfv(current_program->handle, loc, &value[0]);
-                        return new Matrix3(
-                            new Vector3(new Float(value[0]), new Float(value[1]), new Float(value[2])),
-                            new Vector3(new Float(value[3]), new Float(value[4]), new Float(value[5])),
-                            new Vector3(new Float(value[6]), new Float(value[7]), new Float(value[8]))
+                        return make_shared<Matrix3>(
+                            make_shared<Vector3>(make_shared<Float>(value[0]), make_shared<Float>(value[1]), make_shared<Float>(value[2])),
+                            make_shared<Vector3>(make_shared<Float>(value[3]), make_shared<Float>(value[4]), make_shared<Float>(value[5])),
+                            make_shared<Vector3>(make_shared<Float>(value[6]), make_shared<Float>(value[7]), make_shared<Float>(value[8]))
                         );
                     } else
                     if(type == "mat4") {
                         float value[16];
                         gl->glGetUniformfv(current_program->handle, loc, &value[0]);
-                        return new Matrix4(
-                            new Vector4(new Float(value[0]), new Float(value[1]), new Float(value[2]), new Float(value[3])),
-                            new Vector4(new Float(value[4]), new Float(value[5]), new Float(value[6]), new Float(value[7])),
-                            new Vector4(new Float(value[8]), new Float(value[9]), new Float(value[10]), new Float(value[11])),
-                            new Vector4(new Float(value[12]), new Float(value[13]), new Float(value[14]), new Float(value[15]))
+                        return make_shared<Matrix4>(
+                            make_shared<Vector4>(make_shared<Float>(value[0]), make_shared<Float>(value[1]), make_shared<Float>(value[2]), make_shared<Float>(value[3])),
+                            make_shared<Vector4>(make_shared<Float>(value[4]), make_shared<Float>(value[5]), make_shared<Float>(value[6]), make_shared<Float>(value[7])),
+                            make_shared<Vector4>(make_shared<Float>(value[8]), make_shared<Float>(value[9]), make_shared<Float>(value[10]), make_shared<Float>(value[11])),
+                            make_shared<Vector4>(make_shared<Float>(value[12]), make_shared<Float>(value[13]), make_shared<Float>(value[14]), make_shared<Float>(value[15]))
                         );
                     }
 
@@ -677,16 +691,16 @@ Expr* Interpreter::eval_expr(Expr* node) {
 
         case NODE_VECTOR2:
             {
-                Vector2* vec2 = (Vector2*)node;
-                Expr* x = eval_expr(vec2->x);
-                Expr* y = eval_expr(vec2->y);
+                shared_ptr<Vector2> vec2 = static_pointer_cast<Vector2>(node);
+                shared_ptr<Expr> x = eval_expr(vec2->x);
+                shared_ptr<Expr> y = eval_expr(vec2->y);
 
                 if((x->type == NODE_INT || x->type == NODE_FLOAT) && (y->type == NODE_INT || y->type == NODE_FLOAT)) {
-                    return new Vector2(x, y);
+                    return make_shared<Vector2>(static_pointer_cast<Expr>(x), static_pointer_cast<Expr>(y));
                 }
 
                 if(x->type == NODE_VECTOR2 && y->type == NODE_VECTOR2) {
-                    return new Matrix2((Vector2*)x, (Vector2*)y);
+                    return make_shared<Matrix2>(static_pointer_cast<Vector2>(x), static_pointer_cast<Vector2>(y));
                 }
 
                 return resolve_vector({x, y});
@@ -694,17 +708,17 @@ Expr* Interpreter::eval_expr(Expr* node) {
 
         case NODE_VECTOR3:
             {
-                Vector3* vec3 = (Vector3*)(node);
-                Expr* x = eval_expr(vec3->x);
-                Expr* y = eval_expr(vec3->y);
-                Expr* z = eval_expr(vec3->z);
+                shared_ptr<Vector3> vec3 = static_pointer_cast<Vector3>((node));
+                shared_ptr<Expr> x = eval_expr(vec3->x);
+                shared_ptr<Expr> y = eval_expr(vec3->y);
+                shared_ptr<Expr> z = eval_expr(vec3->z);
                 
                 if((x->type == NODE_INT || x->type == NODE_FLOAT) && (y->type == NODE_INT || y->type == NODE_FLOAT) && (z->type == NODE_INT || z->type == NODE_FLOAT)) {
-                    return new Vector3(x, y, z);
+                    return make_shared<Vector3>(x, y, z);
                 }
 
                 if(x->type == NODE_VECTOR3 && y->type == NODE_VECTOR3 && z->type == NODE_VECTOR3) {
-                    return new Matrix3((Vector3*)x, (Vector3*)y, (Vector3*)z);
+                    return make_shared<Matrix3>(static_pointer_cast<Vector3>(x), static_pointer_cast<Vector3>(y), static_pointer_cast<Vector3>(z));
                 }
 
                 return resolve_vector({x, y, z});
@@ -712,18 +726,18 @@ Expr* Interpreter::eval_expr(Expr* node) {
 
         case NODE_VECTOR4:
             {
-                Vector4* vec4 = (Vector4*)(node);
-                Expr* x = eval_expr(vec4->x);
-                Expr* y = eval_expr(vec4->y);
-                Expr* z = eval_expr(vec4->z);
-                Expr* w = eval_expr(vec4->w);
+                shared_ptr<Vector4> vec4 = static_pointer_cast<Vector4>((node));
+                shared_ptr<Expr> x = eval_expr(vec4->x);
+                shared_ptr<Expr> y = eval_expr(vec4->y);
+                shared_ptr<Expr> z = eval_expr(vec4->z);
+                shared_ptr<Expr> w = eval_expr(vec4->w);
                 
                 if((x->type == NODE_INT || x->type == NODE_FLOAT) && (y->type == NODE_INT || y->type == NODE_FLOAT) && (z->type == NODE_INT || z->type == NODE_FLOAT) && (w->type == NODE_INT || w->type == NODE_FLOAT)) {
-                    return new Vector4(x, y, z, w);
+                    return make_shared<Vector4>(x, y, z, w);
                 }
 
                 if(x->type == NODE_VECTOR4 && y->type == NODE_VECTOR4 && z->type == NODE_VECTOR4 && w->type == NODE_VECTOR4) {
-                    return new Matrix4((Vector4*)x, (Vector4*)y, (Vector4*)z, (Vector4*)w);
+                    return make_shared<Matrix4>(static_pointer_cast<Vector4>(x), static_pointer_cast<Vector4>(y), static_pointer_cast<Vector4>(z), static_pointer_cast<Vector4>(w));
                 }
 
                 return NULL;
@@ -731,87 +745,85 @@ Expr* Interpreter::eval_expr(Expr* node) {
 
         case NODE_MATRIX2:
             {
-                Matrix2* mat2 = (Matrix2*)node;
-                mat2->v0 = (Vector2*)eval_expr(mat2->v0);
-                mat2->v1 = (Vector2*)eval_expr(mat2->v1);
+                shared_ptr<Matrix2> mat2 = static_pointer_cast<Matrix2>(node);
+                mat2->v0 = static_pointer_cast<Vector2>(eval_expr(mat2->v0));
+                mat2->v1 = static_pointer_cast<Vector2>(eval_expr(mat2->v1));
                 return mat2;
             }
 
         case NODE_MATRIX3:
             {
-                Matrix3* mat3 = (Matrix3*)node;
-                mat3->v0 = (Vector3*)eval_expr(mat3->v0);
-                mat3->v1 = (Vector3*)eval_expr(mat3->v1);
-                mat3->v2 = (Vector3*)eval_expr(mat3->v2);
+                shared_ptr<Matrix3> mat3 = static_pointer_cast<Matrix3>(node);
+                mat3->v0 = static_pointer_cast<Vector3>(eval_expr(mat3->v0));
+                mat3->v1 = static_pointer_cast<Vector3>(eval_expr(mat3->v1));
+                mat3->v2 = static_pointer_cast<Vector3>(eval_expr(mat3->v2));
                 return mat3;
             }
 
         case NODE_MATRIX4:
             {
-                Matrix4* mat4 = (Matrix4*)node;
-                mat4->v0 = (Vector4*)eval_expr(mat4->v0);
-                mat4->v1 = (Vector4*)eval_expr(mat4->v1);
-                mat4->v2 = (Vector4*)eval_expr(mat4->v2);
-                mat4->v3 = (Vector4*)eval_expr(mat4->v3);
+                shared_ptr<Matrix4> mat4 = static_pointer_cast<Matrix4>(node);
+                mat4->v0 = static_pointer_cast<Vector4>(eval_expr(mat4->v0));
+                mat4->v1 = static_pointer_cast<Vector4>(eval_expr(mat4->v1));
+                mat4->v2 = static_pointer_cast<Vector4>(eval_expr(mat4->v2));
+                mat4->v3 = static_pointer_cast<Vector4>(eval_expr(mat4->v3));
                 return mat4;
             }
 
         case NODE_UNARY:
             {
-                Unary* un = (Unary*)node;
-                Expr* rhs = eval_expr(un->rhs);
+                shared_ptr<Unary> un = static_pointer_cast<Unary>(node);
+                shared_ptr<Expr> rhs = eval_expr(un->rhs);
 
                 if(!rhs) return NULL;
 
                 if(un->op == OP_MINUS) {
                     if(rhs->type == NODE_INT) {
-                        Int* i = (Int*)rhs;
-                        return new Int(-(i->value));
+                        shared_ptr<Int> i = static_pointer_cast<Int>(rhs);
+                        return make_shared<Int>(-(i->value));
                     }
-
                     if(rhs->type == NODE_FLOAT) {
-                        Float* fl = (Float*)rhs;
-                        return new Float(-(fl->value));
+                        shared_ptr<Float> fl = static_pointer_cast<Float>(rhs);
+                        return make_shared<Float>(-(fl->value));
                     }
                     if(rhs->type == NODE_VECTOR3) {
-                        Vector3* vec3 = (Vector3*)rhs;
+                        shared_ptr<Vector3> vec3 = static_pointer_cast<Vector3>(rhs);
 
                         //SHAMEFUL HACK
-                        return eval_binary(new Binary(vec3, OP_MULT, new Float(-1))); 
+                        return eval_binary(make_shared<Binary>(vec3, OP_MULT, make_shared<Float>(-1)));
                     }
                 }
                 if(un->op == OP_NOT) {
                     if(rhs->type == NODE_BOOL) {
-                        Bool* b = (Bool*)rhs;
-                        return new Bool(!(b->value));
+                        shared_ptr<Bool> b = static_pointer_cast<Bool>(rhs);
+                        return make_shared<Bool>(!(b->value));
                     }
                 }
                 if(un->op == OP_ABS) {
                     if(rhs->type == NODE_INT) {
-                        return new Int(abs(resolve_int(rhs)));
+                        return make_shared<Int>(abs(resolve_int(rhs)));
                     }
                     if(rhs->type == NODE_FLOAT) {
-                        return new Float(fabs(resolve_float(rhs)));
+                        return make_shared<Float>(fabs(resolve_float(rhs)));
                     }
                     if(rhs->type == NODE_VECTOR2) {
-                        Vector2* vec2 = (Vector2*)rhs;
+                        shared_ptr<Vector2> vec2 = static_pointer_cast<Vector2>(rhs);
                         float x = resolve_scalar(vec2->x), y = resolve_scalar(vec2->y);
-                        return new Float(sqrtf(x * x + y * y));
+                        return make_shared<Float>(sqrtf(x * x + y * y));
                     }
                     if(rhs->type == NODE_VECTOR3) {
-                        Vector3* vec3 = (Vector3*)rhs;
+                        shared_ptr<Vector3> vec3 = static_pointer_cast<Vector3>(rhs);
                         float x = resolve_scalar(vec3->x), y = resolve_scalar(vec3->y), z = resolve_scalar(vec3->z);
-                        return new Float(sqrtf(x * x + y * y + z * z));
+                        return make_shared<Float>(sqrtf(x * x + y * y + z * z));
                     }
                     if(rhs->type == NODE_VECTOR4) {
-                        Vector4* vec4 = (Vector4*)rhs;
+                        shared_ptr<Vector4> vec4 = static_pointer_cast<Vector4>(rhs);
                         float x = resolve_scalar(vec4->x), y = resolve_scalar(vec4->y), z = resolve_scalar(vec4->z), w = resolve_scalar(vec4->w);
-                        return new Float(sqrtf(x * x + y * y + z * z + w * w));
+                        return make_shared<Float>(sqrtf(x * x + y * y + z * z + w * w));
                     }
                     if(rhs->type == NODE_LIST) {
-                        cout << "len list\n";
-                        List* list = (List*)rhs;
-                        return new Int(list->list.size());
+                        shared_ptr<List> list = static_pointer_cast<List>(rhs);
+                        return make_shared<Int>(list->list.size());
                     }
                     return NULL;
                 }
@@ -819,23 +831,23 @@ Expr* Interpreter::eval_expr(Expr* node) {
 
         case NODE_BINARY:
             {
-                Binary* bin = (Binary*)(node);
+                shared_ptr<Binary> bin = static_pointer_cast<Binary>((node));
                 return eval_binary(bin);
             }
 
         case NODE_FUNCEXPR:
             {
-                FuncExpr* func = (FuncExpr*)node;
+                shared_ptr<FuncExpr> func = static_pointer_cast<FuncExpr>(node);
                 return invoke(func->invoke);
             }
         case NODE_INDEX:
             {
-                Index* in= (Index*)node;
-                Expr* source = eval_expr(in->source);
-                Expr* index = eval_expr(in->index);
+                shared_ptr<Index> in= static_pointer_cast<Index>(node);
+                shared_ptr<Expr> source = eval_expr(in->source);
+                shared_ptr<Expr> index = eval_expr(in->index);
                 
                 if(source->type == NODE_VECTOR2 && index->type == NODE_INT) {
-                    Vector2* vec2 = (Vector2*)source;
+                    shared_ptr<Vector2> vec2 = static_pointer_cast<Vector2>(source);
                     int i = resolve_int(index);
                     if(i == 0) return eval_expr(vec2->x);
                     if(i == 1) return eval_expr(vec2->y);
@@ -844,7 +856,7 @@ Expr* Interpreter::eval_expr(Expr* node) {
                     return NULL;
                 } else
                 if(source->type == NODE_VECTOR3 && index->type == NODE_INT) {
-                    Vector3* vec3 = (Vector3*)source;
+                    shared_ptr<Vector3> vec3 = static_pointer_cast<Vector3>(source);
                     int i = resolve_int(index);
                     if(i == 0) return eval_expr(vec3->x);
                     if(i == 1) return eval_expr(vec3->y);
@@ -854,7 +866,7 @@ Expr* Interpreter::eval_expr(Expr* node) {
                     return NULL;
                 }
                 if(source->type == NODE_VECTOR4 && index->type == NODE_INT) {
-                    Vector4* vec4 = (Vector4*)source;
+                    shared_ptr<Vector4> vec4 = static_pointer_cast<Vector4>(source);
                     int i = resolve_int(index);
                     if(i == 0) return eval_expr(vec4->x);
                     if(i == 1) return eval_expr(vec4->y);
@@ -865,7 +877,7 @@ Expr* Interpreter::eval_expr(Expr* node) {
                     return NULL;
                 }
                 if(source->type == NODE_MATRIX2 && index->type == NODE_INT) {
-                    Matrix2* mat2 = (Matrix2*)source;
+                    shared_ptr<Matrix2> mat2 = static_pointer_cast<Matrix2>(source);
                     int i = resolve_int(index);
                     if(i == 0) return eval_expr(mat2->v0);
                     if(i == 1) return eval_expr(mat2->v1);
@@ -874,7 +886,7 @@ Expr* Interpreter::eval_expr(Expr* node) {
                     return NULL;
                 }
                 if(source->type == NODE_MATRIX3 && index->type == NODE_INT) {
-                    Matrix3* mat3 = (Matrix3*)source;
+                    shared_ptr<Matrix3> mat3 = static_pointer_cast<Matrix3>(source);
                     int i = resolve_int(index);
                     if(i == 0) return eval_expr(mat3->v0);
                     if(i == 1) return eval_expr(mat3->v1);
@@ -884,7 +896,7 @@ Expr* Interpreter::eval_expr(Expr* node) {
                     return NULL;
                 }
                 if(source->type == NODE_MATRIX4 && index->type == NODE_INT) {
-                    Matrix4* mat4 = (Matrix4*)source;
+                    shared_ptr<Matrix4> mat4 = static_pointer_cast<Matrix4>(source);
                     int i = resolve_int(index);
                     if(i == 0) return eval_expr(mat4->v0);
                     if(i == 1) return eval_expr(mat4->v1);
@@ -895,7 +907,7 @@ Expr* Interpreter::eval_expr(Expr* node) {
                     return NULL;
                 }
                 if(source->type == NODE_LIST && index->type == NODE_INT) {
-                    List* list = (List*)source;
+                    shared_ptr<List> list = static_pointer_cast<List>(source);
                     int i = resolve_int(index);
                     if(i >= 0 && i < list->list.size()) {
                         return eval_expr(list->list[i]);
@@ -913,30 +925,30 @@ Expr* Interpreter::eval_expr(Expr* node) {
     }
 }
 
-Expr* Interpreter::eval_stmt(Stmt* stmt) {
+shared_ptr<Expr> Prototype::Interpreter::eval_stmt(shared_ptr<Stmt> stmt) {
     switch(stmt->type) {
         case NODE_FUNCSTMT:
             {
-                FuncStmt* func = (FuncStmt*)stmt;
+                shared_ptr<FuncStmt> func = static_pointer_cast<FuncStmt>(stmt);
                 invoke(func->invoke);
                 return NULL;
             }
         case NODE_ASSIGN:
             {
-                Assign* assign = (Assign*)stmt;
-                Expr* rhs = eval_expr(assign->value);
+                shared_ptr<Assign> assign = static_pointer_cast<Assign>(stmt);
+                shared_ptr<Expr> rhs = eval_expr(assign->value);
                 if(rhs != NULL) {
-                    Expr* lhs = assign->lhs;
+                    shared_ptr<Expr> lhs = assign->lhs;
                     if(lhs->type == NODE_IDENT) {
-                        Scope* scope = globalScope;
+                        shared_ptr<Scope> scope = globalScope;
                         if(!functionScopeStack.empty()) {
                             scope = functionScopeStack.top();
                         }
-                        scope->declare(((Ident*)lhs)->name, rhs);
+                        scope->declare(static_pointer_cast<Ident>(lhs)->name, rhs);
                     } else if(lhs->type == NODE_DOT) {
-                        Dot* uniform = (Dot*)lhs;
+                        shared_ptr<Dot> uniform = static_pointer_cast<Dot>(lhs);
                         if(current_program->vertSource->name == uniform->shader) {
-                            ShaderSource* src = current_program->vertSource;
+                            shared_ptr<ShaderSource> src = current_program->vertSource;
                             string type = "";
                             if(src->uniforms.find(uniform->name) != src->uniforms.end()) {
                                 type = src->uniforms[uniform->name];
@@ -953,7 +965,7 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                             GLint loc = gl->glGetUniformLocation(current_program->handle, uniform->name.c_str());
                             if(type == "float") {
                                 if(rhs->type == NODE_FLOAT) {
-                                    Float* f = (Float*)rhs;
+                                    shared_ptr<Float> f = static_pointer_cast<Float>(rhs);
                                     gl->glUniform1f(loc, resolve_float(f));
                                 } else {
                                     logger->log("ERROR: Uniform upload mismatch: float required for " + uniform->name + " of shader " + current_program_name);
@@ -962,7 +974,7 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                             } else
                             if(type == "vec2") {
                                 if(rhs->type == NODE_VECTOR2) {
-                                    Vector2* vec2 = (Vector2*)eval_expr(rhs);
+                                    shared_ptr<Vector2> vec2 = static_pointer_cast<Vector2>(eval_expr(rhs));
                                     gl->glUniform2f(loc, resolve_vec2(vec2));
                                 } else {
                                     logger->log("ERROR: Uniform upload mismatch: vec2 required for " + uniform->name + " of shader " + current_program_name);
@@ -970,7 +982,7 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                             } else 
                             if(type == "vec3") {
                                 if(rhs->type == NODE_VECTOR3) {
-                                    Vector3* vec3 = (Vector3*)eval_expr(rhs);
+                                    shared_ptr<Vector3> vec3 = static_pointer_cast<Vector3>(eval_expr(rhs));
                                     gl->glUniform3f(loc, resolve_vec3(vec3));
                                 } else {
                                     logger->log("ERROR: Uniform upload mismatch: vec3 required for " + uniform->name + " of shader " + current_program_name);
@@ -979,7 +991,7 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                             } else
                             if(type == "vec4") {
                                 if(rhs->type == NODE_VECTOR4) {
-                                    Vector4* vec4 = (Vector4*)eval_expr(rhs);
+                                    shared_ptr<Vector4> vec4 = static_pointer_cast<Vector4>(eval_expr(rhs));
                                     gl->glUniform4f(loc, resolve_vec4(vec4));
                                 } else {
                                     logger->log("ERROR: Uniform upload mismatch: vec4 required for " + uniform->name + " of shader " + current_program_name);
@@ -988,7 +1000,7 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                             } else
                             if(type == "mat2") {
                                 if(rhs->type == NODE_MATRIX2) {
-                                    Matrix2* mat2 = (Matrix2*)eval_expr(rhs);
+                                    shared_ptr<Matrix2> mat2 = static_pointer_cast<Matrix2>(eval_expr(rhs));
                                     float data[4];
                                     data[0] = resolve_scalar(mat2->v0->x); data[1] = resolve_scalar(mat2->v0->y);
                                     data[2] = resolve_scalar(mat2->v1->x); data[3] = resolve_scalar(mat2->v1->y);
@@ -1000,7 +1012,7 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                             } else
                             if(type == "mat3") {
                                 if(rhs->type == NODE_MATRIX3) {
-                                    Matrix3* mat3 = (Matrix3*)eval_expr(rhs);
+                                    shared_ptr<Matrix3> mat3 = static_pointer_cast<Matrix3>(eval_expr(rhs));
                                     float data[9];
                                     data[0] = resolve_scalar(mat3->v0->x); data[1] = resolve_scalar(mat3->v0->y); data[2] = resolve_scalar(mat3->v0->z);
                                     data[3] = resolve_scalar(mat3->v1->x); data[4] = resolve_scalar(mat3->v1->y); data[5] = resolve_scalar(mat3->v1->z);
@@ -1013,7 +1025,7 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                             } else
                             if(type == "mat4") {
                                 if(rhs->type == NODE_MATRIX4) {
-                                    Matrix4* mat4 = (Matrix4*)eval_expr(rhs);
+                                    shared_ptr<Matrix4> mat4 = static_pointer_cast<Matrix4>(eval_expr(rhs));
                                     float data[16];
                                     data[0] = resolve_scalar(mat4->v0->x); data[1] = resolve_scalar(mat4->v0->y); data[2] = resolve_scalar(mat4->v0->z); data[3] = resolve_scalar(mat4->v0->w);
                                     data[4] = resolve_scalar(mat4->v1->x); data[5] = resolve_scalar(mat4->v1->y); data[6] = resolve_scalar(mat4->v1->z); data[7] = resolve_scalar(mat4->v1->w);
@@ -1028,12 +1040,12 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
 
                         }
                     } else if (lhs->type == NODE_INDEX) {
-                        Index* in = (Index*)lhs;
-                        Expr* source = eval_expr(in->source);
-                        Expr* index = eval_expr(in->index);
+                        shared_ptr<Index> in = static_pointer_cast<Index>(lhs);
+                        shared_ptr<Expr> source = eval_expr(in->source);
+                        shared_ptr<Expr> index = eval_expr(in->index);
 
                         if(source->type == NODE_LIST && index->type == NODE_INT) {
-                            List* list = (List*)source;
+                            shared_ptr<List> list = static_pointer_cast<List>(source);
                             int i = resolve_int(index);
                             if(i >= 0 && i < list->list.size()) {
                                 list->list[i] = rhs;
@@ -1044,13 +1056,12 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                         }
 
                         bool is_scalar = (rhs->type == NODE_FLOAT || rhs->type == NODE_INT);
-                        cout << source->type << " " << NODE_VECTOR3 << endl;
                         if(source->type == NODE_VECTOR2 && index->type == NODE_INT) {
                             if(!is_scalar) {
                                 logger->log(assign, "ERROR", "vec2 component needs to be a float or an int");
                                 return NULL;
                             }
-                            Vector2* vec2 = (Vector2*)source;
+                            shared_ptr<Vector2> vec2 = static_pointer_cast<Vector2>(source);
                             int i = resolve_int(index);
                             if(i == 0) vec2->x = rhs;
                             else if(i == 1) vec2->y = rhs;
@@ -1062,7 +1073,7 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                                 logger->log(assign, "ERROR", "vec3 component needs to be a float or an int");
                                 return NULL;
                             }
-                            Vector3* vec3 = (Vector3*)source;
+                            shared_ptr<Vector3> vec3 = static_pointer_cast<Vector3>(source);
                             int i = resolve_int(index);
                             if(i == 0) vec3->x = rhs;
                             else if(i == 1) vec3->y = rhs;
@@ -1075,7 +1086,7 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                                 logger->log(assign, "ERROR", "vec4 component needs to be a float or an int");
                                 return NULL;
                             }
-                            Vector4* vec4 = (Vector4*)source;
+                            shared_ptr<Vector4> vec4 = static_pointer_cast<Vector4>(source);
                             int i = resolve_int(index);
                             if(i == 0) vec4->x = rhs;
                             else if(i == 1) vec4->y = rhs;
@@ -1090,10 +1101,10 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                                 logger->log(assign, "ERROR", "mat2 component needs to be vec2");
                                 return NULL;
                             }
-                            Matrix2* mat2 = (Matrix2*)source;
+                            shared_ptr<Matrix2> mat2 = static_pointer_cast<Matrix2>(source);
                             int i = resolve_int(index);
-                            if(i == 0) mat2->v0 = (Vector2*)rhs;
-                            else if(i == 1) mat2->v1 = (Vector2*)rhs;
+                            if(i == 0) mat2->v0 = static_pointer_cast<Vector2>(rhs);
+                            else if(i == 1) mat2->v1 = static_pointer_cast<Vector2>(rhs);
                             else { logger->log(assign, "ERROR", "Index out of range for mat2 access"); return NULL; }
                             mat2->generate_columns();
                             return NULL;
@@ -1103,11 +1114,11 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                                 logger->log(assign, "ERROR", "mat3 component needs to be vec3");
                                 return NULL;
                             }
-                            Matrix3* mat3 = (Matrix3*)source;
+                            shared_ptr<Matrix3> mat3 = static_pointer_cast<Matrix3>(source);
                             int i = resolve_int(index);
-                            if(i == 0) mat3->v0 = (Vector3*)rhs;
-                            else if(i == 1) mat3->v1 = (Vector3*)rhs;
-                            else if(i == 2) mat3->v2 = (Vector3*)rhs;
+                            if(i == 0) mat3->v0 = static_pointer_cast<Vector3>(rhs);
+                            else if(i == 1) mat3->v1 = static_pointer_cast<Vector3>(rhs);
+                            else if(i == 2) mat3->v2 = static_pointer_cast<Vector3>(rhs);
                             else { logger->log(index, "ERROR", "Index out of range for mat3 access"); return NULL; }
                             mat3->generate_columns();
                             return NULL;
@@ -1117,12 +1128,12 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
                                 logger->log(assign, "ERROR", "mat4 component needs to be vec4");
                                 return NULL;
                             }
-                            Matrix4* mat4 = (Matrix4*)source;
+                            shared_ptr<Matrix4> mat4 = static_pointer_cast<Matrix4>(source);
                             int i = resolve_int(index);
-                            if(i == 0) mat4->v0 =(Vector4*) rhs;
-                            else if(i == 1) mat4->v1 = (Vector4*)rhs;
-                            else if(i == 2) mat4->v2 = (Vector4*)rhs;
-                            else if(i == 3) mat4->v3 = (Vector4*)rhs;
+                            if(i == 0) mat4->v0 =static_pointer_cast<Vector4>( rhs);
+                            else if(i == 1) mat4->v1 = static_pointer_cast<Vector4>(rhs);
+                            else if(i == 2) mat4->v2 = static_pointer_cast<Vector4>(rhs);
+                            else if(i == 3) mat4->v3 = static_pointer_cast<Vector4>(rhs);
                             else { logger->log(index, "ERROR", "Index out of range for mat4 access"); return NULL; }
                             mat4->generate_columns();
                             return NULL;
@@ -1143,11 +1154,11 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
             }
         case NODE_ALLOC:
             {
-                Alloc* alloc = (Alloc*)stmt;
+                shared_ptr<Alloc> alloc = static_pointer_cast<Alloc>(stmt);
 
                 if(!buffers[alloc->ident->name]) {
-                    Buffer* buf = new Buffer;
-                    buf->layout = new Layout;
+                    shared_ptr<Buffer> buf = make_shared<Buffer>();
+                    buf->layout = make_shared<Layout>();
 
                     gl->glGenBuffers(1, &(buf->handle));
                     buffers[alloc->ident->name] = buf;
@@ -1159,15 +1170,15 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
             }
         case NODE_UPLOAD:
             {
-                Upload* upload = (Upload*)stmt;
+                shared_ptr<Upload> upload = static_pointer_cast<Upload>(stmt);
 
-                Buffer* buffer = buffers[upload->ident->name];
+                shared_ptr<Buffer> buffer = buffers[upload->ident->name];
                 if(buffer == NULL) {
                     logger->log("ERROR: Can't upload to unallocated buffer");
                     return NULL;
                 }
 
-                Layout* layout = buffer->layout;
+                shared_ptr<Layout> layout = buffer->layout;
 
                 if(layout->attributes.find(upload->attrib->name) == layout->attributes.end()) {
                     layout->attributes[upload->attrib->name] = 3;
@@ -1176,21 +1187,21 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
 
                 vector<float>* target = &(buffer->data[upload->attrib->name]);
                 for(unsigned int i = 0; i < upload->list->list.size(); i++) {
-                    Expr* expr = eval_expr(upload->list->list[i]);
+                    shared_ptr<Expr> expr = eval_expr(upload->list->list[i]);
                     if(!expr) {
                         logger->log("ERROR: Can't upload illegal value into buffer");
                         break;
                     }
 
                     if(expr->type == NODE_VECTOR3) {
-                        Vector3* vec3 = (Vector3*)expr;
+                        shared_ptr<Vector3> vec3 = static_pointer_cast<Vector3>(expr);
                         target->insert(target->end(), resolve_scalar(vec3->x));
                         target->insert(target->end(), resolve_scalar(vec3->y));
                         target->insert(target->end(), resolve_scalar(vec3->z));
                     }
 
                     if(expr->type == NODE_FLOAT) {
-                        Float* f = (Float*)expr;
+                        shared_ptr<Float> f = static_pointer_cast<Float>(expr);
                         target->insert(target->begin(), resolve_scalar(f));
                     }
                 }
@@ -1201,16 +1212,16 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
             }
         case NODE_DRAW:
             {
-                Draw* draw = (Draw*)stmt;
+                shared_ptr<Draw> draw = static_pointer_cast<Draw>(stmt);
 
                 if(current_program == NULL) {
                     logger->log("ERROR: Cannot bind program with name " + current_program_name);
                     return NULL;
                 }
 
-                Buffer* buffer = buffers[draw->ident->name];
+                shared_ptr<Buffer> buffer = buffers[draw->ident->name];
                 if(buffer != NULL) {
-                    Layout* layout = buffer->layout;
+                    shared_ptr<Layout> layout = buffer->layout;
                     vector<float> final_vector;
 
                     map<string, unsigned int> attributes = layout->attributes;
@@ -1255,7 +1266,7 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
             }
         case NODE_USE:
             {
-                Use* use = (Use*)stmt;
+                shared_ptr<Use> use = static_pointer_cast<Use>(stmt);
                 current_program_name = use->ident->name;
                 current_program = programs[current_program_name];
 
@@ -1269,13 +1280,13 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
             }
         case NODE_IF:
             {
-                If* ifstmt = (If*)stmt;
-                Expr* condition = eval_expr(ifstmt->condition);
+                shared_ptr<If> ifstmt = static_pointer_cast<If>(stmt);
+                shared_ptr<Expr> condition = eval_expr(ifstmt->condition);
                 if(!condition) return NULL;
                 if(condition->type == NODE_BOOL) {
-                    bool b = ((Bool*)condition)->value;
+                    bool b = (static_pointer_cast<Bool>(condition)->value);
                     if(b) {
-                        Expr* returnValue = execute_stmts(ifstmt->block);
+                        shared_ptr<Expr> returnValue = execute_stmts(ifstmt->block);
                         if(returnValue != NULL) {
                             return returnValue;
                         }
@@ -1287,17 +1298,17 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
             }
         case NODE_WHILE:
             {
-                While* whilestmt = (While*)stmt;
-                Expr* condition = eval_expr(whilestmt->condition);
+                shared_ptr<While> whilestmt = static_pointer_cast<While>(stmt);
+                shared_ptr<Expr> condition = eval_expr(whilestmt->condition);
                 if(!condition) return NULL;
                 if(condition->type == NODE_BOOL) {
                     time_t start = time(nullptr);
                     while(true) {
                         condition = eval_expr(whilestmt->condition);
-                        bool b = ((Bool*)condition)->value;
+                        bool b = (static_pointer_cast<Bool>(condition)->value);
                         if(!b) break;
 
-                        Expr* returnValue = execute_stmts(whilestmt->block);
+                        shared_ptr<Expr> returnValue = execute_stmts(whilestmt->block);
                         if(returnValue != NULL) {
                             return returnValue;
                         }
@@ -1315,25 +1326,25 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
             }
         case NODE_FOR:
             {
-                For* forstmt = (For*)stmt;
-                Ident* iterator = forstmt->iterator;
-                Expr *start = eval_expr(forstmt->start), *end = eval_expr(forstmt->end), *increment = eval_expr(forstmt->increment);
+                shared_ptr<For> forstmt = static_pointer_cast<For>(stmt);
+                shared_ptr<Ident> iterator = forstmt->iterator;
+                shared_ptr<Expr> start = eval_expr(forstmt->start), end = eval_expr(forstmt->end), increment = eval_expr(forstmt->increment);
                 if(start->type == NODE_INT || end->type == NODE_INT || increment->type == NODE_INT) {
-                    eval_stmt(new Assign(iterator, start));
+                    eval_stmt(make_shared<Assign>(iterator, start));
 
                     time_t start = time(nullptr);
                     while(true) {
-                        Bool* terminate = (Bool*)eval_binary(new Binary(iterator, OP_EQUAL, end));
+                        shared_ptr<Bool> terminate = static_pointer_cast<Bool>(eval_binary(make_shared<Binary>(iterator, OP_EQUAL, end)));
                         if(terminate->value) {
                             break;
                         }
 
-                        Expr* returnValue = execute_stmts(forstmt->block);
+                        shared_ptr<Expr> returnValue = execute_stmts(forstmt->block);
                         if(returnValue != NULL) {
                             return returnValue;
                         }
 
-                        eval_stmt(new Assign(iterator, new Binary(iterator, OP_PLUS, increment)));
+                        eval_stmt(make_shared<Assign>(iterator, make_shared<Binary>(iterator, OP_PLUS, increment)));
 
                         time_t now = time(nullptr);
                         int diff = difftime(now, start);
@@ -1345,8 +1356,8 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
             }
         case NODE_PRINT:
             {
-                Print* print = (Print*)stmt;
-                Expr* output = eval_expr(print->expr);
+                shared_ptr<Print> print = static_pointer_cast<Print>(stmt);
+                shared_ptr<Expr> output = eval_expr(print->expr);
                 if(output == NULL)
                     return NULL;
 
@@ -1359,17 +1370,17 @@ Expr* Interpreter::eval_stmt(Stmt* stmt) {
     }
 }
 
-Expr* Interpreter::execute_stmts(Stmts* stmts) {
-    Expr* returnValue = NULL;
+shared_ptr<Expr> Prototype::Interpreter::execute_stmts(shared_ptr<Stmts> stmts) {
+    shared_ptr<Expr> returnValue = NULL;
     for(unsigned int it = 0; it < stmts->list.size(); it++) { 
-        Stmt* stmt = stmts->list.at(it);
+        shared_ptr<Stmt> stmt = stmts->list.at(it);
         if(stmt->type == NODE_RETURN) {
-            Return* ret = (Return*)stmt;
+            shared_ptr<Return> ret = static_pointer_cast<Return>(stmt);
             returnValue = ret->value;
             break;
         }
 
-        Expr* expr = eval_stmt(stmt);
+        shared_ptr<Expr> expr = eval_stmt(stmt);
         if(expr != NULL) {
             returnValue = expr;
             break;
@@ -1383,7 +1394,7 @@ Expr* Interpreter::execute_stmts(Stmts* stmts) {
     }
 }
 
-void Interpreter::compile_shader(GLuint* handle, ShaderSource* source) {
+void Prototype::Interpreter::compile_shader(GLuint* handle, shared_ptr<ShaderSource> source) {
     const char* src = source->code.c_str();
     gl->glShaderSource(*handle, 1, &src, NULL);
     gl->glCompileShader(*handle);
@@ -1398,10 +1409,10 @@ void Interpreter::compile_shader(GLuint* handle, ShaderSource* source) {
     }
 }
 
-void Interpreter::compile_program() {
+void Prototype::Interpreter::compile_program() {
     programs.clear();
-    for(map<string, ShaderPair*>::iterator it = shaders.begin(); it != shaders.end(); ++it) {
-        Program* program = new Program;
+    for(map<string, shared_ptr<ShaderPair>>::iterator it = shaders.begin(); it != shaders.end(); ++it) {
+        shared_ptr<Program> program = make_shared<Program>();
         program->handle = gl->glCreateProgram();
         program->vert = gl->glCreateShader(GL_VERTEX_SHADER);
         program->frag = gl->glCreateShader(GL_FRAGMENT_SHADER);
@@ -1439,7 +1450,7 @@ void Interpreter::compile_program() {
     }
 }
 
-void Interpreter::execute_init() {
+void Prototype::Interpreter::execute_init() {
     if(!init || status) return;
     buffers.clear();
     globalScope->clear();
@@ -1447,26 +1458,21 @@ void Interpreter::execute_init() {
     execute_stmts(init->stmts);
 }
 
-void Interpreter::execute_loop() {
+void Prototype::Interpreter::execute_loop() {
     if(!loop || status) return;
 
     execute_stmts(loop->stmts);
 }
 
-void Interpreter::parse(string code) {
-    YY_BUFFER_STATE state = yy_scan_string(code.c_str());
+void Prototype::Interpreter::parse(string code) {
     reset();
-    yylineno = 1;
-    status = yyparse(&shaders, &functions);
-    yy_delete_buffer(state);
 
-
-    if(functions["vert_basic"] != NULL && functions["frag_basic"] != NULL) {
-        transpiler->transpile(functions["vert_basic"]->stmts, functions["frag_basic"]->stmts);
-    }
+    istringstream ss(code);
+    scanner.switch_streams(&ss, NULL);
+    status = parser.parse();
 }
 
-void Interpreter::prepare() {
+void Prototype::Interpreter::prepare() {
     init = functions["init"];
     if(init == NULL) {
         logger->log("ERROR: init() function required!");

@@ -39,7 +39,7 @@ void LogWindow::log(LogInfo info, string msg) {
     this->log(output);
 }
 
-void LogWindow::log(Node* node, string label, string msg) {
+void LogWindow::log(shared_ptr<Node> node, string label, string msg) {
     LogInfo info;
     info.label = label;
     info.first_line = node->first_line;

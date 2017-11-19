@@ -5,16 +5,16 @@ GLSLTranspiler::GLSLTranspiler()
 
 }
 
-void GLSLTranspiler::transpile(Stmts* vertex, Stmts* fragment) {
-    vector<Stmt*> vertex_stmts = vertex->list;
+void GLSLTranspiler::transpile(shared_ptr<Stmts> vertex, shared_ptr<Stmts> fragment) {
+    vector<shared_ptr<Stmt>> vertex_stmts = vertex->list;
     for(unsigned int i = 0; i < vertex_stmts.size(); i++) {
-        Stmt* stmt = vertex_stmts[i];
+        shared_ptr<Stmt> stmt = vertex_stmts[i];
         vertSource += eval_stmt(stmt);
     }
 
-    vector<Stmt*> fragment_stmts = fragment->list;
+    vector<shared_ptr<Stmt>> fragment_stmts = fragment->list;
     for(unsigned int i = 0; i < fragment_stmts.size(); i++) {
-        Stmt* stmt = fragment_stmts[i];
+        shared_ptr<Stmt> stmt = fragment_stmts[i];
         fragSource += eval_stmt(stmt);
     }
 
@@ -22,29 +22,29 @@ void GLSLTranspiler::transpile(Stmts* vertex, Stmts* fragment) {
     cout << fragSource << endl;
 }
 
-string GLSLTranspiler::eval_expr(Expr* expr) {
+string GLSLTranspiler::eval_expr(shared_ptr<Expr> expr) {
     switch(expr->type) {
         case NODE_INT:
-            return to_string(((Int*)expr)->value);
+            return to_string(static_pointer_cast<Int>(expr)->value);
         case NODE_FLOAT:
-            return to_string(((Float*)expr)->value);
+            return to_string(static_pointer_cast<Float>(expr)->value);
         case NODE_IDENT:
-            return ((Ident*)expr)->name;
+            return static_pointer_cast<Ident>(expr)->name; 
         case NODE_DOT:
             {
-                Dot* dot = (Dot*)expr;
+                shared_ptr<Dot> dot = static_pointer_cast<Dot>(expr);
                 return dot->shader + "." + dot->name;
             }
         case NODE_BINARY:
             {
-                return eval_binary((Binary*)expr);
+                return eval_binary(static_pointer_cast<Binary>(expr));
             }
         default:
             return "";
     }
 }
 
-string GLSLTranspiler::eval_binary(Binary* bin) {
+string GLSLTranspiler::eval_binary(shared_ptr<Binary> bin) {
     string op_str = "";
     switch(bin->op) {
         case OP_MULT:
@@ -56,11 +56,11 @@ string GLSLTranspiler::eval_binary(Binary* bin) {
     return eval_expr(bin->lhs) + op_str + eval_expr(bin->rhs);
 }
 
-string GLSLTranspiler::eval_stmt(Stmt* stmt) {
+string GLSLTranspiler::eval_stmt(shared_ptr<Stmt> stmt) {
     switch(stmt->type) {
         case NODE_ASSIGN:
             {
-                Assign* a = (Assign*)stmt;
+                shared_ptr<Assign> a = static_pointer_cast<Assign>(stmt);
                 return eval_expr(a->lhs) + " = " + eval_expr(a->value) + ";";
             }
         default:
