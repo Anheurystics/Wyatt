@@ -8,4 +8,8 @@ parsercli
 scanner.cpp
 scanner.h
 parser.cpp
-parser.h
+parser.hpp
+position.hh
+location.hh
+stack.hh
+.vscode/
