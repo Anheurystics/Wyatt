@@ -46,9 +46,7 @@ void CustomGLWidget::paintGL() {
         interpreter->execute_init();
     }
 
-    if(interpreter->status != 0) {
-        std::cout << "interpreter ERROR\n";
-    } else {
+    if(interpreter->status == 0) {
         interpreter->execute_loop();
     }
 }
