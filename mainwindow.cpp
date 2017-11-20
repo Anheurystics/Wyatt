@@ -6,8 +6,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    startupCode = "func init(){\n\n}\n\nfunc loop(){\n\n}\n";
 
     codeEditor = ui->codeEditor;
+    codeEditor->setPlainText(startupCode);
+
     QObject::connect(codeEditor, SIGNAL(textChanged()), ui->openGLWidget, SLOT(updateCode()));
 
     highlighter = new Highlighter(codeEditor->document());

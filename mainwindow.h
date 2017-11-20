@@ -31,6 +31,7 @@ private:
 
     QFileInfo openFileInfo;
     QString txtFilter;
+    QString startupCode;
 
     void setOpenedFile(QString fileName) {
         openFileName = fileName;
@@ -44,7 +45,7 @@ private slots:
         openFileInfo.setFile(openFileName);
         setWindowTitle("Prototype - untitled");
 
-        codeEditor->setPlainText("");
+        codeEditor->setPlainText(startupCode);
     }
 
     void openFile() {
