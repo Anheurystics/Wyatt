@@ -16,9 +16,12 @@ namespace Prototype {
 
 class Scanner: public yyFlexLexer {
     public:
-        Scanner() {}
+        Scanner(unsigned int* line, unsigned int* column): line(line), column(column) {}
         virtual ~Scanner() {}
         virtual Parser::symbol_type get_next_token();
+    private:
+        unsigned int* line;
+        unsigned int* column;
 };
 
 }

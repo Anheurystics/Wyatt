@@ -125,6 +125,9 @@ class Interpreter {
         LogWindow* logger;
 
         GLSLTranspiler* transpiler;
+
+        unsigned int line = 1;
+        unsigned int column = 1;
 };
 }
 

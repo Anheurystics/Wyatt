@@ -24,7 +24,7 @@ float resolve_scalar(Expr_ptr expr) {
 
 #define LOOP_TIMEOUT 5
 
-Prototype::Interpreter::Interpreter(LogWindow* logger): scanner(), parser(scanner, &functions, &shaders) {
+Prototype::Interpreter::Interpreter(LogWindow* logger): scanner(&line, &column), parser(scanner, &line, &column, &functions, &shaders) {
     this->logger = logger;
 
     globalScope = make_shared<Scope>("global");
@@ -64,6 +64,9 @@ void Prototype::Interpreter::reset() {
     init = NULL;
     loop = NULL;
     gl = NULL;
+
+    line = 1;
+    column = 1;
 }
 
 string tostring(Expr_ptr expr) {
@@ -525,7 +528,7 @@ Expr_ptr Prototype::Interpreter::invoke(Invoke_ptr invoke) {
             for(unsigned int i = 0; i < nParams; i++) {
                 Expr_ptr arg = eval_expr(invoke->args->list[i]);
                 if(arg == NULL) {
-                    logger->log("ERROR: Invalid argument passed on to " + name);
+                    logger->log(arg, "ERROR", "Invalid argument passed on to " + name);
                     return NULL;
                 }
                 localScope->declare(def->params->list[i]->name, arg);
@@ -537,7 +540,7 @@ Expr_ptr Prototype::Interpreter::invoke(Invoke_ptr invoke) {
         functionScopeStack.pop();
         return retValue;
     } else {
-        logger->log("ERROR: Call to undefined function " + name);
+        logger->log(invoke, "ERROR", "Call to undefined function " + name);
     }
     return NULL;
 }
@@ -602,7 +605,7 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
 
                 value = globalScope->get(ident->name);
                 if(value == NULL) {
-                    logger->log("ERROR: Undefined variable " + ident->name);
+                    logger->log(ident, "ERROR", "Undefined variable " + ident->name);
                 }
 
                 return value;
@@ -620,7 +623,7 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                         if(src->uniforms.find(uniform->name) != src->uniforms.end()) {
                             type = src->uniforms[uniform->name];
                         } else {
-                            logger->log("ERROR: Uniform " + uniform->name + " of shader " + current_program_name + " does not exist!");
+                            logger->log(uniform, "ERROR", "Uniform " + uniform->name + " of shader " + current_program_name + " does not exist!");
                             return NULL;
                         }
                     }
@@ -957,7 +960,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                 if(src->uniforms.find(uniform->name) != src->uniforms.end()) {
                                     type = src->uniforms[uniform->name];
                                 } else {
-                                    logger->log("ERROR: Uniform " + uniform->name + " of shader " + current_program_name + " does not exist!");
+                                    logger->log(uniform, "ERROR", "Uniform " + uniform->name + " of shader " + current_program_name + " does not exist!");
                                     return NULL;
                                 }
                             }
@@ -968,7 +971,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                     Float_ptr f = static_pointer_cast<Float>(rhs);
                                     gl->glUniform1f(loc, resolve_float(f));
                                 } else {
-                                    logger->log("ERROR: Uniform upload mismatch: float required for " + uniform->name + " of shader " + current_program_name);
+                                    logger->log(uniform, "ERROR", "Uniform upload mismatch: float required for " + uniform->name + " of shader " + current_program_name);
                                     return NULL;
                                 }
                             } else
@@ -977,7 +980,8 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                     Vector2_ptr vec2 = static_pointer_cast<Vector2>(eval_expr(rhs));
                                     gl->glUniform2f(loc, resolve_vec2(vec2));
                                 } else {
-                                    logger->log("ERROR: Uniform upload mismatch: vec2 required for " + uniform->name + " of shader " + current_program_name);
+                                    logger->log(uniform, "ERROR", "Uniform upload mismatch: vec2 required for " + uniform->name + " of shader " + current_program_name);
+                                    return NULL;
                                 }
                             } else 
                             if(type == "vec3") {
@@ -985,7 +989,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                     Vector3_ptr vec3 = static_pointer_cast<Vector3>(eval_expr(rhs));
                                     gl->glUniform3f(loc, resolve_vec3(vec3));
                                 } else {
-                                    logger->log("ERROR: Uniform upload mismatch: vec3 required for " + uniform->name + " of shader " + current_program_name);
+                                    logger->log(uniform, "ERROR", "Uniform upload mismatch: vec3 required for " + uniform->name + " of shader " + current_program_name);
                                     return NULL;
                                 }
                             } else
@@ -994,7 +998,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                     Vector4_ptr vec4 = static_pointer_cast<Vector4>(eval_expr(rhs));
                                     gl->glUniform4f(loc, resolve_vec4(vec4));
                                 } else {
-                                    logger->log("ERROR: Uniform upload mismatch: vec4 required for " + uniform->name + " of shader " + current_program_name);
+                                    logger->log(uniform, "ERROR", "Uniform upload mismatch: vec4 required for " + uniform->name + " of shader " + current_program_name);
                                     return NULL;
                                 }
                             } else
@@ -1006,7 +1010,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                     data[2] = resolve_scalar(mat2->v1->x); data[3] = resolve_scalar(mat2->v1->y);
                                     gl->glUniform2fv(loc, 1, data);
                                 } else {
-                                    logger->log("ERROR: Uniform upload mismatch: vec4 required for " + uniform->name + " of shader " + current_program_name);
+                                    logger->log(uniform, "ERROR", "Uniform upload mismatch: vec4 required for " + uniform->name + " of shader " + current_program_name);
                                     return NULL;
                                 }
                             } else
@@ -1019,7 +1023,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                     data[6] = resolve_scalar(mat3->v2->x); data[7] = resolve_scalar(mat3->v2->y); data[8] = resolve_scalar(mat3->v2->z);
                                     gl->glUniformMatrix3fv(loc, 1, false, data);
                                 } else {
-                                    logger->log("ERROR: Uniform upload mismatch: mat3 required for " + uniform->name + " of shader " + current_program_name);
+                                    logger->log(uniform, "ERROR", "Uniform upload mismatch: mat3 required for " + uniform->name + " of shader " + current_program_name);
                                     return NULL;
                                 }
                             } else
@@ -1033,7 +1037,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                     data[12] = resolve_scalar(mat4->v3->x); data[13] = resolve_scalar(mat4->v3->y); data[14] = resolve_scalar(mat4->v3->z); data[15] = resolve_scalar(mat4->v3->w);
                                     gl->glUniformMatrix4fv(loc, 1, false, data);
                                 } else {
-                                    logger->log("ERROR: Uniform upload mismatch: mat3 required for " + uniform->name + " of shader " + current_program_name);
+                                    logger->log(uniform, "ERROR", "Uniform upload mismatch: mat3 required for " + uniform->name + " of shader " + current_program_name);
                                     return NULL;
                                 }
                             }
@@ -1141,13 +1145,12 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
 
                         logger->log(index,"ERROR", "Invalid use of [] operator");
                         return NULL;
-
                     } else {
                         logger->log(assign, "ERROR", "Invalid left-hand side expression in assignment");
                         return NULL;
                     }
                 } else {
-                    logger->log("ERROR: Invalid assignment");
+                    logger->log(assign, "ERROR", "Invalid assignment");
                 }
 
                 return NULL;
@@ -1163,7 +1166,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     gl->glGenBuffers(1, &(buf->handle));
                     buffers[alloc->ident->name] = buf;
                 } else {
-                    logger->log("ERROR: Can't allocate to " + alloc->ident->name + ": buffer already exists!");
+                    logger->log(alloc, "ERROR", "Can't allocate to " + alloc->ident->name + ": buffer already exists!");
                 }
 
                 return NULL;
@@ -1174,7 +1177,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
 
                 Buffer_ptr buffer = buffers[upload->ident->name];
                 if(buffer == NULL) {
-                    logger->log("ERROR: Can't upload to unallocated buffer");
+                    logger->log(upload, "ERROR", "Can't upload to unallocated buffer");
                     return NULL;
                 }
 
@@ -1189,7 +1192,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 for(unsigned int i = 0; i < upload->list->list.size(); i++) {
                     Expr_ptr expr = eval_expr(upload->list->list[i]);
                     if(!expr) {
-                        logger->log("ERROR: Can't upload illegal value into buffer");
+                        logger->log(upload, "ERROR", "Can't upload illegal value into buffer");
                         break;
                     }
 
@@ -1215,7 +1218,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 Draw_ptr draw = static_pointer_cast<Draw>(stmt);
 
                 if(current_program == NULL) {
-                    logger->log("ERROR: Cannot bind program with name " + current_program_name);
+                    logger->log(draw, "ERROR", "Cannot bind program with name " + current_program_name);
                     return NULL;
                 }
 
@@ -1226,7 +1229,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
 
                     map<string, unsigned int> attributes = layout->attributes;
                     if(attributes.size() == 0) {
-                        logger->log("ERROR: Cannot draw empty buffer!");
+                        logger->log(draw, "ERROR", "Cannot draw empty buffer!");
                         return NULL;
                     }
 
@@ -1259,7 +1262,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
 
                     gl->glDrawArrays(GL_TRIANGLES, 0, final_vector.size() / total_size);
                 } else {
-                    logger->log("ERROR: Can't draw non-existent buffer " + draw->ident->name);
+                    logger->log(draw, "ERROR", "Can't draw non-existent buffer " + draw->ident->name);
                 }
 
                 return NULL;
@@ -1271,7 +1274,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 current_program = programs[current_program_name];
 
                 if(current_program == NULL) {
-                    logger->log("ERROR: No valid vertex/fragment pair for program name " + current_program_name);
+                    logger->log(use, "ERROR", "No valid vertex/fragment pair for program name " + current_program_name);
                     return NULL;
                 }
 
@@ -1292,7 +1295,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                         }
                     }
                 } else {
-                    logger->log("ERROR: Condition in if statement not a boolean");
+                    logger->log(ifstmt, "ERROR", "Condition in if statement not a boolean");
                 }
                 return NULL;
             }
@@ -1319,7 +1322,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                         if(diff > LOOP_TIMEOUT) { break; }
                     }
                 } else {
-                    logger->log("ERROR: Condition in while statement not a boolean");
+                    logger->log(whilestmt, "ERROR", "Condition in while statement not a boolean");
                 }
 
                 return NULL;

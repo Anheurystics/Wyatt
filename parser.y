@@ -9,22 +9,24 @@
 %define parse.assert
 %define api.namespace { Prototype }
 %code requires {
-#include <cstdio>
-#include <iostream>
-#include <vector>
-#include <cmath>
-#include <string>
-#include <memory>
+    #include <cstdio>
+    #include <iostream>
+    #include <vector>
+    #include <cmath>
+    #include <string>
+    #include <memory>
 
-using namespace std;
+    using namespace std;
 
-namespace Prototype {
-    class Scanner;
-}
+    namespace Prototype {
+        class Scanner;
+    }
 
-#include "nodes.h"
+    #include "nodes.h"
 
-#define set_lines(a, b, c)
+    #define set_lines(a, b, c) \
+        a->first_line = b.begin.line; \
+        a->last_line = c.end.line; \
 }
 
 %code top {
@@ -34,16 +36,19 @@ namespace Prototype {
     #include "interpreter.h"
     #include "location.hh"
 
-    static Prototype::Parser::symbol_type yylex(Prototype::Scanner &scanner) {
-        Prototype::Parser::symbol_type tok = scanner.get_next_token();
-        return tok;
+    static Prototype::Parser::symbol_type yylex(Prototype::Scanner &scanner, unsigned int* line, unsigned int* column) {
+        return scanner.get_next_token();
     }
 
     using namespace Prototype;
 }
 
 %lex-param { Prototype::Scanner &scanner }
+%lex-param { unsigned int* line }
+%lex-param { unsigned int* column }
 %parse-param { Prototype::Scanner &scanner }
+%parse-param { unsigned int* line }
+%parse-param { unsigned int* column }
 %parse-param { std::map<std::string, std::shared_ptr<FuncDef>>* functions }
 %parse-param { std::map<std::string, std::shared_ptr<ShaderPair>>* shaders }
 %locations
@@ -276,6 +281,6 @@ vec4: OPEN_BRACKET expr COMMA expr COMMA expr COMMA expr CLOSE_BRACKET { $$ = ma
 %%
 
 void Parser::error(const location &loc, const string &message) {
-    cerr << "Error: " << message << " at " << loc << endl;
+    cerr << "Error: " << message << " at line " << loc.begin.line << endl;
 }
 
