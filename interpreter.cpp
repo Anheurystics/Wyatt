@@ -24,10 +24,8 @@ float resolve_scalar(Expr_ptr expr) {
 
 #define LOOP_TIMEOUT 5
 
-Prototype::Interpreter::Interpreter(LogWindow* logger): scanner(&line, &column), parser(scanner, &line, &column, &functions, &shaders) {
-    this->logger = logger;
-
-    globalScope = make_shared<Scope>("global");
+Prototype::Interpreter::Interpreter(LogWindow* logger): logger(logger), scanner(&line, &column), parser(scanner, &line, &column, &functions, &shaders) {
+    globalScope = make_shared<Scope>("global", logger);
 
     string utilsrc = str_from_file("utils.txt");
     parse(utilsrc);
@@ -43,6 +41,9 @@ Prototype::Interpreter::Interpreter(LogWindow* logger): scanner(&line, &column),
     functions.clear();
 
     transpiler = new GLSLTranspiler();
+
+    init_invoke = make_shared<Invoke>(make_shared<Ident>("init"), make_shared<ArgList>(nullptr));
+    loop_invoke = make_shared<Invoke>(make_shared<Ident>("loop"), make_shared<ArgList>(nullptr));
 }
 
 #define clear_map(type, name) \
@@ -516,7 +517,7 @@ Expr_ptr Prototype::Interpreter::invoke(Invoke_ptr invoke) {
     }
 
     if(def != NULL) {
-        Scope_ptr localScope = make_shared<Scope>(name);
+        Scope_ptr localScope = make_shared<Scope>(name, logger);
         unsigned int nParams = def->params->list.size();
         unsigned int nArgs = invoke->args->list.size();
 
@@ -1468,13 +1469,13 @@ void Prototype::Interpreter::execute_init() {
     buffers.clear();
     globalScope->clear();
 
-    execute_stmts(init->stmts);
+    invoke(init_invoke);
 }
 
 void Prototype::Interpreter::execute_loop() {
     if(!loop || status) return;
 
-    execute_stmts(loop->stmts);
+    invoke(loop_invoke);
 }
 
 void Prototype::Interpreter::parse(string code) {

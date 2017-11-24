@@ -110,7 +110,6 @@ class Interpreter {
         Prototype::Scanner scanner;
         Prototype::Parser parser;
 
-
         typedef shared_ptr<Layout> Layout_ptr;
         typedef shared_ptr<Program> Program_ptr;
         typedef shared_ptr<Buffer> Buffer_ptr;
@@ -130,6 +129,8 @@ class Interpreter {
 
         FuncDef_ptr init = NULL;
         FuncDef_ptr loop = NULL;
+        Invoke_ptr init_invoke;
+        Invoke_ptr loop_invoke;
         QOpenGLFunctions* gl;
 
         Expr_ptr eval_expr(Expr_ptr);
