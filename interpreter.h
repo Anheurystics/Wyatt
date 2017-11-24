@@ -20,6 +20,8 @@
 #include "logwindow.h"
 #include "helper.h"
 #include "glsltranspiler.h"
+#include "scope.h"
+#include "scopelist.h"
 
 namespace Prototype {
 
@@ -43,101 +45,6 @@ struct Program {
     shared_ptr<ShaderSource> vertSource;
     shared_ptr<ShaderSource> fragSource;
 };
-
-class Scope {
-    public:
-        string name;
-        LogWindow* logger;
-
-        Scope(string name, LogWindow* logger): name(name), logger(logger) {}
-
-        void clear() {
-            for(map<string, Expr_ptr>::iterator it = variables.begin(); it != variables.end(); ++it) {
-                variables.erase(it);
-            }
-        }
-
-        void declare(string name, string type, Expr_ptr value) {
-            types[name] = type;
-            variables[name] = (value != NULL? value : null_expr);
-        }
-
-        bool assign(string name, Expr_ptr value) {
-            if(types.find(name) == types.end()) {
-                return false;
-            }
-            if(types[name] != "var" && types[name] != type_to_name(value->type)) {
-                logger->log(value, "ERROR", "Cannot assign value of type " + type_to_name(value->type) + " to variable of type " + types[name]);
-                return true;
-            }
-
-            variables[name] = value;
-            return true;
-        }
-
-        Expr_ptr get(string name) {
-            if(variables.find(name) != variables.end()) {
-                return variables[name];
-            }
-
-            return nullptr;
-        }
-
-    private:
-        map<string, Expr_ptr> variables;
-        map<string, string> types;
-};
-
-typedef shared_ptr<Scope> Scope_ptr;
-
-class ScopeList {
-    public:
-        string name;
-        ScopeList(string name, LogWindow* logger): name(name), logger(logger) {
-            attach("base");
-        }
-
-        Scope_ptr current() {
-            return chain.back();
-        }
-
-        Scope_ptr attach(string name) {
-            Scope_ptr newScope = make_shared<Scope>(name, logger);
-            chain.push_back(newScope);
-            return newScope;
-        }
-
-        void detach() {
-            chain.pop_back();
-        }
-
-        Expr_ptr get(string name) {
-            for(vector<Scope_ptr>::reverse_iterator it = chain.rbegin(); it != chain.rend(); ++it) {
-                Scope_ptr scope = *it;
-                Expr_ptr value = scope->get(name);
-                if(value != nullptr) {
-                    return value;
-                }
-            }
-            return nullptr;
-       }
-
-        void assign(string name, Expr_ptr value) {
-            for(vector<Scope_ptr>::reverse_iterator it = chain.rbegin(); it != chain.rend(); ++it) {
-                Scope_ptr scope = *it;
-                if(scope->assign(name, value)) {
-                    return;
-                }
-            }
-            logger->log(value, "ERROR", "Variable " + name + " does not exist!");
-        }
-
-    private:
-        vector<Scope_ptr> chain;
-        LogWindow* logger;
-};
-
-typedef shared_ptr<ScopeList> ScopeList_ptr;
 
 class Interpreter {
     public:

@@ -24,7 +24,7 @@ float resolve_scalar(Expr_ptr expr) {
 
 #define LOOP_TIMEOUT 5
 
-Prototype::Interpreter::Interpreter(LogWindow* logger): logger(logger), scanner(&line, &column), parser(scanner, &line, &column, &functions, &shaders) {
+Prototype::Interpreter::Interpreter(LogWindow* logger): scanner(&line, &column), parser(scanner, &line, &column, &functions, &shaders), logger(logger) {
     globalScope = make_shared<Scope>("global", logger);
 
     string utilsrc = str_from_file("utils.txt");
