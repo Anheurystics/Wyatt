@@ -339,9 +339,9 @@ class ArgList: public Node {
 
 class ParamList: public Node {
     public:
-        vector<Ident_ptr> list;
+        vector<Decl_ptr> list;
 
-        ParamList(Ident_ptr init): Node(NODE_PARAMLIST) {
+        ParamList(Decl_ptr init): Node(NODE_PARAMLIST) {
             if(init) list.push_back(init);
         }
 };

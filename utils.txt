@@ -1,4 +1,4 @@
-func normalize(v) {
+func normalize(var v) {
     return v / |v|;
 }
 
@@ -6,16 +6,16 @@ func mat3_identity() {
     return [[1,0,0],[0,1,0],[0,0,1]];
 }
 
-func mat3_translation(x, y) {
+func mat3_translation(float x, float y) {
     return [[1,0,0],[0,1,0],[x,y,1]];
 }
 
-func mat3_rotation(angle) {
-    c = cos(angle); s = sin(angle);
+func mat3_rotation(float angle) {
+    float c = cos(angle); float s = sin(angle);
     return [[c,-s,0],[s,c,0],[0,0,1]];
 }
 
-func mat3_scale(s) {
+func mat3_scale(float s) {
     return [[s,0,0],[0,s,0],[0,0,1]];
 }
 
@@ -23,40 +23,40 @@ func mat4_identity() {
     return [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]];
 }
 
-func mat4_translation(x, y, z) {
+func mat4_translation(float x, float y, float z) {
     return [[1,0,0,0],[0,1,0,0],[0,0,1,0],[x,y,z,1]];
 }
 
-func mat4_rotation_x(angle) {
-    c = cos(angle); s = sin(angle);
+func mat4_rotation_x(float angle) {
+    float c = cos(angle); float s = sin(angle);
     return [[1,0,0,0],[0,c,-s,0],[0,s,c,0],[0,0,0,1]];
 }
 
-func mat4_rotation_y(angle) {
-    c = cos(angle); s = sin(angle);
+func mat4_rotation_y(float angle) {
+    float c = cos(angle); float s = sin(angle);
     return [[c,0,s,0],[0,1,0,0],[-s,0,c,0],[0,0,0,1]];
 }
 
-func mat4_rotation_z(angle) {
-    c = cos(angle); s = sin(angle);
+func mat4_rotation_z(float angle) {
+    float c = cos(angle); float s = sin(angle);
     return [[c,-s,0,0],[s,c,0,0],[0,0,0,0],[0,0,0,1]];
 }
 
-func mat4_scale(s) {
+func mat4_scale(float s) {
     return [[s,0,0,0],[0,s,0,0],[0,0,s,0],[0,0,0,1]];
 }
 
-func mat4_lookat(eye, at, up) {
-    front = normalize(eye - at);
+func mat4_lookat(vec3 eye, vec3 at, vec3 up) {
+    vec3 front = normalize(eye - at);
     up = normalize(up);
-    right = up % front;
+    vec3 right = up % front;
     up = front % right;
     return [[right, 0], [up, 0], [front, 0], [-eye,1]];
 }
 
-func mat4_perspective(fov, aspect, near, far) {
-    f = 1.0 / tan(fov * 0.5);
-    nf = 1.0 / (near - far);
+func mat4_perspective(float fov, float aspect, float near, float far) {
+    float f = 1.0 / tan(fov * 0.5);
+    float nf = 1.0 / (near - far);
     return [
         [f/aspect, 0, 0, 0],
         [0, f, 0, 0],

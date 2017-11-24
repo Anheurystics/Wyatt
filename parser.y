@@ -244,8 +244,8 @@ arg_list: { $$ = make_shared<ArgList>(nullptr); }
     ;
 
 param_list: { $$ = make_shared<ParamList>(nullptr); }
-    | IDENTIFIER { $$ = make_shared<ParamList>($1); }
-    | param_list COMMA IDENTIFIER { $$ = $1; $1->list.push_back($3); }
+    | decl { $$ = make_shared<ParamList>($1); }
+    | param_list COMMA decl { $$ = $1; $1->list.push_back($3); }
     ;
 
 list: { $$ = make_shared<List>(nullptr); }

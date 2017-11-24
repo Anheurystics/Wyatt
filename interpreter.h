@@ -62,17 +62,17 @@ class Scope {
             variables[name] = (value != NULL? value : null_expr);
         }
 
-        void assign(string name, Expr_ptr value) {
+        bool assign(string name, Expr_ptr value) {
             if(types.find(name) == types.end()) {
-                logger->log(value, "ERROR", "Variable " + name + " does not exist!");
-                return;
+                return false;
             }
-            if(types[name] != type_to_name(value->type)) {
+            if(types[name] != "var" && types[name] != type_to_name(value->type)) {
                 logger->log(value, "ERROR", "Cannot assign value of type " + type_to_name(value->type) + " to variable of type " + types[name]);
-                return;
+                return true;
             }
 
             variables[name] = value;
+            return true;
         }
 
         Expr_ptr get(string name) {
@@ -80,13 +80,64 @@ class Scope {
                 return variables[name];
             }
 
-            return NULL;
+            return nullptr;
         }
 
     private:
         map<string, Expr_ptr> variables;
         map<string, string> types;
 };
+
+typedef shared_ptr<Scope> Scope_ptr;
+
+class ScopeList {
+    public:
+        string name;
+        ScopeList(string name, LogWindow* logger): name(name), logger(logger) {
+            attach("base");
+        }
+
+        Scope_ptr current() {
+            return chain.back();
+        }
+
+        Scope_ptr attach(string name) {
+            Scope_ptr newScope = make_shared<Scope>(name, logger);
+            chain.push_back(newScope);
+            return newScope;
+        }
+
+        void detach() {
+            chain.pop_back();
+        }
+
+        Expr_ptr get(string name) {
+            for(vector<Scope_ptr>::reverse_iterator it = chain.rbegin(); it != chain.rend(); ++it) {
+                Scope_ptr scope = *it;
+                Expr_ptr value = scope->get(name);
+                if(value != nullptr) {
+                    return value;
+                }
+            }
+            return nullptr;
+       }
+
+        void assign(string name, Expr_ptr value) {
+            for(vector<Scope_ptr>::reverse_iterator it = chain.rbegin(); it != chain.rend(); ++it) {
+                Scope_ptr scope = *it;
+                if(scope->assign(name, value)) {
+                    return;
+                }
+            }
+            logger->log(value, "ERROR", "Variable " + name + " does not exist!");
+        }
+
+    private:
+        vector<Scope_ptr> chain;
+        LogWindow* logger;
+};
+
+typedef shared_ptr<ScopeList> ScopeList_ptr;
 
 class Interpreter {
     public:
@@ -115,8 +166,8 @@ class Interpreter {
         typedef shared_ptr<Buffer> Buffer_ptr;
         typedef shared_ptr<Scope> Scope_ptr;
 
-        shared_ptr<Scope> globalScope;
-        std::stack<shared_ptr<Scope>> functionScopeStack;
+        Scope_ptr globalScope;
+        std::stack<ScopeList_ptr> functionScopeStack;
         map<string, shared_ptr<Buffer>> buffers;
         map<string, shared_ptr<Program>> programs;
         map<string, shared_ptr<ShaderPair>> shaders;

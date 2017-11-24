@@ -517,7 +517,7 @@ Expr_ptr Prototype::Interpreter::invoke(Invoke_ptr invoke) {
     }
 
     if(def != NULL) {
-        Scope_ptr localScope = make_shared<Scope>(name, logger);
+        ScopeList_ptr localScope = make_shared<ScopeList>(name, logger);
         unsigned int nParams = def->params->list.size();
         unsigned int nArgs = invoke->args->list.size();
 
@@ -532,7 +532,9 @@ Expr_ptr Prototype::Interpreter::invoke(Invoke_ptr invoke) {
                     logger->log(arg, "ERROR", "Invalid argument passed on to " + name);
                     return NULL;
                 }
-                localScope->assign(def->params->list[i]->name, arg);
+
+                Decl_ptr param = def->params->list[i];
+                localScope->current()->declare(param->name->name, param->datatype->name, arg);
             }
         }
 
@@ -942,9 +944,9 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 Decl_ptr decl = static_pointer_cast<Decl>(stmt);
                 Scope_ptr scope = globalScope;
                 if(!functionScopeStack.empty()) {
-                    scope = functionScopeStack.top();
+                    scope = functionScopeStack.top()->current();
                 }
-                scope->declare(decl->name->name, decl->datatype->name, decl->value == NULL? null_expr : decl->value);
+                scope->declare(decl->name->name, decl->datatype->name, decl->value == NULL? null_expr : eval_expr(decl->value));
                 return NULL;
             }
         case NODE_ASSIGN:
@@ -954,11 +956,11 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 if(rhs != NULL) {
                     Expr_ptr lhs = assign->lhs;
                     if(lhs->type == NODE_IDENT) {
-                        Scope_ptr scope = globalScope;
                         if(!functionScopeStack.empty()) {
-                            scope = functionScopeStack.top();
+                            functionScopeStack.top()->assign(static_pointer_cast<Ident>(lhs)->name, rhs);
+                        } else {
+                            globalScope->assign(static_pointer_cast<Ident>(lhs)->name, rhs);
                         }
-                        scope->assign(static_pointer_cast<Ident>(lhs)->name, rhs);
                     } else if(lhs->type == NODE_DOT) {
                         Dot_ptr uniform = static_pointer_cast<Dot>(lhs);
                         if(current_program->vertSource->name == uniform->shader) {
@@ -1300,7 +1302,9 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 if(condition->type == NODE_BOOL) {
                     bool b = (static_pointer_cast<Bool>(condition)->value);
                     if(b) {
+                        functionScopeStack.top()->attach("if");
                         Expr_ptr returnValue = execute_stmts(ifstmt->block);
+                        functionScopeStack.top()->detach();
                         if(returnValue != NULL) {
                             return returnValue;
                         }
@@ -1317,6 +1321,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 if(!condition) return NULL;
                 if(condition->type == NODE_BOOL) {
                     time_t start = time(nullptr);
+                    functionScopeStack.top()->attach("while");
                     while(true) {
                         condition = eval_expr(whilestmt->condition);
                         bool b = (static_pointer_cast<Bool>(condition)->value);
@@ -1332,6 +1337,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                         int diff = difftime(now, start);
                         if(diff > LOOP_TIMEOUT) { break; }
                     }
+                    functionScopeStack.top()->detach();
                 } else {
                     logger->log(whilestmt, "ERROR", "Condition in while statement not a boolean");
                 }
@@ -1344,6 +1350,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 Ident_ptr iterator = forstmt->iterator;
                 Expr_ptr start = eval_expr(forstmt->start), end = eval_expr(forstmt->end), increment = eval_expr(forstmt->increment);
                 if(start->type == NODE_INT || end->type == NODE_INT || increment->type == NODE_INT) {
+                    functionScopeStack.top()->attach("for");
                     eval_stmt(make_shared<Assign>(iterator, start));
 
                     time_t start = time(nullptr);
@@ -1364,6 +1371,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                         int diff = difftime(now, start);
                         if(diff > LOOP_TIMEOUT) { break;}
                     }
+                    functionScopeStack.top()->detach();
                 }
 
                 return NULL;
