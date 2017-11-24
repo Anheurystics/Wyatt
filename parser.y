@@ -36,7 +36,7 @@
     #include "interpreter.h"
     #include "location.hh"
 
-    static Prototype::Parser::symbol_type yylex(Prototype::Scanner &scanner, unsigned int* line, unsigned int* column) {
+    static Prototype::Parser::symbol_type yylex(Prototype::Scanner &scanner) {
         return scanner.get_next_token();
     }
 
@@ -44,8 +44,6 @@
 }
 
 %lex-param { Prototype::Scanner &scanner }
-%lex-param { unsigned int* line }
-%lex-param { unsigned int* column }
 %parse-param { Prototype::Scanner &scanner }
 %parse-param { unsigned int* line }
 %parse-param { unsigned int* column }

@@ -2,8 +2,6 @@
 
 CustomGLWidget::CustomGLWidget(QWidget *parent = 0): QOpenGLWidget(parent)
 {
-    MainWindow* window = qobject_cast<MainWindow*>(this->parent());
-
     QTimer* timer = new QTimer(this); 
     timer->setInterval(17);
     connect(timer, SIGNAL(timeout()), this, SLOT(update()));
@@ -54,6 +52,7 @@ void CustomGLWidget::paintGL() {
 void CustomGLWidget::resizeGL(int width, int height)
 {
     resize(width, width);
+    (void)height;
 }
 
 CustomGLWidget::~CustomGLWidget()

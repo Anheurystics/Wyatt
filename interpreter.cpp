@@ -915,7 +915,8 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                 if(source->type == NODE_LIST && index->type == NODE_INT) {
                     List_ptr list = static_pointer_cast<List>(source);
                     int i = resolve_int(index);
-                    if(i >= 0 && i < list->list.size()) {
+                    int size = list->list.size();
+                    if(i >= 0 && i < size ) {
                         return eval_expr(list->list[i]);
                     } else {
                         logger->log(index, "ERROR", "Index out of range for list of length " + list->list.size());
@@ -1064,7 +1065,8 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                         if(source->type == NODE_LIST && index->type == NODE_INT) {
                             List_ptr list = static_pointer_cast<List>(source);
                             int i = resolve_int(index);
-                            if(i >= 0 && i < list->list.size()) {
+                            int size = list->list.size();
+                            if(i >= 0 && i < size) {
                                 list->list[i] = rhs;
                             } else {
                                 logger->log(assign, "ERROR", "Index out of range for list of length " + list->list.size());
