@@ -25,6 +25,7 @@ frag           { return Parser::make_FRAGMENT(curr_location); }
 `(\\.|[^`])*` { std::string str = strdup(yytext); str = str.substr(1, str.length() - 2); return Parser::make_SHADER(make_shared<String>(str), curr_location); }
 \"(\\.|[^\\"])*\" { std::string str = strdup(yytext); str = str.substr(1, str.length() - 2); return Parser::make_STRING(make_shared<String>(str), curr_location); }
 [ \t]          ;
+"//".*         ;
 \n             { (*line)++; (*column) = 0; }
 [0-9]+\.[0-9]+ { return Parser::make_FLOAT(make_shared<Float>(float(atof(yytext))), curr_location); }
 [0-9]+         { return Parser::make_INT(make_shared<Int>(atoi(yytext)), curr_location); }
