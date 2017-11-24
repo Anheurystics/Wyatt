@@ -11,7 +11,7 @@ using namespace std;
 
 enum NodeType {
     NODE_INVOKE,
-    NODE_EXPR, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_STRING, NODE_VECTOR2, NODE_VECTOR3, NODE_VECTOR4, NODE_MATRIX2, NODE_MATRIX3, NODE_MATRIX4, NODE_IDENT, NODE_DOT,
+    NODE_EXPR, NODE_NULL, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_STRING, NODE_VECTOR2, NODE_VECTOR3, NODE_VECTOR4, NODE_MATRIX2, NODE_MATRIX3, NODE_MATRIX4, NODE_IDENT, NODE_DOT,
     NODE_UPLOADLIST, NODE_FUNCEXPR, NODE_LIST, NODE_ARGLIST, NODE_PARAMLIST, NODE_INDEX,
     NODE_STMT, NODE_ASSIGN, NODE_DECL, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_USE, NODE_FUNCSTMT, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_FOR, NODE_SSOURCE, NODE_PRINT, NODE_FUNCDEF, NODE_RETURN
 };
@@ -69,12 +69,12 @@ class UploadList;
 class Upload;
 class Draw;
 class Use;
+class Print;
 class Invoke;
 class FuncExpr;
 class FuncStmt;
 class ShaderSource;
 struct ShaderPair;
-class Print;
 
 typedef shared_ptr<Node> Node_ptr;
 typedef shared_ptr<Expr> Expr_ptr;
@@ -110,34 +110,36 @@ typedef shared_ptr<UploadList> UploadList_ptr;
 typedef shared_ptr<Upload> Upload_ptr;
 typedef shared_ptr<Draw> Draw_ptr;
 typedef shared_ptr<Use> Use_ptr;
+typedef shared_ptr<Print> Print_ptr;
 typedef shared_ptr<Invoke> Invoke_ptr;
 typedef shared_ptr<FuncExpr> FuncExpr_ptr;
 typedef shared_ptr<FuncStmt> FuncStmt_ptr;
 typedef shared_ptr<ShaderSource> ShaderSource_ptr;
 typedef shared_ptr<ShaderPair> ShaderPair_ptr;
-typedef shared_ptr<Print> Print_ptr;
+
+#define null_expr make_shared<Expr>(NODE_NULL)
 
 class Node {
     public:
         unsigned int first_line, last_line;
         unsigned int first_column, last_column;
         NodeType type;
+
+        Node(NodeType type): type(type) {}
 };
 
 class Expr: public Node {
     public:
-        Expr() {
-            type = NODE_EXPR;
-        }
+        Expr(): Node(NODE_EXPR) {}
+        Expr(NodeType type): Node(type) {}
 };
 
 class Ident: public Expr {
     public:
         string name;
 
-        Ident(string name) {
+        Ident(string name): Expr(NODE_IDENT) {
             this->name = name;
-            type = NODE_IDENT;
         }
 };
 
@@ -156,11 +158,10 @@ class Binary: public Expr {
         OpType op;
         Expr_ptr lhs, rhs;
 
-        Binary(Expr_ptr lhs, OpType op, Expr_ptr rhs) {
+        Binary(Expr_ptr lhs, OpType op, Expr_ptr rhs): Expr(NODE_BINARY) {
             this->op = op;
             this->lhs = lhs;
             this->rhs = rhs;
-            type = NODE_BINARY; 
         }
 };
 
@@ -169,10 +170,9 @@ class Unary: public Expr {
         OpType op;
         Expr_ptr rhs;
 
-        Unary(OpType op, Expr_ptr rhs) {
+        Unary(OpType op, Expr_ptr rhs): Expr(NODE_UNARY) {
             this->op = op;
             this->rhs = rhs;
-            type = NODE_UNARY;
         }
 };
 
@@ -180,9 +180,8 @@ class Bool: public Expr {
     public:
         bool value;
 
-        Bool(bool value) {
+        Bool(bool value): Expr(NODE_BOOL) {
             this->value = value;
-            type = NODE_BOOL;
         }
 };
 
@@ -190,9 +189,8 @@ class Int: public Expr {
     public:
         int value;
 
-        Int(int value) {
+        Int(int value): Expr(NODE_INT) {
             this->value = value;
-            type = NODE_INT; 
         }
 };
 
@@ -200,9 +198,8 @@ class Float: public Expr {
     public:
         float value;
 
-        Float(float value) {
+        Float(float value): Expr(NODE_FLOAT) {
             this->value = value;
-            type = NODE_FLOAT; 
         }
 };
 
@@ -210,9 +207,8 @@ class String: public Expr {
     public:
         string value;
 
-        String(string value) {
+        String(string value): Expr(NODE_STRING) {
             this->value = value;
-            type = NODE_STRING;
         }
 };
 
@@ -220,10 +216,9 @@ class Vector2: public Expr {
     public:
         Expr_ptr x, y;
 
-        Vector2(Expr_ptr x, Expr_ptr y) {
+        Vector2(Expr_ptr x, Expr_ptr y): Expr(NODE_VECTOR2) {
             this->x = x;
             this->y = y;
-            type = NODE_VECTOR2;
         }
 };
 
@@ -231,11 +226,10 @@ class Vector3: public Expr {
     public:
         Expr_ptr x, y, z;
 
-        Vector3(Expr_ptr x, Expr_ptr y, Expr_ptr z) {
+        Vector3(Expr_ptr x, Expr_ptr y, Expr_ptr z): Expr(NODE_VECTOR3) {
             this->x = x;
             this->y = y;
             this->z = z;
-            type = NODE_VECTOR3; 
         }
 };
 
@@ -243,12 +237,11 @@ class Vector4: public Expr {
     public:
         Expr_ptr x, y, z, w;
 
-        Vector4(Expr_ptr x, Expr_ptr y, Expr_ptr z, Expr_ptr w) {
+        Vector4(Expr_ptr x, Expr_ptr y, Expr_ptr z, Expr_ptr w): Expr(NODE_VECTOR4) {
             this->x = x;
             this->y = y;
             this->z = z;
             this->w = w;
-            type = NODE_VECTOR4;
         }
 };
 
@@ -257,8 +250,7 @@ class Matrix2: public Expr {
         Vector2_ptr v0, v1;
         Vector2_ptr c0, c1;
 
-        Matrix2(Vector2_ptr v0, Vector2_ptr v1): v0(v0), v1(v1) {
-            type = NODE_MATRIX2;
+        Matrix2(Vector2_ptr v0, Vector2_ptr v1): Expr(NODE_MATRIX2), v0(v0), v1(v1) {
             generate_columns();
         }
 
@@ -273,9 +265,7 @@ class Matrix3: public Expr {
         Vector3_ptr v0, v1, v2;
         Vector3_ptr c0, c1, c2;
 
-        Matrix3(Vector3_ptr v0, Vector3_ptr v1, Vector3_ptr v2): v0(v0), v1(v1), v2(v2) {
-            type = NODE_MATRIX3;
-
+        Matrix3(Vector3_ptr v0, Vector3_ptr v1, Vector3_ptr v2): Expr(NODE_MATRIX3), v0(v0), v1(v1), v2(v2) {
             generate_columns();
         }
 
@@ -291,8 +281,7 @@ class Matrix4: public Expr {
         Vector4_ptr v0, v1, v2, v3;
         Vector4_ptr c0, c1, c2, c3;
 
-        Matrix4(Vector4_ptr v0, Vector4_ptr v1, Vector4_ptr v2, Vector4_ptr v3): v0(v0), v1(v1), v2(v2), v3(v3) {
-            type = NODE_MATRIX4;
+        Matrix4(Vector4_ptr v0, Vector4_ptr v1, Vector4_ptr v2, Vector4_ptr v3): Expr(NODE_MATRIX4), v0(v0), v1(v1), v2(v2), v3(v3) {
             generate_columns();
         }
 
@@ -309,27 +298,24 @@ class Index: public Expr {
         Expr_ptr source;
         Expr_ptr index;
 
-        Index(Expr_ptr source, Expr_ptr index) {
+        Index(Expr_ptr source, Expr_ptr index): Expr(NODE_INDEX) {
             this->source = source;
             this->index = index;
-            type = NODE_INDEX;
         }
 };
 
 class Stmt: public Node {
     public:
-        Stmt() {
-            type = NODE_STMT;
-        }
+        Stmt(): Node(NODE_STMT) {}
+        Stmt(NodeType type): Node(type) {}
 };
 
 class Stmts: public Node {
     public:
         vector<Stmt_ptr> list;
 
-        Stmts(Stmt_ptr init) {
+        Stmts(Stmt_ptr init): Node(NODE_STMTS) {
             if(init) list.insert(list.begin(), init);
-            type = NODE_STMTS;
         }
 };
 
@@ -337,9 +323,8 @@ class List: public Expr {
     public:
         vector<Expr_ptr> list;
 
-        List(Expr_ptr init) {
+        List(Expr_ptr init): Expr(NODE_LIST) {
             if(init) list.insert(list.begin(), init);
-            type = NODE_LIST;
         }
 };
 
@@ -347,9 +332,8 @@ class ArgList: public Node {
     public:
         vector<Expr_ptr> list;
 
-        ArgList(Expr_ptr init) {
+        ArgList(Expr_ptr init): Node(NODE_ARGLIST) {
             if(init) list.push_back(init);
-            type = NODE_ARGLIST;
         }
 };
 
@@ -357,9 +341,8 @@ class ParamList: public Node {
     public:
         vector<Ident_ptr> list;
 
-        ParamList(Ident_ptr init) {
+        ParamList(Ident_ptr init): Node(NODE_PARAMLIST) {
             if(init) list.push_back(init);
-            type = NODE_PARAMLIST;
         }
 };
 
@@ -367,9 +350,8 @@ class Return: public Stmt {
     public:
         Expr_ptr value;
 
-        Return(Expr_ptr value) {
+        Return(Expr_ptr value): Stmt(NODE_RETURN) {
             this->value = value;
-            type = NODE_RETURN;
         }
 };
 
@@ -379,11 +361,10 @@ class FuncDef: public Stmt {
         ParamList_ptr params;
         Stmts_ptr stmts;
 
-        FuncDef(Ident_ptr ident, ParamList_ptr params, Stmts_ptr stmts) {
+        FuncDef(Ident_ptr ident, ParamList_ptr params, Stmts_ptr stmts): Stmt(NODE_FUNCDEF) {
             this->ident = ident;
             this->params = params;
             this->stmts = stmts;
-            type = NODE_FUNCDEF;
         }
 };
 
@@ -392,10 +373,9 @@ class If: public Stmt {
         Expr_ptr condition;
         Stmts_ptr block;
 
-        If(Expr_ptr condition, Stmts_ptr block) {
+        If(Expr_ptr condition, Stmts_ptr block): Stmt(NODE_IF) {
             this->condition = condition;
             this->block = block;
-            type = NODE_IF;
         }
 };
 
@@ -404,10 +384,9 @@ class While: public Stmt {
         Expr_ptr condition;
         Stmts_ptr block;
 
-        While(Expr_ptr condition, Stmts_ptr block) {
+        While(Expr_ptr condition, Stmts_ptr block): Stmt(NODE_WHILE) {
             this->condition = condition;
             this->block = block;
-            type = NODE_WHILE;
         }
 }; 
 
@@ -417,13 +396,12 @@ class For: public Stmt {
         Expr_ptr start, end, increment;
         Stmts_ptr block;
 
-        For(Ident_ptr iterator, Expr_ptr start, Expr_ptr end, Expr_ptr increment, Stmts_ptr block) {
+        For(Ident_ptr iterator, Expr_ptr start, Expr_ptr end, Expr_ptr increment, Stmts_ptr block): Stmt(NODE_FOR) {
             this->iterator = iterator;
             this->start = start;
             this->end = end;
             this->increment = increment;
             this->block = block;
-            type = NODE_FOR;
         }
 };
 
@@ -432,10 +410,9 @@ class Assign: public Stmt {
         Expr_ptr lhs;
         Expr_ptr value;
 
-        Assign(Expr_ptr ident, Expr_ptr value) {
+        Assign(Expr_ptr ident, Expr_ptr value): Stmt(NODE_ASSIGN) {
             this->lhs = ident;
             this->value = value;
-            type = NODE_ASSIGN;
         }
 };
 
@@ -444,11 +421,10 @@ class Decl: public Stmt {
         Ident_ptr datatype, name;
         Expr_ptr value;
 
-        Decl(Ident_ptr datatype, Ident_ptr name, Expr_ptr value) {
+        Decl(Ident_ptr datatype, Ident_ptr name, Expr_ptr value): Stmt(NODE_DECL) {
             this->datatype= datatype;
             this->name = name;
             this->value = value;
-            type = NODE_DECL;
         }
 };
 
@@ -456,9 +432,8 @@ class Alloc: public Stmt {
     public:
         Ident_ptr ident;
 
-        Alloc(Ident_ptr ident) {
+        Alloc(Ident_ptr ident): Stmt(NODE_ALLOC) {
             this->ident = ident;
-            type = NODE_ALLOC;
         }
 };
 
@@ -466,9 +441,8 @@ class UploadList: public Expr {
     public:
         vector<Expr_ptr> list;
 
-        UploadList(Expr_ptr init) {
+        UploadList(Expr_ptr init): Expr(NODE_UPLOADLIST) {
             list.insert(list.begin(), init);
-            type = NODE_UPLOADLIST;
         }
 };
 
@@ -478,8 +452,7 @@ class Upload: public Stmt {
         Ident_ptr attrib;
         UploadList_ptr list;
 
-        Upload(Ident_ptr ident, Ident_ptr attrib, UploadList_ptr list) {
-            type = NODE_UPLOAD;
+        Upload(Ident_ptr ident, Ident_ptr attrib, UploadList_ptr list): Stmt(NODE_UPLOAD) {
             this->ident = ident;
             this->attrib = attrib;
             this->list = list;
@@ -490,9 +463,8 @@ class Draw: public Stmt {
     public:
         Ident_ptr ident;
 
-        Draw(Ident_ptr ident) {
+        Draw(Ident_ptr ident): Stmt(NODE_DRAW) {
             this->ident = ident;
-            type = NODE_DRAW;
         }
 };
 
@@ -500,9 +472,17 @@ class Use: public Stmt {
     public:
         Ident_ptr ident;
 
-        Use(Ident_ptr ident) {
+        Use(Ident_ptr ident): Stmt(NODE_USE) {
             this->ident = ident;
-            type = NODE_USE;
+        }
+};
+
+class Print: public Stmt {
+    public:
+        Expr_ptr expr;
+
+        Print(Expr_ptr expr): Stmt(NODE_PRINT) {
+            this->expr = expr;
         }
 };
 
@@ -511,10 +491,9 @@ class Invoke: public Node {
         Ident_ptr ident;
         ArgList_ptr args;
 
-        Invoke(Ident_ptr ident, ArgList_ptr args) {
+        Invoke(Ident_ptr ident, ArgList_ptr args): Node(NODE_INVOKE) {
             this->ident = ident;
             this->args = args;
-            type = NODE_INVOKE;
         }
 };
 
@@ -522,9 +501,8 @@ class FuncExpr: public Expr {
     public:
         Invoke_ptr invoke;
 
-        FuncExpr(Invoke_ptr invoke) {
+        FuncExpr(Invoke_ptr invoke): Expr(NODE_FUNCEXPR) {
             this->invoke = invoke;
-            type = NODE_FUNCEXPR;
         }
 };
 
@@ -532,9 +510,8 @@ class FuncStmt: public Stmt {
     public:
         Invoke_ptr invoke;
 
-        FuncStmt(Invoke_ptr invoke) {
+        FuncStmt(Invoke_ptr invoke): Stmt(NODE_FUNCSTMT) {
             this->invoke = invoke;
-            type = NODE_FUNCSTMT;
         }
 };
 
@@ -553,11 +530,10 @@ class ShaderSource: public Node {
         regex uniform_regex = regex("uniform\\s(\\w+)\\s(.*);");
         regex sub_regex = regex("(\\w+)");
 
-        ShaderSource(string name, string code, string shader_type) {
+        ShaderSource(string name, string code, string shader_type): Node(NODE_SSOURCE) {
             this->name = name;
             this->code = code;
             this->shader_type = shader_type;
-            type = NODE_SSOURCE;
 
             sregex_iterator uniform_begin = sregex_iterator(this->code.begin(), this->code.end(), uniform_regex), uniform_end = sregex_iterator();
 
@@ -585,16 +561,6 @@ struct ShaderPair {
     std::string name;
     ShaderSource_ptr vertex = NULL;
     ShaderSource_ptr fragment = NULL;
-};
-
-class Print: public Stmt {
-    public:
-        Expr_ptr expr;
-
-        Print(Expr_ptr expr) {
-            this->expr = expr;
-            type = NODE_PRINT;
-        }
 };
 
 #endif // NODES_H

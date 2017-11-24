@@ -531,7 +531,7 @@ Expr_ptr Prototype::Interpreter::invoke(Invoke_ptr invoke) {
                     logger->log(arg, "ERROR", "Invalid argument passed on to " + name);
                     return NULL;
                 }
-                localScope->declare(def->params->list[i]->name, arg);
+                localScope->assign(def->params->list[i]->name, arg);
             }
         }
 
@@ -936,6 +936,16 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 invoke(func->invoke);
                 return NULL;
             }
+        case NODE_DECL:
+            {
+                Decl_ptr decl = static_pointer_cast<Decl>(stmt);
+                Scope_ptr scope = globalScope;
+                if(!functionScopeStack.empty()) {
+                    scope = functionScopeStack.top();
+                }
+                scope->declare(decl->name->name, decl->datatype->name, decl->value == NULL? null_expr : decl->value);
+                return NULL;
+            }
         case NODE_ASSIGN:
             {
                 Assign_ptr assign = static_pointer_cast<Assign>(stmt);
@@ -947,7 +957,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                         if(!functionScopeStack.empty()) {
                             scope = functionScopeStack.top();
                         }
-                        scope->declare(static_pointer_cast<Ident>(lhs)->name, rhs);
+                        scope->assign(static_pointer_cast<Ident>(lhs)->name, rhs);
                     } else if(lhs->type == NODE_DOT) {
                         Dot_ptr uniform = static_pointer_cast<Dot>(lhs);
                         if(current_program->vertSource->name == uniform->shader) {

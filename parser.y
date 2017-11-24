@@ -115,6 +115,7 @@
 %type<shared_ptr<Vector4>> vec4
 %type<shared_ptr<Dot>> dot;
 %type<shared_ptr<List>> list;
+%type<shared_ptr<Decl>> decl;
 
 %type<shared_ptr<Stmt>> stmt stmt_block
 %type<shared_ptr<FuncDef>> function
@@ -210,9 +211,12 @@ index: IDENTIFIER OPEN_BRACKET expr CLOSE_BRACKET { $$ = make_shared<Index>($1, 
 dot: IDENTIFIER PERIOD IDENTIFIER { $$ = make_shared<Dot>($1, $3); }
     ;
 
+decl: IDENTIFIER IDENTIFIER { $$ = make_shared<Decl>($1, $2, nullptr); set_lines($$, @1, @2); }
+    ;
+
 stmt: IDENTIFIER EQUALS expr { $$ = make_shared<Assign>($1, $3); set_lines($$, @1, @3); }
-    | IDENTIFIER IDENTIFIER { $$ = make_shared<Decl>($1, $2, nullptr); set_lines($$, @1, @2); }
-    | IDENTIFIER IDENTIFIER EQUALS expr { $$ = make_shared<Decl>($1, $2, $4); set_lines($$, @1, @4); }
+    | decl { $$ = $1; }
+    | decl EQUALS expr { $1->value = $3; set_lines($$, @1, @3); }
     | index EQUALS expr { $$ = make_shared<Assign>($1, $3); set_lines($$, @1, @3); }
     | dot EQUALS expr { $$ = make_shared<Assign>($1, $3); set_lines($$, @1, @3); }
     | ALLOCATE IDENTIFIER { $$ = make_shared<Alloc>($2); set_lines($$, @1, @2); }

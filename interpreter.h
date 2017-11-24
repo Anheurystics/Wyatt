@@ -29,7 +29,7 @@ class Interpreter {
         int status = -1;
 
         void parse(string);
-        shared_ptr<Expr> execute_stmts(shared_ptr<Stmts>);
+        Expr_ptr execute_stmts(shared_ptr<Stmts>);
         void prepare();
         void execute_init();
         void execute_loop();
@@ -74,16 +74,23 @@ class Interpreter {
                 }
 
                 void clear() {
-                    for(map<string, shared_ptr<Expr>>::iterator it = variables.begin(); it != variables.end(); ++it) {
+                    for(map<string, Expr_ptr>::iterator it = variables.begin(); it != variables.end(); ++it) {
                         variables.erase(it);
                     }
                 }
 
-                void declare(string name, shared_ptr<Expr> value) {
-                    variables[name] = value;
+                void declare(string name, string type, Expr_ptr value) {
+                    types[name] = type;
+                    variables[name] = null_expr;
                 }
 
-                shared_ptr<Expr> get(string name) {
+                void assign(string name, Expr_ptr value) {
+                    //if(types.find(name) != types.end()) {
+                        variables[name] = value;
+                    //}
+                }
+
+                Expr_ptr get(string name) {
                     if(variables.find(name) != variables.end()) {
                         return variables[name];
                     }
@@ -92,7 +99,8 @@ class Interpreter {
                 }
 
             private:
-                map<string, shared_ptr<Expr>> variables;
+                map<string, Expr_ptr> variables;
+                map<string, string> types;
         };
 
         typedef shared_ptr<Layout> Layout_ptr;
@@ -105,22 +113,22 @@ class Interpreter {
         map<string, shared_ptr<Buffer>> buffers;
         map<string, shared_ptr<Program>> programs;
         map<string, shared_ptr<ShaderPair>> shaders;
-        map<string, shared_ptr<FuncDef>> functions;
+        map<string, FuncDef_ptr> functions;
 
-        map<string, shared_ptr<FuncDef>> builtins;
+        map<string, FuncDef_ptr> builtins;
 
         string current_program_name;
         shared_ptr<Program> current_program = NULL;
 
-        shared_ptr<FuncDef> init = NULL;
-        shared_ptr<FuncDef> loop = NULL;
+        FuncDef_ptr init = NULL;
+        FuncDef_ptr loop = NULL;
         QOpenGLFunctions* gl;
 
-        shared_ptr<Expr> eval_expr(shared_ptr<Expr>);
-        shared_ptr<Expr> eval_binary(shared_ptr<Binary>);
-        shared_ptr<Expr> invoke(shared_ptr<Invoke>);
-        shared_ptr<Expr> eval_stmt(shared_ptr<Stmt>);
-        shared_ptr<Expr> resolve_vector(vector<shared_ptr<Expr>>);
+        Expr_ptr eval_expr(Expr_ptr);
+        Expr_ptr eval_binary(shared_ptr<Binary>);
+        Expr_ptr invoke(shared_ptr<Invoke>);
+        Expr_ptr eval_stmt(shared_ptr<Stmt>);
+        Expr_ptr resolve_vector(vector<Expr_ptr>);
 
         LogWindow* logger;
 
