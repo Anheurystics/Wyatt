@@ -47,7 +47,8 @@
 %parse-param { Prototype::Scanner &scanner }
 %parse-param { unsigned int* line }
 %parse-param { unsigned int* column }
-%parse-param { std::map<std::string, std::shared_ptr<FuncDef>>* functions }
+%parse-param { std::vector<Decl_ptr>* globals }
+%parse-param { std::map<std::string, FuncDef_ptr>* functions }
 %parse-param { std::map<std::string, std::shared_ptr<ShaderPair>>* shaders }
 %locations
 %define parse.trace
@@ -127,9 +128,19 @@
 
 %%
 
-program:
+program: globals funcshaders;
+
+globals:
     |
-    function program  {
+    decl EQUALS expr SEMICOLON globals {
+        $1->value = $3;
+        globals->push_back($1);
+    }
+    ;
+
+funcshaders:
+    |
+    function funcshaders{
         if(functions->find($1->ident->name) == functions->end()) {
             functions->insert(std::pair<std::string, std::shared_ptr<FuncDef>>($1->ident->name, $1));
         } else {
@@ -137,7 +148,7 @@ program:
         }
     }
     |
-    vert_shader program { 
+    vert_shader funcshaders{
         if(shaders->find($1->name) == shaders->end()) {
             std::shared_ptr<ShaderPair> pair = make_shared<ShaderPair>();
             pair->name = $1->name;
@@ -149,7 +160,7 @@ program:
         }
     }
     |
-    frag_shader program { 
+    frag_shader funcshaders {
         if(shaders->find($1->name) == shaders->end()) {
             std::shared_ptr<ShaderPair> pair = make_shared<ShaderPair>();
             pair->name = $1->name;

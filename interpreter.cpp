@@ -24,7 +24,7 @@ float resolve_scalar(Expr_ptr expr) {
 
 #define LOOP_TIMEOUT 5
 
-Prototype::Interpreter::Interpreter(LogWindow* logger): scanner(&line, &column), parser(scanner, &line, &column, &functions, &shaders), logger(logger) {
+Prototype::Interpreter::Interpreter(LogWindow* logger): scanner(&line, &column), parser(scanner, &line, &column, &globals, &functions, &shaders), logger(logger) {
     globalScope = make_shared<Scope>("global", logger);
 
     string utilsrc = str_from_file("utils.txt");
@@ -957,11 +957,16 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 if(rhs != NULL) {
                     Expr_ptr lhs = assign->lhs;
                     if(lhs->type == NODE_IDENT) {
-                        if(!functionScopeStack.empty()) {
-                            functionScopeStack.top()->assign(static_pointer_cast<Ident>(lhs)->name, rhs);
-                        } else {
-                            globalScope->assign(static_pointer_cast<Ident>(lhs)->name, rhs);
+                        string name = static_pointer_cast<Ident>(lhs)->name;
+                        if(!functionScopeStack.empty() && functionScopeStack.top()->assign(name, rhs)) {
+                            return NULL;
                         }
+                        if(globalScope->assign(static_pointer_cast<Ident>(lhs)->name, rhs)) {
+                            return NULL;
+                        }
+                        logger->log(lhs, "ERROR", "Variable " + name + " does not exist!");
+
+                        return NULL;
                     } else if(lhs->type == NODE_DOT) {
                         Dot_ptr uniform = static_pointer_cast<Dot>(lhs);
                         if(current_program->vertSource->name == uniform->shader) {
@@ -1478,6 +1483,11 @@ void Prototype::Interpreter::execute_init() {
     if(!init || status) return;
     buffers.clear();
     globalScope->clear();
+
+    for(vector<Decl_ptr>::iterator it = globals.begin(); it != globals.end(); ++it) {
+        Decl_ptr decl = *it;
+        globalScope->declare(decl->name->name, decl->datatype->name, decl->value);
+    }
 
     invoke(init_invoke);
 }

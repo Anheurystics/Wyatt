@@ -32,14 +32,14 @@ Expr_ptr ScopeList::get(string name) {
     return nullptr;
 }
 
-void ScopeList::assign(string name, Expr_ptr value) {
+bool ScopeList::assign(string name, Expr_ptr value) {
     for(vector<Scope_ptr>::reverse_iterator it = chain.rbegin(); it != chain.rend(); ++it) {
         Scope_ptr scope = *it;
         if(scope->assign(name, value)) {
-            return;
+            return true;
         }
     }
-    logger->log(value, "ERROR", "Variable " + name + " does not exist!");
+    return false;
 }
 
 }

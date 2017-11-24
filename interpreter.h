@@ -79,8 +79,9 @@ class Interpreter {
         map<string, shared_ptr<Program>> programs;
         map<string, shared_ptr<ShaderPair>> shaders;
         map<string, FuncDef_ptr> functions;
-
         map<string, FuncDef_ptr> builtins;
+
+        vector<Decl_ptr> globals;
 
         string current_program_name;
         shared_ptr<Program> current_program = NULL;
