@@ -22,6 +22,72 @@
 #include "glsltranspiler.h"
 
 namespace Prototype {
+
+struct Layout {
+    map<string, unsigned int> attributes;
+    vector<string> list;
+};
+
+struct Buffer {
+    GLuint handle;
+    map<string, vector<float>> data;
+    map<string, unsigned int> sizes;
+
+    shared_ptr<Layout> layout = NULL;
+};
+
+struct Program {
+    GLuint handle;
+    GLuint vert, frag;
+
+    shared_ptr<ShaderSource> vertSource;
+    shared_ptr<ShaderSource> fragSource;
+};
+
+class Scope {
+    public:
+        string name;
+        LogWindow* logger;
+
+        Scope(string name, LogWindow* logger): name(name), logger(logger) {}
+
+        void clear() {
+            for(map<string, Expr_ptr>::iterator it = variables.begin(); it != variables.end(); ++it) {
+                variables.erase(it);
+            }
+        }
+
+        void declare(string name, string type, Expr_ptr value) {
+            types[name] = type;
+            variables[name] = (value != NULL? value : null_expr);
+        }
+
+        void assign(string name, Expr_ptr value) {
+            if(types.find(name) == types.end()) {
+                logger->log(value, "ERROR", "Variable " + name + " does not exist!");
+                return;
+            }
+            if(types[name] != type_to_name(value->type)) {
+                logger->log(value, "ERROR", "Cannot assign value of type " + type_to_name(value->type) + " to variable of type " + types[name]);
+                return;
+            }
+
+            variables[name] = value;
+        }
+
+        Expr_ptr get(string name) {
+            if(variables.find(name) != variables.end()) {
+                return variables[name];
+            }
+
+            return NULL;
+        }
+
+    private:
+        map<string, Expr_ptr> variables;
+        map<string, string> types;
+};
+
 class Interpreter {
     public:
         Interpreter(LogWindow*);
@@ -44,64 +110,6 @@ class Interpreter {
         Prototype::Scanner scanner;
         Prototype::Parser parser;
 
-        struct Layout {
-            map<string, unsigned int> attributes;
-            vector<string> list;
-        };
-
-        struct Buffer {
-            GLuint handle;
-            map<string, vector<float>> data;
-            map<string, unsigned int> sizes;
-
-            shared_ptr<Layout> layout = NULL;
-        };
-
-        struct Program {
-            GLuint handle;
-            GLuint vert, frag;
-
-            shared_ptr<ShaderSource> vertSource;
-            shared_ptr<ShaderSource> fragSource;
-        };
-
-        class Scope {
-            public:
-           		string name;
-
-            	Scope(string name) {
-                    this->name = name;
-                }
-
-                void clear() {
-                    for(map<string, Expr_ptr>::iterator it = variables.begin(); it != variables.end(); ++it) {
-                        variables.erase(it);
-                    }
-                }
-
-                void declare(string name, string type, Expr_ptr value) {
-                    types[name] = type;
-                    variables[name] = null_expr;
-                }
-
-                void assign(string name, Expr_ptr value) {
-                    //if(types.find(name) != types.end()) {
-                        variables[name] = value;
-                    //}
-                }
-
-                Expr_ptr get(string name) {
-                    if(variables.find(name) != variables.end()) {
-                        return variables[name];
-                    }
-
-                    return NULL;
-                }
-
-            private:
-                map<string, Expr_ptr> variables;
-                map<string, string> types;
-        };
 
         typedef shared_ptr<Layout> Layout_ptr;
         typedef shared_ptr<Program> Program_ptr;

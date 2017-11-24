@@ -216,7 +216,7 @@ decl: IDENTIFIER IDENTIFIER { $$ = make_shared<Decl>($1, $2, nullptr); set_lines
 
 stmt: IDENTIFIER EQUALS expr { $$ = make_shared<Assign>($1, $3); set_lines($$, @1, @3); }
     | decl { $$ = $1; }
-    | decl EQUALS expr { $1->value = $3; set_lines($$, @1, @3); }
+    | decl EQUALS expr { $$ = $1; $1->value = $3; set_lines($$, @1, @3); }
     | index EQUALS expr { $$ = make_shared<Assign>($1, $3); set_lines($$, @1, @3); }
     | dot EQUALS expr { $$ = make_shared<Assign>($1, $3); set_lines($$, @1, @3); }
     | ALLOCATE IDENTIFIER { $$ = make_shared<Alloc>($2); set_lines($$, @1, @2); }
