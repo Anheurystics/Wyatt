@@ -50,10 +50,10 @@ void Prototype::Interpreter::reset() {
     while(!functionScopeStack.empty()) functionScopeStack.pop();
 
     current_program_name = "";
-    current_program = NULL;
-    init = NULL;
-    loop = NULL;
-    gl = NULL;
+    current_program = nullptr;
+    init = nullptr;
+    loop = nullptr;
+    gl = nullptr;
 
     line = 1;
     column = 1;
@@ -112,12 +112,12 @@ string tostring(Expr_ptr expr) {
 
 Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
     Expr_ptr lhs = eval_expr(bin->lhs);
-    if(!lhs) return NULL;
+    if(!lhs) return nullptr;
 
     OpType op = bin->op;
 
     Expr_ptr rhs = eval_expr(bin->rhs);
-    if(!rhs) return NULL;
+    if(!rhs) return nullptr;
 
     NodeType ltype = lhs->type;
     NodeType rtype = rhs->type;
@@ -457,12 +457,12 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
     }
 
     logger->log(bin, "ERROR", "Invalid operation between " + type_to_name(ltype) + " and " + type_to_name(rtype));
-    return NULL;
+    return nullptr;
 }
 
 Expr_ptr Prototype::Interpreter::invoke(Invoke_ptr invoke) {
     string name = invoke->ident->name;
-    FuncDef_ptr def = NULL;
+    FuncDef_ptr def = nullptr;
 
     if(name == "cos") {
         if(invoke->args->list.size() == 1) {
@@ -501,21 +501,21 @@ Expr_ptr Prototype::Interpreter::invoke(Invoke_ptr invoke) {
         def = functions[name];
     }
 
-    if(def != NULL) {
+    if(def != nullptr) {
         ScopeList_ptr localScope = make_shared<ScopeList>(name, logger);
         unsigned int nParams = def->params->list.size();
         unsigned int nArgs = invoke->args->list.size();
 
         if(nParams != nArgs) {
             logger->log(invoke, "ERROR", "Function " + name + " expects " + to_string(nParams) + " arguments, got " + to_string(nArgs));
-            return NULL;
+            return nullptr;
         }
         if(nParams > 0) {
             for(unsigned int i = 0; i < nParams; i++) {
                 Expr_ptr arg = eval_expr(invoke->args->list[i]);
-                if(arg == NULL) {
+                if(arg == nullptr) {
                     logger->log(arg, "ERROR", "Invalid argument passed on to " + name);
-                    return NULL;
+                    return nullptr;
                 }
 
                 Decl_ptr param = def->params->list[i];
@@ -530,7 +530,7 @@ Expr_ptr Prototype::Interpreter::invoke(Invoke_ptr invoke) {
     } else {
         logger->log(invoke, "ERROR", "Call to undefined function " + name);
     }
-    return NULL;
+    return nullptr;
 }
 
 Expr_ptr Prototype::Interpreter::resolve_vector(vector<Expr_ptr> list) {
@@ -564,7 +564,7 @@ Expr_ptr Prototype::Interpreter::resolve_vector(vector<Expr_ptr> list) {
             data.push_back(resolve_scalar(vec4->w));
             n += 4;
         } else {
-            return NULL;
+            return nullptr;
         }
     }
 
@@ -575,7 +575,7 @@ Expr_ptr Prototype::Interpreter::resolve_vector(vector<Expr_ptr> list) {
         return make_shared<Vector4>(make_shared<Float>(data[0]), make_shared<Float>(data[1]), make_shared<Float>(data[2]), make_shared<Float>(data[3]));
     }
 
-    return NULL;
+    return nullptr;
 }
 
 Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
@@ -583,16 +583,16 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
         case NODE_IDENT: 
             {
                 Ident_ptr ident = static_pointer_cast<Ident>(node);
-                Expr_ptr value = NULL;
+                Expr_ptr value = nullptr;
                 if(!functionScopeStack.empty()) {
                     value = functionScopeStack.top()->get(ident->name);
-                    if(value != NULL) {
+                    if(value != nullptr) {
                         return value;
                     }
                 }
 
                 value = globalScope->get(ident->name);
-                if(value == NULL) {
+                if(value == nullptr) {
                     logger->log(ident, "ERROR", "Undefined variable " + ident->name);
                 }
 
@@ -612,7 +612,7 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                             type = src->uniforms[uniform->name];
                         } else {
                             logger->log(uniform, "ERROR", "Uniform " + uniform->name + " of shader " + current_program_name + " does not exist!");
-                            return NULL;
+                            return nullptr;
                         }
                     }
 
@@ -731,7 +731,7 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                     return make_shared<Matrix4>(static_pointer_cast<Vector4>(x), static_pointer_cast<Vector4>(y), static_pointer_cast<Vector4>(z), static_pointer_cast<Vector4>(w));
                 }
 
-                return NULL;
+                return nullptr;
             }
 
         case NODE_MATRIX2:
@@ -766,7 +766,7 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                 Unary_ptr un = static_pointer_cast<Unary>(node);
                 Expr_ptr rhs = eval_expr(un->rhs);
 
-                if(!rhs) return NULL;
+                if(!rhs) return nullptr;
 
                 if(un->op == OP_MINUS) {
                     if(rhs->type == NODE_INT) {
@@ -816,7 +816,7 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                         List_ptr list = static_pointer_cast<List>(rhs);
                         return make_shared<Int>(list->list.size());
                     }
-                    return NULL;
+                    return nullptr;
                 }
             }
 
@@ -844,7 +844,7 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                     if(i == 1) return eval_expr(vec2->y);
                         
                     logger->log(index, "ERROR", "Index out of range for vec2 access");
-                    return NULL;
+                    return nullptr;
                 } else
                 if(source->type == NODE_VECTOR3 && index->type == NODE_INT) {
                     Vector3_ptr vec3 = static_pointer_cast<Vector3>(source);
@@ -854,7 +854,7 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                     if(i == 2) return eval_expr(vec3->z);
                         
                     logger->log(index, "ERROR", "Index out of range for vec3 access");
-                    return NULL;
+                    return nullptr;
                 }
                 if(source->type == NODE_VECTOR4 && index->type == NODE_INT) {
                     Vector4_ptr vec4 = static_pointer_cast<Vector4>(source);
@@ -865,7 +865,7 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                     if(i == 4) return eval_expr(vec4->w);
                         
                     logger->log(index, "ERROR", "Index out of range for vec4 access");
-                    return NULL;
+                    return nullptr;
                 }
                 if(source->type == NODE_MATRIX2 && index->type == NODE_INT) {
                     Matrix2_ptr mat2 = static_pointer_cast<Matrix2>(source);
@@ -874,7 +874,7 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                     if(i == 1) return eval_expr(mat2->v1);
                     
                     logger->log(index, "ERROR", "Index out of range for mat2 access");
-                    return NULL;
+                    return nullptr;
                 }
                 if(source->type == NODE_MATRIX3 && index->type == NODE_INT) {
                     Matrix3_ptr mat3 = static_pointer_cast<Matrix3>(source);
@@ -884,7 +884,7 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                     if(i == 2) return eval_expr(mat3->v2);
 
                     logger->log(index, "ERROR", "Index out of range for mat3 access");
-                    return NULL;
+                    return nullptr;
                 }
                 if(source->type == NODE_MATRIX4 && index->type == NODE_INT) {
                     Matrix4_ptr mat4 = static_pointer_cast<Matrix4>(source);
@@ -895,7 +895,7 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                     if(i == 3) return eval_expr(mat4->v3);
 
                     logger->log(index, "ERROR", "Index out of range for mat4 access");
-                    return NULL;
+                    return nullptr;
                 }
                 if(source->type == NODE_LIST && index->type == NODE_INT) {
                     List_ptr list = static_pointer_cast<List>(source);
@@ -905,15 +905,15 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                         return eval_expr(list->list[i]);
                     } else {
                         logger->log(index, "ERROR", "Index out of range for list of length " + list->list.size());
-                        return NULL;
+                        return nullptr;
                     }
                 }
 
                 logger->log(index,"ERROR", "Invalid use of [] operator");
-                return NULL;
+                return nullptr;
             }
 
-        default: logger->log(node, "ERROR", "Illegal expression"); return NULL;
+        default: logger->log(node, "ERROR", "Illegal expression"); return nullptr;
     }
 }
 
@@ -923,7 +923,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
             {
                 FuncStmt_ptr func = static_pointer_cast<FuncStmt>(stmt);
                 invoke(func->invoke);
-                return NULL;
+                return nullptr;
             }
         case NODE_DECL:
             {
@@ -932,26 +932,26 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 if(!functionScopeStack.empty()) {
                     scope = functionScopeStack.top()->current();
                 }
-                scope->declare(decl->name->name, decl->datatype->name, decl->value == NULL? null_expr : eval_expr(decl->value));
-                return NULL;
+                scope->declare(decl->name->name, decl->datatype->name, decl->value == nullptr? null_expr : eval_expr(decl->value));
+                return nullptr;
             }
         case NODE_ASSIGN:
             {
                 Assign_ptr assign = static_pointer_cast<Assign>(stmt);
                 Expr_ptr rhs = eval_expr(assign->value);
-                if(rhs != NULL) {
+                if(rhs != nullptr) {
                     Expr_ptr lhs = assign->lhs;
                     if(lhs->type == NODE_IDENT) {
                         string name = static_pointer_cast<Ident>(lhs)->name;
                         if(!functionScopeStack.empty() && functionScopeStack.top()->assign(name, rhs)) {
-                            return NULL;
+                            return nullptr;
                         }
                         if(globalScope->assign(static_pointer_cast<Ident>(lhs)->name, rhs)) {
-                            return NULL;
+                            return nullptr;
                         }
                         logger->log(lhs, "ERROR", "Variable " + name + " does not exist!");
 
-                        return NULL;
+                        return nullptr;
                     } else if(lhs->type == NODE_DOT) {
                         Dot_ptr uniform = static_pointer_cast<Dot>(lhs);
                         if(current_program->vertSource->name == uniform->shader) {
@@ -965,7 +965,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                     type = src->uniforms[uniform->name];
                                 } else {
                                     logger->log(uniform, "ERROR", "Uniform " + uniform->name + " of shader " + current_program_name + " does not exist!");
-                                    return NULL;
+                                    return nullptr;
                                 }
                             }
 
@@ -976,7 +976,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                     gl->glUniform1f(loc, resolve_float(f));
                                 } else {
                                     logger->log(uniform, "ERROR", "Uniform upload mismatch: float required for " + uniform->name + " of shader " + current_program_name);
-                                    return NULL;
+                                    return nullptr;
                                 }
                             } else
                             if(type == "vec2") {
@@ -985,7 +985,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                     gl->glUniform2f(loc, resolve_vec2(vec2));
                                 } else {
                                     logger->log(uniform, "ERROR", "Uniform upload mismatch: vec2 required for " + uniform->name + " of shader " + current_program_name);
-                                    return NULL;
+                                    return nullptr;
                                 }
                             } else 
                             if(type == "vec3") {
@@ -994,7 +994,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                     gl->glUniform3f(loc, resolve_vec3(vec3));
                                 } else {
                                     logger->log(uniform, "ERROR", "Uniform upload mismatch: vec3 required for " + uniform->name + " of shader " + current_program_name);
-                                    return NULL;
+                                    return nullptr;
                                 }
                             } else
                             if(type == "vec4") {
@@ -1003,7 +1003,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                     gl->glUniform4f(loc, resolve_vec4(vec4));
                                 } else {
                                     logger->log(uniform, "ERROR", "Uniform upload mismatch: vec4 required for " + uniform->name + " of shader " + current_program_name);
-                                    return NULL;
+                                    return nullptr;
                                 }
                             } else
                             if(type == "mat2") {
@@ -1015,7 +1015,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                     gl->glUniform2fv(loc, 1, data);
                                 } else {
                                     logger->log(uniform, "ERROR", "Uniform upload mismatch: vec4 required for " + uniform->name + " of shader " + current_program_name);
-                                    return NULL;
+                                    return nullptr;
                                 }
                             } else
                             if(type == "mat3") {
@@ -1028,7 +1028,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                     gl->glUniformMatrix3fv(loc, 1, false, data);
                                 } else {
                                     logger->log(uniform, "ERROR", "Uniform upload mismatch: mat3 required for " + uniform->name + " of shader " + current_program_name);
-                                    return NULL;
+                                    return nullptr;
                                 }
                             } else
                             if(type == "mat4") {
@@ -1042,7 +1042,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                     gl->glUniformMatrix4fv(loc, 1, false, data);
                                 } else {
                                     logger->log(uniform, "ERROR", "Uniform upload mismatch: mat3 required for " + uniform->name + " of shader " + current_program_name);
-                                    return NULL;
+                                    return nullptr;
                                 }
                             }
 
@@ -1061,26 +1061,26 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                             } else {
                                 logger->log(assign, "ERROR", "Index out of range for list of length " + list->list.size());
                             }
-                            return NULL;
+                            return nullptr;
                         }
 
                         bool is_scalar = (rhs->type == NODE_FLOAT || rhs->type == NODE_INT);
                         if(source->type == NODE_VECTOR2 && index->type == NODE_INT) {
                             if(!is_scalar) {
                                 logger->log(assign, "ERROR", "vec2 component needs to be a float or an int");
-                                return NULL;
+                                return nullptr;
                             }
                             Vector2_ptr vec2 = static_pointer_cast<Vector2>(source);
                             int i = resolve_int(index);
                             if(i == 0) vec2->x = rhs;
                             else if(i == 1) vec2->y = rhs;
                             else logger->log(index, "ERROR", "Index out of range for vec2 access");
-                            return NULL;
+                            return nullptr;
                         } else
                         if(source->type == NODE_VECTOR3 && index->type == NODE_INT) {
                             if(!is_scalar) {
                                 logger->log(assign, "ERROR", "vec3 component needs to be a float or an int");
-                                return NULL;
+                                return nullptr;
                             }
                             Vector3_ptr vec3 = static_pointer_cast<Vector3>(source);
                             int i = resolve_int(index);
@@ -1088,12 +1088,12 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                             else if(i == 1) vec3->y = rhs;
                             else if(i == 2) vec3->z = rhs;
                             else logger->log(assign, "ERROR", "Index out of range for vec3 access");
-                            return NULL;
+                            return nullptr;
                         }
                         if(source->type == NODE_VECTOR4 && index->type == NODE_INT) {
                             if(!is_scalar) {
                                 logger->log(assign, "ERROR", "vec4 component needs to be a float or an int");
-                                return NULL;
+                                return nullptr;
                             }
                             Vector4_ptr vec4 = static_pointer_cast<Vector4>(source);
                             int i = resolve_int(index);
@@ -1102,40 +1102,40 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                             else if(i == 2) vec4->z = rhs;
                             else if(i == 4) vec4->w = rhs;
                             else logger->log(assign, "ERROR", "Index out of range for vec4 access");
-                            return NULL;
+                            return nullptr;
                         }
 
                         if(source->type == NODE_MATRIX2 && index->type == NODE_INT) {
                             if(rhs->type != NODE_VECTOR2) {
                                 logger->log(assign, "ERROR", "mat2 component needs to be vec2");
-                                return NULL;
+                                return nullptr;
                             }
                             Matrix2_ptr mat2 = static_pointer_cast<Matrix2>(source);
                             int i = resolve_int(index);
                             if(i == 0) mat2->v0 = static_pointer_cast<Vector2>(rhs);
                             else if(i == 1) mat2->v1 = static_pointer_cast<Vector2>(rhs);
-                            else { logger->log(assign, "ERROR", "Index out of range for mat2 access"); return NULL; }
+                            else { logger->log(assign, "ERROR", "Index out of range for mat2 access"); return nullptr; }
                             mat2->generate_columns();
-                            return NULL;
+                            return nullptr;
                         }
                         if(source->type == NODE_MATRIX3 && index->type == NODE_INT) {
                             if(rhs->type != NODE_VECTOR3) {
                                 logger->log(assign, "ERROR", "mat3 component needs to be vec3");
-                                return NULL;
+                                return nullptr;
                             }
                             Matrix3_ptr mat3 = static_pointer_cast<Matrix3>(source);
                             int i = resolve_int(index);
                             if(i == 0) mat3->v0 = static_pointer_cast<Vector3>(rhs);
                             else if(i == 1) mat3->v1 = static_pointer_cast<Vector3>(rhs);
                             else if(i == 2) mat3->v2 = static_pointer_cast<Vector3>(rhs);
-                            else { logger->log(index, "ERROR", "Index out of range for mat3 access"); return NULL; }
+                            else { logger->log(index, "ERROR", "Index out of range for mat3 access"); return nullptr; }
                             mat3->generate_columns();
-                            return NULL;
+                            return nullptr;
                         }
                         if(source->type == NODE_MATRIX4 && index->type == NODE_INT) {
                             if(rhs->type != NODE_VECTOR4) {
                                 logger->log(assign, "ERROR", "mat4 component needs to be vec4");
-                                return NULL;
+                                return nullptr;
                             }
                             Matrix4_ptr mat4 = static_pointer_cast<Matrix4>(source);
                             int i = resolve_int(index);
@@ -1143,22 +1143,22 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                             else if(i == 1) mat4->v1 = static_pointer_cast<Vector4>(rhs);
                             else if(i == 2) mat4->v2 = static_pointer_cast<Vector4>(rhs);
                             else if(i == 3) mat4->v3 = static_pointer_cast<Vector4>(rhs);
-                            else { logger->log(index, "ERROR", "Index out of range for mat4 access"); return NULL; }
+                            else { logger->log(index, "ERROR", "Index out of range for mat4 access"); return nullptr; }
                             mat4->generate_columns();
-                            return NULL;
+                            return nullptr;
                         }
 
                         logger->log(index,"ERROR", "Invalid use of [] operator");
-                        return NULL;
+                        return nullptr;
                     } else {
                         logger->log(assign, "ERROR", "Invalid left-hand side expression in assignment");
-                        return NULL;
+                        return nullptr;
                     }
                 } else {
                     logger->log(assign, "ERROR", "Invalid assignment");
                 }
 
-                return NULL;
+                return nullptr;
             }
         case NODE_ALLOC:
             {
@@ -1174,16 +1174,16 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     logger->log(alloc, "ERROR", "Can't allocate to " + alloc->ident->name + ": buffer already exists!");
                 }
 
-                return NULL;
+                return nullptr;
             }
         case NODE_UPLOAD:
             {
                 Upload_ptr upload = static_pointer_cast<Upload>(stmt);
 
                 Buffer_ptr buffer = buffers[upload->ident->name];
-                if(buffer == NULL) {
+                if(buffer == nullptr) {
                     logger->log(upload, "ERROR", "Can't upload to unallocated buffer");
-                    return NULL;
+                    return nullptr;
                 }
 
                 Layout_ptr layout = buffer->layout;
@@ -1216,26 +1216,26 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
 
                 buffer->sizes[upload->attrib->name] = target->size() / buffer->layout->attributes[upload->attrib->name];
 
-                return NULL;
+                return nullptr;
             }
         case NODE_DRAW:
             {
                 Draw_ptr draw = static_pointer_cast<Draw>(stmt);
 
-                if(current_program == NULL) {
+                if(current_program == nullptr) {
                     logger->log(draw, "ERROR", "Cannot bind program with name " + current_program_name);
-                    return NULL;
+                    return nullptr;
                 }
 
                 Buffer_ptr buffer = buffers[draw->ident->name];
-                if(buffer != NULL) {
+                if(buffer != nullptr) {
                     Layout_ptr layout = buffer->layout;
                     vector<float> final_vector;
 
                     map<string, unsigned int> attributes = layout->attributes;
                     if(attributes.size() == 0) {
                         logger->log(draw, "ERROR", "Cannot draw empty buffer!");
-                        return NULL;
+                        return nullptr;
                     }
 
                     gl->glBindBuffer(GL_ARRAY_BUFFER, buffer->handle);
@@ -1270,7 +1270,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     logger->log(draw, "ERROR", "Can't draw non-existent buffer " + draw->ident->name);
                 }
 
-                return NULL;
+                return nullptr;
             }
         case NODE_USE:
             {
@@ -1278,39 +1278,39 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 current_program_name = use->ident->name;
                 current_program = programs[current_program_name];
 
-                if(current_program == NULL) {
+                if(current_program == nullptr) {
                     logger->log(use, "ERROR", "No valid vertex/fragment pair for program name " + current_program_name);
-                    return NULL;
+                    return nullptr;
                 }
 
                 gl->glUseProgram(current_program->handle);
-                return NULL;
+                return nullptr;
             }
         case NODE_IF:
             {
                 If_ptr ifstmt = static_pointer_cast<If>(stmt);
                 Expr_ptr condition = eval_expr(ifstmt->condition);
-                if(!condition) return NULL;
+                if(!condition) return nullptr;
                 if(condition->type == NODE_BOOL) {
                     bool b = (static_pointer_cast<Bool>(condition)->value);
                     if(b) {
                         functionScopeStack.top()->attach("if");
                         Expr_ptr returnValue = execute_stmts(ifstmt->block);
                         functionScopeStack.top()->detach();
-                        if(returnValue != NULL) {
+                        if(returnValue != nullptr) {
                             return returnValue;
                         }
                     }
                 } else {
                     logger->log(ifstmt, "ERROR", "Condition in if statement not a boolean");
                 }
-                return NULL;
+                return nullptr;
             }
         case NODE_WHILE:
             {
                 While_ptr whilestmt = static_pointer_cast<While>(stmt);
                 Expr_ptr condition = eval_expr(whilestmt->condition);
-                if(!condition) return NULL;
+                if(!condition) return nullptr;
                 if(condition->type == NODE_BOOL) {
                     time_t start = time(nullptr);
                     functionScopeStack.top()->attach("while");
@@ -1320,7 +1320,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                         if(!b) break;
 
                         Expr_ptr returnValue = execute_stmts(whilestmt->block);
-                        if(returnValue != NULL) {
+                        if(returnValue != nullptr) {
                             return returnValue;
                         }
 
@@ -1334,7 +1334,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     logger->log(whilestmt, "ERROR", "Condition in while statement not a boolean");
                 }
 
-                return NULL;
+                return nullptr;
             }
         case NODE_FOR:
             {
@@ -1353,7 +1353,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                         }
 
                         Expr_ptr returnValue = execute_stmts(forstmt->block);
-                        if(returnValue != NULL) {
+                        if(returnValue != nullptr) {
                             return returnValue;
                         }
 
@@ -1366,26 +1366,26 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     functionScopeStack.top()->detach();
                 }
 
-                return NULL;
+                return nullptr;
             }
         case NODE_PRINT:
             {
                 Print_ptr print = static_pointer_cast<Print>(stmt);
                 Expr_ptr output = eval_expr(print->expr);
-                if(output == NULL)
-                    return NULL;
+                if(output == nullptr)
+                    return nullptr;
 
 
                 logger->log(tostring(output));
-                return NULL;
+                return nullptr;
             }
 
-        default: return NULL;
+        default: return nullptr;
     }
 }
 
 Expr_ptr Prototype::Interpreter::execute_stmts(Stmts_ptr stmts) {
-    Expr_ptr returnValue = NULL;
+    Expr_ptr returnValue = nullptr;
     for(unsigned int it = 0; it < stmts->list.size(); it++) { 
         Stmt_ptr stmt = stmts->list.at(it);
         if(stmt->type == NODE_RETURN) {
@@ -1395,22 +1395,22 @@ Expr_ptr Prototype::Interpreter::execute_stmts(Stmts_ptr stmts) {
         }
 
         Expr_ptr expr = eval_stmt(stmt);
-        if(expr != NULL) {
+        if(expr != nullptr) {
             returnValue = expr;
             break;
         }
     }
 
-    if(returnValue != NULL) {
+    if(returnValue != nullptr) {
         return eval_expr(returnValue);
     } else {
-        return NULL;
+        return nullptr;
     }
 }
 
 void Prototype::Interpreter::compile_shader(GLuint* handle, ShaderSource_ptr source) {
     const char* src = source->code.c_str();
-    gl->glShaderSource(*handle, 1, &src, NULL);
+    gl->glShaderSource(*handle, 1, &src, nullptr);
     gl->glCompileShader(*handle);
 
     GLint success;
@@ -1437,12 +1437,12 @@ void Prototype::Interpreter::compile_program() {
         program->vertSource = it->second->vertex;
         program->fragSource = it->second->fragment;
 
-        if(program->vertSource == NULL) {
+        if(program->vertSource == nullptr) {
             logger->log("ERROR: Missing vertex shader source for program " + it->first);
             continue;
         }
 
-        if(program->fragSource == NULL) {
+        if(program->fragSource == nullptr) {
             logger->log("ERROR: Missing fragment shader source for program " + it->first);
             continue;
         }
@@ -1502,7 +1502,7 @@ void Prototype::Interpreter::load_import(string file) {
 
 void Prototype::Interpreter::parse(string code) {
     istringstream ss(code);
-    scanner.switch_streams(&ss, NULL);
+    scanner.switch_streams(&ss, nullptr);
     status = parser.parse();
 }
 
@@ -1510,12 +1510,12 @@ void Prototype::Interpreter::prepare() {
     logger->clear();
 
     init = functions["init"];
-    if(init == NULL) {
+    if(init == nullptr) {
         logger->log("ERROR: init() function required!");
     }
 
     loop = functions["loop"];
-    if(loop == NULL) {
+    if(loop == nullptr) {
         logger->log("ERROR: loop() function required!");
     }
 }

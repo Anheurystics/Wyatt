@@ -35,7 +35,7 @@ struct Buffer {
     map<string, vector<float>> data;
     map<string, unsigned int> sizes;
 
-    shared_ptr<Layout> layout = NULL;
+    shared_ptr<Layout> layout = nullptr;
 };
 
 struct Program {
@@ -87,10 +87,10 @@ class Interpreter {
         vector<Decl_ptr> globals;
 
         string current_program_name;
-        shared_ptr<Program> current_program = NULL;
+        shared_ptr<Program> current_program = nullptr;
 
-        FuncDef_ptr init = NULL;
-        FuncDef_ptr loop = NULL;
+        FuncDef_ptr init = nullptr;
+        FuncDef_ptr loop = nullptr;
         Invoke_ptr init_invoke;
         Invoke_ptr loop_invoke;
         QOpenGLFunctions* gl;

@@ -11,7 +11,7 @@ namespace Prototype {
 
     void Scope::declare(string name, string type, Expr_ptr value) {
         types[name] = type;
-        assign(name, (value != NULL? value : null_expr));
+        assign(name, (value != nullptr? value : null_expr));
     }
 
     bool Scope::assign(string name, Expr_ptr value) {
