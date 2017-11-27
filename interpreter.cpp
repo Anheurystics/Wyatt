@@ -24,22 +24,8 @@ float resolve_scalar(Expr_ptr expr) {
 
 #define LOOP_TIMEOUT 5
 
-Prototype::Interpreter::Interpreter(LogWindow* logger): scanner(&line, &column), parser(scanner, &line, &column, &globals, &functions, &shaders), logger(logger) {
+Prototype::Interpreter::Interpreter(LogWindow* logger): scanner(&line, &column), parser(scanner, &line, &column, &imports, &globals, &functions, &shaders), logger(logger) {
     globalScope = make_shared<Scope>("global", logger);
-
-    string utilsrc = str_from_file("utils.txt");
-    parse(utilsrc);
-    if(status != 0) {
-        logger->log("Error parsing utils.txt");
-    }
-
-    status = 0;
-
-    for(map<string, FuncDef_ptr>::iterator it = functions.begin(); it != functions.end(); ++it) {
-        builtins[it->first] = it->second;
-    }
-    functions.clear();
-
     transpiler = new GLSLTranspiler();
 
     init_invoke = make_shared<Invoke>(make_shared<Ident>("init"), make_shared<ArgList>(nullptr));
@@ -56,6 +42,9 @@ void Prototype::Interpreter::reset() {
     clear_map(Program_ptr, programs);
     clear_map(ShaderPair_ptr, shaders);
     clear_map(FuncDef_ptr, functions);
+
+    globals.clear();
+    imports.clear();
 
     globalScope->clear();
     while(!functionScopeStack.empty()) functionScopeStack.pop();
@@ -506,10 +495,6 @@ Expr_ptr Prototype::Interpreter::invoke(Invoke_ptr invoke) {
         if(invoke->args->list.size() == 0) {
             return make_shared<Float>(3.14159f);
         }
-    }
-
-    if(builtins.find(name) != builtins.end()) {
-        def = builtins[name];
     }
 
     if(functions.find(name) != functions.end()) {
@@ -1498,15 +1483,32 @@ void Prototype::Interpreter::execute_loop() {
     invoke(loop_invoke);
 }
 
-void Prototype::Interpreter::parse(string code) {
-    reset();
+void Prototype::Interpreter::load_imports() {
+    for(unsigned int i = 0; i < imports.size(); i++) {
+        string file = imports[i];
+        load_import(file);
+    }
+}
 
+void Prototype::Interpreter::load_import(string file) {
+    string src = str_from_file(file);
+    parse(src);
+    if(status != 0) {
+        logger->log("Error importing " + file);
+    }
+
+    status = 0;
+}
+
+void Prototype::Interpreter::parse(string code) {
     istringstream ss(code);
     scanner.switch_streams(&ss, NULL);
     status = parser.parse();
 }
 
 void Prototype::Interpreter::prepare() {
+    logger->clear();
+
     init = functions["init"];
     if(init == NULL) {
         logger->log("ERROR: init() function required!");

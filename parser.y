@@ -47,6 +47,7 @@
 %parse-param { Prototype::Scanner &scanner }
 %parse-param { unsigned int* line }
 %parse-param { unsigned int* column }
+%parse-param { std::vector<string>* imports }
 %parse-param { std::vector<Decl_ptr>* globals }
 %parse-param { std::map<std::string, FuncDef_ptr>* functions }
 %parse-param { std::map<std::string, std::shared_ptr<ShaderPair>>* shaders }
@@ -90,6 +91,7 @@
 %token WHILE "while";
 %token FOR "for";
 %token IN "in";
+%token IMPORT "import";
 %token ALLOCATE "allocate"; 
 %token UPLOAD "<-";
 %token DRAW "draw";
@@ -128,7 +130,14 @@
 
 %%
 
-program: globals funcshaders;
+program: imports globals funcshaders;
+
+imports:
+    |
+    IMPORT STRING SEMICOLON imports {
+        imports->push_back($2->value);
+    }
+    ;
 
 globals:
     |
@@ -229,7 +238,7 @@ stmt: IDENTIFIER EQUALS expr { $$ = make_shared<Assign>($1, $3); set_lines($$, @
     | index EQUALS expr { $$ = make_shared<Assign>($1, $3); set_lines($$, @1, @3); }
     | dot EQUALS expr { $$ = make_shared<Assign>($1, $3); set_lines($$, @1, @3); }
     | ALLOCATE IDENTIFIER { $$ = make_shared<Alloc>($2); set_lines($$, @1, @2); }
-    | IDENTIFIER PERIOD IDENTIFIER UPLOAD upload_list { $$ = make_shared<Upload>($1, $3, $5); set_lines($$, @1, @5); }
+    | IDENTIFIER PERIOD IDENTIFIER COMP_PLUS upload_list { $$ = make_shared<Upload>($1, $3, $5); set_lines($$, @1, @5); }
     | DRAW IDENTIFIER { $$ = make_shared<Draw>($2); set_lines($$, @1, @2); }
     | USE IDENTIFIER { $$ = make_shared<Use>($2); set_lines($$, @1, @2); }
     | PRINT expr { $$ = make_shared<Print>($2); set_lines($$, @1, @2); }

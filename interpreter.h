@@ -55,6 +55,8 @@ class Interpreter {
         void parse(string);
         Expr_ptr execute_stmts(shared_ptr<Stmts>);
         void prepare();
+        void load_imports();
+        void load_import(string);
         void execute_init();
         void execute_loop();
         void compile_program();
@@ -81,6 +83,7 @@ class Interpreter {
         map<string, FuncDef_ptr> functions;
         map<string, FuncDef_ptr> builtins;
 
+        vector<string> imports;
         vector<Decl_ptr> globals;
 
         string current_program_name;
