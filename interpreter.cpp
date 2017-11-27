@@ -194,7 +194,7 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
     if(ltype == NODE_STRING || rtype == NODE_STRING) {
         bool left = (ltype == NODE_STRING);
         String_ptr str = String_ptr(left? static_pointer_cast<String>(lhs) : static_pointer_cast<String>(rhs));
-        Expr_ptr other = eval_expr(left? lhs : rhs);
+        Expr_ptr other = eval_expr(left? rhs : lhs);
 
         return make_shared<String>(left? (str->value + tostring(other)) : (tostring(other) + str->value));
     }
