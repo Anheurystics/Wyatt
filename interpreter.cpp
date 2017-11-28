@@ -24,7 +24,7 @@ float resolve_scalar(Expr_ptr expr) {
 
 #define LOOP_TIMEOUT 5
 
-Prototype::Interpreter::Interpreter(LogWindow* logger): scanner(&line, &column), parser(scanner, &line, &column, &imports, &globals, &functions, &shaders), logger(logger) {
+Prototype::Interpreter::Interpreter(LogWindow* logger): scanner(&line, &column), parser(scanner, logger, &line, &column, &imports, &globals, &functions, &shaders), logger(logger) {
     globalScope = make_shared<Scope>("global", logger);
     transpiler = new GLSLTranspiler();
 
@@ -1408,9 +1408,9 @@ Expr_ptr Prototype::Interpreter::execute_stmts(Stmts_ptr stmts) {
     }
 }
 
-void Prototype::Interpreter::compile_shader(GLuint* handle, Shader_ptr source) {
-    /*
-    const char* src = source->code.c_str();
+void Prototype::Interpreter::compile_shader(GLuint* handle, Shader_ptr shader) {
+    string code = transpiler->transpile(shader);
+    const char* src = code.c_str();
     gl->glShaderSource(*handle, 1, &src, nullptr);
     gl->glCompileShader(*handle);
 
@@ -1420,9 +1420,10 @@ void Prototype::Interpreter::compile_shader(GLuint* handle, Shader_ptr source) {
     gl->glGetShaderInfoLog(*handle, 256, 0, log);
     gl->glGetShaderiv(*handle, GL_COMPILE_STATUS, &success);
     if(success != GL_TRUE) {
-        cout << source->name << " shader error\n" << success << " " << log << endl;
+        cout << shader->name << " shader error\n" << success << " " << log << endl;
+    } else {
+        cout << "Success compiling " << shader->name << endl;
     }
-    */
 }
 
 void Prototype::Interpreter::compile_program() {

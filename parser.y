@@ -23,6 +23,7 @@
     }
 
     #include "nodes.h"
+    #include "logwindow.h"
 
     #define set_lines(a, b, c) \
         a->first_line = b.begin.line; \
@@ -45,6 +46,7 @@
 
 %lex-param { Prototype::Scanner &scanner }
 %parse-param { Prototype::Scanner &scanner }
+%parse-param { LogWindow* logger }
 %parse-param { unsigned int* line }
 %parse-param { unsigned int* column }
 %parse-param { std::vector<string>* imports }
@@ -317,6 +319,5 @@ vec4: OPEN_BRACKET expr COMMA expr COMMA expr COMMA expr CLOSE_BRACKET { $$ = ma
 %%
 
 void Parser::error(const location &loc, const string &message) {
-    cerr << "Error: " << message << " at line " << loc.begin.line << endl;
+    logger->log("ERROR: " + message + " at line " + to_string(loc.begin.line) + "\n");
 }
-

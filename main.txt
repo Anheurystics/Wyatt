@@ -2,34 +2,6 @@ import "utils.txt";
 
 float angle = 0;
 
-vert basic `
-#version 130
-
-in vec3 pos;
-in vec3 col;
-
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 proj;
-
-out vec3 Color;
-
-void main() {
-    gl_Position = proj * view * model * vec4(pos, 1.0);
-    Color = col;
-}
-`;
-
-frag basic `#version 130
-
-in vec3 Color;
-out vec4 FragColor;
-
-void main() {
-    FragColor = vec4(Color, 1.0);
-}
-`;
-
 vert basic(vec3 pos, vec3 col) {
 	mat4 model;
 	mat4 view;
@@ -37,7 +9,7 @@ vert basic(vec3 pos, vec3 col) {
 
 	func main() {
 		FinalPosition = proj * view * model * [pos, 1.0];
-		Color = color;
+		Color = col;
 	}
 }(vec4 FinalPosition, vec3 Color)
 
