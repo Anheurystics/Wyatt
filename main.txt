@@ -30,14 +30,22 @@ void main() {
 }
 `;
 
-//func vert_basic(input) {
-//    output.FinalPosition = proj * view * model * [input.pos, 1.0];
-//    Color = col;
-//}
-//
-//func frag_basic(input) {
-//    output.FinalColor = [input.Color, 1.0];
-//}
+vert basic(vec3 pos, vec3 col) {
+	mat4 model;
+	mat4 view;
+	mat4 proj;
+
+	func main() {
+		FinalPosition = proj * view * model * [pos, 1.0];
+		Color = color;
+	}
+}(vec4 FinalPosition, vec3 Color)
+
+frag basic(vec3 Color) {
+	func main() {
+		FinalColor = [Color, 1.0];
+	}
+}(vec4 FinalColor)
 
 func init() {
     allocate a;
