@@ -5,7 +5,7 @@ GLSLTranspiler::GLSLTranspiler()
 
 }
 
-string GLSLTranspiler::transpile(shared_ptr<Shader> shader) {
+string GLSLTranspiler::transpile(Shader_ptr shader) {
     this->shader = shader;
 
     string source = "#version 130\n";
@@ -104,7 +104,20 @@ string GLSLTranspiler::resolve_vector(vector<Expr_ptr> list) {
     return "vec" + to_string(n) + output + ")";
 }
 
-string GLSLTranspiler::eval_expr(shared_ptr<Expr> expr) {
+string GLSLTranspiler::eval_invoke(Invoke_ptr invoke) {
+    string output = invoke->ident->name + "(";
+    for(unsigned int i = 0; i < invoke->args->list.size(); i++) {
+        Expr_ptr e = invoke->args->list[i];
+        if(i != 0) {
+            output += ",";
+        }
+        output += eval_expr(e);
+    }
+    output += ")";
+    return output;
+}
+
+string GLSLTranspiler::eval_expr(Expr_ptr expr) {
     switch(expr->type) {
         case NODE_INT:
             return to_string(static_pointer_cast<Int>(expr)->value);
@@ -120,7 +133,7 @@ string GLSLTranspiler::eval_expr(shared_ptr<Expr> expr) {
             }
         case NODE_DOT:
             {
-                shared_ptr<Dot> dot = static_pointer_cast<Dot>(expr);
+                Dot_ptr dot = static_pointer_cast<Dot>(expr);
                 return dot->shader + "." + dot->name;
             }
         case NODE_BINARY:
@@ -151,12 +164,17 @@ string GLSLTranspiler::eval_expr(shared_ptr<Expr> expr) {
                 Expr_ptr w = vec4->w;
                 return resolve_vector({x, y, z, w});
             }
+        case NODE_FUNCEXPR:
+            {
+                FuncExpr_ptr func = static_pointer_cast<FuncExpr>(expr);
+                return eval_invoke(func->invoke);
+            }
         default:
             return "";
     }
 }
 
-string GLSLTranspiler::eval_binary(shared_ptr<Binary> bin) {
+string GLSLTranspiler::eval_binary(Binary_ptr bin) {
     string op_str = "";
     switch(bin->op) {
         case OP_MULT:
@@ -168,11 +186,21 @@ string GLSLTranspiler::eval_binary(shared_ptr<Binary> bin) {
     return eval_expr(bin->lhs) + op_str + eval_expr(bin->rhs);
 }
 
-string GLSLTranspiler::eval_stmt(shared_ptr<Stmt> stmt) {
+string GLSLTranspiler::eval_stmt(Stmt_ptr stmt) {
     switch(stmt->type) {
+        case NODE_DECL:
+            {
+                Decl_ptr decl = static_pointer_cast<Decl>(stmt);
+                string output = decl->datatype->name + " " + decl->name->name;
+                if(decl->value != nullptr) {
+                    output += " = " + eval_expr(decl->value);
+                }
+                output += ";";  
+                return output;
+            }
         case NODE_ASSIGN:
             {
-                shared_ptr<Assign> a = static_pointer_cast<Assign>(stmt);
+                Assign_ptr a = static_pointer_cast<Assign>(stmt);
                 return eval_expr(a->lhs) + " = " + eval_expr(a->value) + ";";
             }
         default:

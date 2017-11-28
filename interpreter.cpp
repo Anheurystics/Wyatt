@@ -1410,6 +1410,7 @@ Expr_ptr Prototype::Interpreter::execute_stmts(Stmts_ptr stmts) {
 
 void Prototype::Interpreter::compile_shader(GLuint* handle, Shader_ptr shader) {
     string code = transpiler->transpile(shader);
+    cout << code << endl;
     const char* src = code.c_str();
     gl->glShaderSource(*handle, 1, &src, nullptr);
     gl->glCompileShader(*handle);
@@ -1421,8 +1422,6 @@ void Prototype::Interpreter::compile_shader(GLuint* handle, Shader_ptr shader) {
     gl->glGetShaderiv(*handle, GL_COMPILE_STATUS, &success);
     if(success != GL_TRUE) {
         cout << shader->name << " shader error\n" << success << " " << log << endl;
-    } else {
-        cout << "Success compiling " << shader->name << endl;
     }
 }
 
