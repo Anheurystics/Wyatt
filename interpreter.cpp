@@ -602,14 +602,14 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
             {
                 Dot_ptr uniform = static_pointer_cast<Dot>(node);
                 if(current_program->vertSource->name == uniform->shader) {
-                    ShaderSource_ptr src = current_program->vertSource;
+                    Shader_ptr src = current_program->vertSource;
                     string type = "";
-                    if(src->uniforms.find(uniform->name) != src->uniforms.end()) {
-                        type = src->uniforms[uniform->name];
+                    if(src->uniforms->find(uniform->name) != src->uniforms->end()) {
+                        type = src->uniforms->at(uniform->name);
                     } else {
                         src = current_program->fragSource;
-                        if(src->uniforms.find(uniform->name) != src->uniforms.end()) {
-                            type = src->uniforms[uniform->name];
+                        if(src->uniforms->find(uniform->name) != src->uniforms->end()) {
+                            type = src->uniforms->at(uniform->name);
                         } else {
                             logger->log(uniform, "ERROR", "Uniform " + uniform->name + " of shader " + current_program_name + " does not exist!");
                             return nullptr;
@@ -955,14 +955,14 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     } else if(lhs->type == NODE_DOT) {
                         Dot_ptr uniform = static_pointer_cast<Dot>(lhs);
                         if(current_program->vertSource->name == uniform->shader) {
-                            ShaderSource_ptr src = current_program->vertSource;
+                            Shader_ptr src = current_program->vertSource;
                             string type = "";
-                            if(src->uniforms.find(uniform->name) != src->uniforms.end()) {
-                                type = src->uniforms[uniform->name];
+                            if(src->uniforms->find(uniform->name) != src->uniforms->end()) {
+                                type = src->uniforms->at(uniform->name);
                             } else {
                                 src = current_program->fragSource;
-                                if(src->uniforms.find(uniform->name) != src->uniforms.end()) {
-                                    type = src->uniforms[uniform->name];
+                                if(src->uniforms->find(uniform->name) != src->uniforms->end()) {
+                                    type = src->uniforms->at(uniform->name);
                                 } else {
                                     logger->log(uniform, "ERROR", "Uniform " + uniform->name + " of shader " + current_program_name + " does not exist!");
                                     return nullptr;
@@ -1408,7 +1408,8 @@ Expr_ptr Prototype::Interpreter::execute_stmts(Stmts_ptr stmts) {
     }
 }
 
-void Prototype::Interpreter::compile_shader(GLuint* handle, ShaderSource_ptr source) {
+void Prototype::Interpreter::compile_shader(GLuint* handle, Shader_ptr source) {
+    /*
     const char* src = source->code.c_str();
     gl->glShaderSource(*handle, 1, &src, nullptr);
     gl->glCompileShader(*handle);
@@ -1421,6 +1422,7 @@ void Prototype::Interpreter::compile_shader(GLuint* handle, ShaderSource_ptr sou
     if(success != GL_TRUE) {
         cout << source->name << " shader error\n" << success << " " << log << endl;
     }
+    */
 }
 
 void Prototype::Interpreter::compile_program() {

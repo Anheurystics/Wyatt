@@ -97,6 +97,7 @@
 %token DRAW "draw";
 %token VERTEX "vert";
 %token FRAGMENT "frag";
+%token MAIN "main";
 %token PRINT "print";
 %token USE "use";
 %token RETURN "return";
@@ -117,11 +118,13 @@
 %type<shared_ptr<Dot>> dot;
 %type<shared_ptr<List>> list;
 %type<shared_ptr<Decl>> decl;
+%type<shared_ptr<map<string, string>>> shader_uniforms;
+%type<shared_ptr<map<string, FuncDef_ptr>>> shader_functions;
 
 %type<shared_ptr<Stmt>> stmt stmt_block
 %type<shared_ptr<FuncDef>> function
 %type<shared_ptr<Stmts>> stmts block
-%type<shared_ptr<ShaderSource>> vert_shader frag_shader
+%type<shared_ptr<Shader>> vert_shader frag_shader
 %type<shared_ptr<UploadList>> upload_list
 %type<shared_ptr<ArgList>> arg_list
 %type<shared_ptr<ParamList>> param_list
@@ -182,10 +185,21 @@ funcshaders:
     }
     ;
 
-vert_shader: VERTEX IDENTIFIER SHADER SEMICOLON { $$ = make_shared<ShaderSource>($2->name, $3->value, "vert"); }
+shader_uniforms: { $$ = make_shared<map<string, string>>(); }
+    | decl SEMICOLON shader_uniforms { $$ = $3; $3->insert(pair<string, string>($1->name->name, $1->datatype->name)); }
     ;
 
-frag_shader: FRAGMENT IDENTIFIER SHADER SEMICOLON { $$ = make_shared<ShaderSource>($2->name, $3->value, "frag"); }
+shader_functions: FUNC MAIN OPEN_PAREN CLOSE_PAREN block { $$ = make_shared<map<string, FuncDef_ptr>>(); $$->insert(pair<string, FuncDef_ptr>("main", make_shared<FuncDef>(make_shared<Ident>("main"), make_shared<ParamList>(nullptr), $5)));}
+    | function shader_functions { $2->insert(pair<string, FuncDef_ptr>($1->ident->name, $1)); }
+    ;
+
+vert_shader: VERTEX IDENTIFIER OPEN_PAREN param_list CLOSE_PAREN OPEN_BRACE shader_uniforms shader_functions CLOSE_BRACE OPEN_PAREN param_list CLOSE_PAREN {
+        $$ = make_shared<Shader>($2->name, $7, $8, $4, $11);
+    }
+    ;
+frag_shader: FRAGMENT IDENTIFIER OPEN_PAREN param_list CLOSE_PAREN OPEN_BRACE shader_uniforms shader_functions CLOSE_BRACE OPEN_PAREN param_list CLOSE_PAREN {
+        $$ = make_shared<Shader>($2->name, $7, $8, $4, $11);
+    }
     ;
 
 function: FUNC IDENTIFIER OPEN_PAREN param_list CLOSE_PAREN block { $$ = make_shared<FuncDef>($2, $4, $6); set_lines($$, @1, @6); }

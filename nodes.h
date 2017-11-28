@@ -13,7 +13,7 @@ enum NodeType {
     NODE_INVOKE,
     NODE_EXPR, NODE_NULL, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_STRING, NODE_VECTOR2, NODE_VECTOR3, NODE_VECTOR4, NODE_MATRIX2, NODE_MATRIX3, NODE_MATRIX4, NODE_IDENT, NODE_DOT,
     NODE_UPLOADLIST, NODE_FUNCEXPR, NODE_LIST, NODE_ARGLIST, NODE_PARAMLIST, NODE_INDEX,
-    NODE_STMT, NODE_ASSIGN, NODE_DECL, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_USE, NODE_FUNCSTMT, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_FOR, NODE_SSOURCE, NODE_PRINT, NODE_FUNCDEF, NODE_RETURN
+    NODE_STMT, NODE_ASSIGN, NODE_DECL, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_USE, NODE_FUNCSTMT, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_FOR, NODE_SHADER, NODE_PRINT, NODE_FUNCDEF, NODE_RETURN
 };
 
 inline string type_to_name(NodeType type) {
@@ -73,7 +73,7 @@ class Print;
 class Invoke;
 class FuncExpr;
 class FuncStmt;
-class ShaderSource;
+class Shader;
 struct ShaderPair;
 
 typedef shared_ptr<Node> Node_ptr;
@@ -114,7 +114,7 @@ typedef shared_ptr<Print> Print_ptr;
 typedef shared_ptr<Invoke> Invoke_ptr;
 typedef shared_ptr<FuncExpr> FuncExpr_ptr;
 typedef shared_ptr<FuncStmt> FuncStmt_ptr;
-typedef shared_ptr<ShaderSource> ShaderSource_ptr;
+typedef shared_ptr<Shader> Shader_ptr;
 typedef shared_ptr<ShaderPair> ShaderPair_ptr;
 
 #define null_expr make_shared<Expr>(NODE_NULL)
@@ -515,52 +515,27 @@ class FuncStmt: public Stmt {
         }
 };
 
-
-class ShaderSource: public Node {
+class Shader: public Node {
     public:
         string name;
-        string code;
-        string shader_type;
+        shared_ptr<map<string, string>> uniforms;
+        shared_ptr<map<string, FuncDef_ptr>> functions;
+        ParamList_ptr inputs;
+        ParamList_ptr outputs;
 
-        map<string, vector<string>> inputs;
-        map<string, vector<string>> outputs;
-
-        map<string, string> uniforms;
-
-        regex uniform_regex = regex("uniform\\s(\\w+)\\s(.*);");
-        regex sub_regex = regex("(\\w+)");
-
-        ShaderSource(string name, string code, string shader_type): Node(NODE_SSOURCE) {
+        Shader(string name, shared_ptr<map<string, string>> uniforms, shared_ptr<map<string, FuncDef_ptr>> functions, ParamList_ptr inputs, ParamList_ptr outputs): Node(NODE_SHADER) {
             this->name = name;
-            this->code = code;
-            this->shader_type = shader_type;
-
-            sregex_iterator uniform_begin = sregex_iterator(this->code.begin(), this->code.end(), uniform_regex), uniform_end = sregex_iterator();
-
-            for(sregex_iterator i = uniform_begin; i != uniform_end; ++i) {
-                smatch match = *i;
-                string type = "";
-                for(unsigned int j = 0; j < match.size(); j++) {
-                    string group = match[j];
-                    if(j == 1) {
-                        type = group;
-                    }
-                    if(j == 2) {
-                        sregex_iterator sub_begin = sregex_iterator(group.begin(), group.end(), sub_regex), sub_end = sregex_iterator();
-
-                        for(sregex_iterator k = sub_begin; k != sub_end; ++k) {
-                            uniforms[(*k)[0]] = type;
-                        }
-                    }
-                }
-            }
+            this->uniforms = uniforms;
+            this->functions = functions;
+            this->inputs = inputs;
+            this->outputs = outputs;
         }
 };
 
 struct ShaderPair {
     std::string name;
-    ShaderSource_ptr vertex = NULL;
-    ShaderSource_ptr fragment = NULL;
+    Shader_ptr vertex = nullptr;
+    Shader_ptr fragment = nullptr;
 };
 
 #endif // NODES_H

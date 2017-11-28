@@ -42,8 +42,8 @@ struct Program {
     GLuint handle;
     GLuint vert, frag;
 
-    shared_ptr<ShaderSource> vertSource;
-    shared_ptr<ShaderSource> fragSource;
+    shared_ptr<Shader> vertSource;
+    shared_ptr<Shader> fragSource;
 };
 
 class Interpreter {
@@ -60,7 +60,7 @@ class Interpreter {
         void execute_init();
         void execute_loop();
         void compile_program();
-        void compile_shader(GLuint*, shared_ptr<ShaderSource>);
+        void compile_shader(GLuint*, shared_ptr<Shader>);
         void setFunctions(QOpenGLFunctions* gl) {
             this->gl = gl;
         }
