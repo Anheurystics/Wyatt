@@ -862,7 +862,7 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                     if(i == 0) return eval_expr(vec4->x);
                     if(i == 1) return eval_expr(vec4->y);
                     if(i == 2) return eval_expr(vec4->z);
-                    if(i == 4) return eval_expr(vec4->w);
+                    if(i == 3) return eval_expr(vec4->w);
                         
                     logger->log(index, "ERROR", "Index out of range for vec4 access");
                     return nullptr;
@@ -870,8 +870,8 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                 if(source->type == NODE_MATRIX2 && index->type == NODE_INT) {
                     Matrix2_ptr mat2 = static_pointer_cast<Matrix2>(source);
                     int i = resolve_int(index);
-                    if(i == 0) return eval_expr(mat2->v0);
-                    if(i == 1) return eval_expr(mat2->v1);
+                    if(i == 0) return mat2->v0;
+                    if(i == 1) return mat2->v1;
                     
                     logger->log(index, "ERROR", "Index out of range for mat2 access");
                     return nullptr;
@@ -879,9 +879,9 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                 if(source->type == NODE_MATRIX3 && index->type == NODE_INT) {
                     Matrix3_ptr mat3 = static_pointer_cast<Matrix3>(source);
                     int i = resolve_int(index);
-                    if(i == 0) return eval_expr(mat3->v0);
-                    if(i == 1) return eval_expr(mat3->v1);
-                    if(i == 2) return eval_expr(mat3->v2);
+                    if(i == 0) return mat3->v0;
+                    if(i == 1) return mat3->v1;
+                    if(i == 2) return mat3->v2;
 
                     logger->log(index, "ERROR", "Index out of range for mat3 access");
                     return nullptr;
@@ -889,10 +889,10 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                 if(source->type == NODE_MATRIX4 && index->type == NODE_INT) {
                     Matrix4_ptr mat4 = static_pointer_cast<Matrix4>(source);
                     int i = resolve_int(index);
-                    if(i == 0) return eval_expr(mat4->v0);
-                    if(i == 1) return eval_expr(mat4->v1);
-                    if(i == 2) return eval_expr(mat4->v2);
-                    if(i == 3) return eval_expr(mat4->v3);
+                    if(i == 0) return mat4->v0;
+                    if(i == 1) return mat4->v1;
+                    if(i == 2) return mat4->v2;
+                    if(i == 3) return mat4->v3;
 
                     logger->log(index, "ERROR", "Index out of range for mat4 access");
                     return nullptr;
@@ -1100,7 +1100,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                             if(i == 0) vec4->x = rhs;
                             else if(i == 1) vec4->y = rhs;
                             else if(i == 2) vec4->z = rhs;
-                            else if(i == 4) vec4->w = rhs;
+                            else if(i == 3) vec4->w = rhs;
                             else logger->log(assign, "ERROR", "Index out of range for vec4 access");
                             return nullptr;
                         }
