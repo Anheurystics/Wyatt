@@ -812,6 +812,10 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                         float x = resolve_scalar(vec4->x), y = resolve_scalar(vec4->y), z = resolve_scalar(vec4->z), w = resolve_scalar(vec4->w);
                         return make_shared<Float>(sqrtf(x * x + y * y + z * z + w * w));
                     }
+                    if(rhs->type == NODE_MATRIX2) {
+                        Matrix2_ptr mat2 = static_pointer_cast<Matrix2>(rhs);
+                        return make_shared<Float>(resolve_scalar(mat2->v0->x) * resolve_scalar(mat2->v1->y) - resolve_scalar(mat2->v0->y) * resolve_scalar(mat2->v1->x));
+                    }
                     if(rhs->type == NODE_LIST) {
                         List_ptr list = static_pointer_cast<List>(rhs);
                         return make_shared<Int>(list->list.size());

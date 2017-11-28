@@ -2,6 +2,15 @@ func normalize(var v) {
     return v / |v|;
 }
 
+func mat2_inverse(mat2 m) {
+	float a = m[0][0];
+	float b = m[0][1];
+	float c = m[1][0];
+	float d = m[1][1];
+	
+    return [[d, -b],[-c, a]] / |m|;
+}
+
 func mat3_identity() {
     return [[1,0,0],[0,1,0],[0,0,1]];
 }
