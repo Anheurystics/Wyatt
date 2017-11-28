@@ -1343,7 +1343,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 Expr_ptr start = eval_expr(forstmt->start), end = eval_expr(forstmt->end), increment = eval_expr(forstmt->increment);
                 if(start->type == NODE_INT || end->type == NODE_INT || increment->type == NODE_INT) {
                     functionScopeStack.top()->attach("for");
-                    eval_stmt(make_shared<Assign>(iterator, start));
+                    eval_stmt(make_shared<Decl>(make_shared<Ident>("int"), iterator, start));
 
                     time_t start = time(nullptr);
                     while(true) {
