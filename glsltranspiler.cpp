@@ -71,6 +71,10 @@ string GLSLTranspiler::resolve_vector(vector<Expr_ptr> list) {
         if(expr->type == NODE_IDENT) {
             string name = static_pointer_cast<Ident>(expr)->name;
             string type = "";
+            if(localtypes.find(name) != localtypes.end()) {
+                type = localtypes[name];
+                output += (n != 0? ",":"") + name;
+            } else
             if(shader->uniforms->find(name) != shader->uniforms->end()) {
                 type = shader->uniforms->at(name);
                 output += (n != 0? ",":"") + name;
@@ -177,8 +181,17 @@ string GLSLTranspiler::eval_expr(Expr_ptr expr) {
 string GLSLTranspiler::eval_binary(Binary_ptr bin) {
     string op_str = "";
     switch(bin->op) {
+        case OP_PLUS:
+            op_str = " + ";
+            break;
+        case OP_MINUS:
+            op_str = " - ";
+            break;
         case OP_MULT:
             op_str = " * ";
+            break;
+        case OP_DIV:
+            op_str + " / " ;
             break;
         default:
             op_str = " ? ";
@@ -195,6 +208,7 @@ string GLSLTranspiler::eval_stmt(Stmt_ptr stmt) {
                 if(decl->value != nullptr) {
                     output += " = " + eval_expr(decl->value);
                 }
+                localtypes[decl->name->name] = decl->datatype->name;
                 output += ";";  
                 return output;
             }

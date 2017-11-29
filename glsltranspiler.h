@@ -20,6 +20,8 @@ class GLSLTranspiler
         string eval_binary(Binary_ptr);
         string eval_stmt(Stmt_ptr);
         string resolve_vector(vector<Expr_ptr>);
+
+        map<string, string> localtypes;
 };
 
 #endif // GLSLTRANSPILER_H
