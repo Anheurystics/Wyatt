@@ -816,6 +816,26 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                         Matrix2_ptr mat2 = static_pointer_cast<Matrix2>(rhs);
                         return make_shared<Float>(resolve_scalar(mat2->v0->x) * resolve_scalar(mat2->v1->y) - resolve_scalar(mat2->v0->y) * resolve_scalar(mat2->v1->x));
                     }
+                    #define mat3_det(a,b,c,d,e,f,g,h,i) (a * (e * i - f * h)) - (b * (d * i - f * g)) + (c * (d * h - e * g))
+                    if(rhs->type == NODE_MATRIX3) {
+                        Matrix3_ptr mat3 = static_pointer_cast<Matrix3>(rhs);
+                        float a = resolve_scalar(mat3->v0->x), b = resolve_scalar(mat3->v0->y), c = resolve_scalar(mat3->v0->z);
+                        float d = resolve_scalar(mat3->v1->x), e = resolve_scalar(mat3->v1->y), f = resolve_scalar(mat3->v1->z);
+                        float g = resolve_scalar(mat3->v2->x), h = resolve_scalar(mat3->v2->y), i = resolve_scalar(mat3->v2->z);
+                        return make_shared<Float>(mat3_det(a, b, c, d, e, f, g, h, i));
+                    }
+                    if(rhs->type == NODE_MATRIX4) {
+                        Matrix4_ptr mat4 = static_pointer_cast<Matrix4>(rhs);
+                        float a = resolve_scalar(mat4->v0->x), b = resolve_scalar(mat4->v0->y), c = resolve_scalar(mat4->v0->z), d = resolve_scalar(mat4->v0->w);
+                        float e = resolve_scalar(mat4->v1->x), f = resolve_scalar(mat4->v1->y), g = resolve_scalar(mat4->v1->z), h = resolve_scalar(mat4->v1->w);
+                        float i = resolve_scalar(mat4->v2->x), j = resolve_scalar(mat4->v2->y), k = resolve_scalar(mat4->v2->z), l = resolve_scalar(mat4->v2->w);
+                        float m = resolve_scalar(mat4->v3->x), n = resolve_scalar(mat4->v3->y), o = resolve_scalar(mat4->v3->z), p = resolve_scalar(mat4->v3->w);
+
+                        return make_shared<Float>((a * mat3_det(f, g, h, j, k, l, n, o, p))
+                                                - (b * mat3_det(e, g, h, i, k, l, m, o, p))
+                                                + (c * mat3_det(e, f, h, i, j, l, m, n, p))
+                                                - (d * mat3_det(e, f, g, i, j, k, m, n, o)));
+                    }
                     if(rhs->type == NODE_LIST) {
                         List_ptr list = static_pointer_cast<List>(rhs);
                         return make_shared<Int>(list->list.size());
