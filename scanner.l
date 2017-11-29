@@ -54,6 +54,7 @@ false          { return Parser::make_BOOL(make_shared<Bool>(false), curr_locatio
 ">="           { return Parser::make_GEQUAL(curr_location); }
 "<="           { return Parser::make_LEQUAL(curr_location); }
 "=="           { return Parser::make_EQUAL(curr_location); }
+"!="           { return Parser::make_NEQUAL(curr_location); }
 "["            { return Parser::make_OPEN_BRACKET(curr_location); }
 "]"            { return Parser::make_CLOSE_BRACKET(curr_location); }
 "="            { return Parser::make_EQUALS(curr_location); }
