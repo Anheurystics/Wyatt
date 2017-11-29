@@ -2,20 +2,29 @@ import "utils.txt";
 
 float angle = 0;
 
-vert basic(vec3 pos, vec3 col) {
+vert basic(vec3 pos, vec3 norm, vec3 col) {
 	mat4 model;
+	mat4 norm_model;
 	mat4 view;
 	mat4 proj;
-
+	
 	func main() {
 		FinalPosition = proj * view * model * [pos, 1.0];
+		Position = vec3(view * model * [pos, 1.0]);
 		Color = col;
+		Normal = mat3(norm_model) * norm;
 	}
-}(vec4 FinalPosition, vec3 Color)
+}(vec4 FinalPosition, vec3 Position, vec3 Normal, vec3 Color)
 
-frag basic(vec3 Color) {
+frag basic(vec3 Position, vec3 Normal, vec3 Color) {
+	vec3 LightPos;
+	vec3 LightColor;
+
 	func main() {
-		FinalColor = [Color, 1.0];
+		vec3 toLight = normalize(LightPos - Position);
+		float cos_angle = dot(normalize(Normal), toLight);
+		vec3 litColor = LightColor * Color * cos_angle;
+		FinalColor = [litColor, 1.0];
 	}
 }(vec4 FinalColor)
 
@@ -23,8 +32,6 @@ func init() {
     allocate a;
 
     vec3 white = [1, 1, 1];
-    vec3 lgray = [0.8, 0.8, 0.8];
-    vec3 dgray = [0.2, 0.2, 0.2];
 
     vec3 v0 = [-1,  1,  1];
     vec3 v1 = [ 1,  1,  1];
@@ -35,29 +42,43 @@ func init() {
     vec3 v6 = [-1, -1, -1];
     vec3 v7 = [ 1, -1, -1];
 
+	vec3 norm = [0, 0, 1];
     a.pos += v1, v0, v3, v1, v3, v2;
     a.col += white, white, white, white, white, white;
-
+	a.norm += norm, norm, norm, norm, norm, norm;
+	
+	norm = [0, 0, -1];
     a.pos += v5, v4, v7, v5, v7, v6;
     a.col += white, white, white, white, white, white;
+	a.norm += norm, norm, norm, norm, norm, norm;
 
+	norm = [1, 0, 0];
     a.pos += v4, v1, v2, v4, v2, v7;
-    a.col += lgray, lgray, lgray, lgray, lgray, lgray;
+    a.col += white, white, white, white, white, white;
+	a.norm += norm, norm, norm, norm, norm, norm;
 
+	norm = [-1, 0, 0];
     a.pos += v0, v5, v6, v0, v6, v3;
-    a.col += lgray, lgray, lgray, lgray, lgray, lgray;
+    a.col += white, white, white, white, white, white;
+	a.norm += norm, norm, norm, norm, norm, norm;
 
+	norm = [0, 1, 0];
     a.pos += v4, v5, v0, v4, v0, v1;
-    a.col += dgray, dgray, dgray, dgray, dgray, dgray;
+    a.col += white, white, white, white, white, white;
+	a.norm += norm, norm, norm, norm, norm, norm;
 
+	norm = [0, -1, 0];
     a.pos += v2, v3, v6, v2, v6, v7;
-    a.col += dgray, dgray, dgray, dgray, dgray, dgray;
+    a.col += white, white, white, white, white, white;
+	a.norm += norm, norm, norm, norm, norm, norm;
 
     vec3 eye = [0,0,7];
     vec3 at = [0,0,0];
     vec3 up = [0,1,0];
 
     use basic;
+    basic.LightPos = [0, 0, 1];
+    basic.LightColor = [1, 0, 0];
     basic.view = mat4_lookat(eye, at, up);
     basic.proj = mat4_perspective(pi() * 0.25, 1.0, 0.1, 100.0);
 }
@@ -67,5 +88,6 @@ func loop() {
 
     use basic;
     basic.model = mat4_rotation_x(angle) * mat4_rotation_y(angle);
+	basic.norm_model = mat4_transpose(mat4_inverse(basic.model));
     draw a;
 }
