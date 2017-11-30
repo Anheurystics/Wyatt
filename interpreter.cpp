@@ -1193,6 +1193,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     buf->layout = make_shared<Layout>();
 
                     gl->glGenBuffers(1, &(buf->handle));
+                    gl->glGenBuffers(1, &(buf->indexHandle));
                     buffers[alloc->ident->name] = buf;
                 } else {
                     logger->log(alloc, "ERROR", "Can't allocate to " + alloc->ident->name + ": buffer already exists!");
@@ -1207,6 +1208,16 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 Buffer_ptr buffer = buffers[upload->ident->name];
                 if(buffer == nullptr) {
                     logger->log(upload, "ERROR", "Can't upload to unallocated buffer");
+                    return nullptr;
+                }
+
+                if(upload->attrib->name == "indices") {
+                    for(unsigned int i = 0 ; i < upload->list->list.size(); i++) {
+                        Expr_ptr e = eval_expr(upload->list->list[i]);
+                        if(e->type == NODE_INT) {
+                            buffer->indices.push_back(resolve_int(e));
+                        }
+                    }
                     return nullptr;
                 }
 
@@ -1289,7 +1300,14 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                         cumulative_size += layout->attributes[attrib];
                     }
 
-                    gl->glDrawArrays(GL_TRIANGLES, 0, final_vector.size() / total_size);
+                    if(buffer->indices.size() > 0) {
+                        gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer->indexHandle);
+                        gl->glBufferData(GL_ELEMENT_ARRAY_BUFFER, buffer->indices.size() * sizeof(int), &(buffer->indices)[0], GL_STATIC_DRAW);
+                        gl->glDrawElements(GL_TRIANGLES, buffer->indices.size(), GL_UNSIGNED_INT, 0);
+                    } else {
+                        gl->glDrawArrays(GL_TRIANGLES, 0, final_vector.size() / total_size);
+                    }
+
                 } else {
                     logger->log(draw, "ERROR", "Can't draw non-existent buffer " + draw->ident->name);
                 }
