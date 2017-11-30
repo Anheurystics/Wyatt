@@ -514,7 +514,7 @@ Expr_ptr Prototype::Interpreter::invoke(Invoke_ptr invoke) {
             for(unsigned int i = 0; i < nParams; i++) {
                 Expr_ptr arg = eval_expr(invoke->args->list[i]);
                 if(arg == nullptr) {
-                    logger->log(arg, "ERROR", "Invalid argument passed on to " + name);
+                    logger->log(invoke->args->list[i], "ERROR", "Invalid argument passed on to " + name);
                     return nullptr;
                 }
 
