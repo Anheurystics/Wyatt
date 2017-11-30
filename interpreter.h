@@ -35,7 +35,7 @@ struct Buffer {
     GLuint indexHandle;
     map<string, vector<float>> data;
     map<string, unsigned int> sizes;
-    vector<int> indices;
+    vector<unsigned int> indices;
 
     shared_ptr<Layout> layout = nullptr;
 };

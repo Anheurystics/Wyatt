@@ -1214,7 +1214,10 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 if(upload->attrib->name == "indices") {
                     for(unsigned int i = 0 ; i < upload->list->list.size(); i++) {
                         Expr_ptr e = eval_expr(upload->list->list[i]);
-                        if(e->type == NODE_INT) {
+                        if(e == nullptr || e->type != NODE_INT) {
+                            logger->log(upload, "ERROR", "Cannot upload non-int value into inded buffer!");
+                            return nullptr;
+                        } else {
                             buffer->indices.push_back(resolve_int(e));
                         }
                     }
@@ -1302,7 +1305,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
 
                     if(buffer->indices.size() > 0) {
                         gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer->indexHandle);
-                        gl->glBufferData(GL_ELEMENT_ARRAY_BUFFER, buffer->indices.size() * sizeof(int), &(buffer->indices)[0], GL_STATIC_DRAW);
+                        gl->glBufferData(GL_ELEMENT_ARRAY_BUFFER, buffer->indices.size() * sizeof(unsigned int), &(buffer->indices)[0], GL_STATIC_DRAW);
                         gl->glDrawElements(GL_TRIANGLES, buffer->indices.size(), GL_UNSIGNED_INT, 0);
                     } else {
                         gl->glDrawArrays(GL_TRIANGLES, 0, final_vector.size() / total_size);
