@@ -47,6 +47,25 @@ string GLSLTranspiler::transpile(Shader_ptr shader) {
     return source;
 }
 
+string GLSLTranspiler::resolve_ident(Ident_ptr ident) {
+    string name = ident->name;
+    if(localtypes.find(name) != localtypes.end()) {
+        return localtypes[name];
+    } else
+    if(shader->uniforms->find(name) != shader->uniforms->end()) {
+        return shader->uniforms->at(name);
+    } else {
+        for(vector<Decl_ptr>::iterator jt = shader->inputs->list.begin(); jt != shader->inputs->list.end(); ++jt) {
+            Decl_ptr decl = *jt;
+            if(decl->name->name == name) {
+                return decl->datatype->name;
+            }
+        }
+    }
+
+    return "";
+}
+
 string GLSLTranspiler::resolve_vector(vector<Expr_ptr> list) {
     string output = "(";
     int n = 0;
@@ -69,26 +88,10 @@ string GLSLTranspiler::resolve_vector(vector<Expr_ptr> list) {
             n += 4;
         } else
         if(expr->type == NODE_IDENT) {
-            string name = static_pointer_cast<Ident>(expr)->name;
-            string type = "";
-            if(localtypes.find(name) != localtypes.end()) {
-                type = localtypes[name];
-                output += (n != 0? ",":"") + name;
-            } else
-            if(shader->uniforms->find(name) != shader->uniforms->end()) {
-                type = shader->uniforms->at(name);
-                output += (n != 0? ",":"") + name;
-            } else {
-                for(vector<Decl_ptr>::iterator jt = shader->inputs->list.begin(); jt != shader->inputs->list.end(); ++jt) {
-                    Decl_ptr decl = *jt;
-                    if(decl->name->name == name) {
-                        type = decl->datatype->name;
-                        break;
-                    }
-                }
-                if(type != "") {
-                    output += (n != 0? ",":"") + name;
-                }
+            Ident_ptr ident = static_pointer_cast<Ident>(expr);
+            string type = resolve_ident(ident);
+            if(type != "") {
+                output += (n != 0? "," : "") + ident->name;
             }
             if(type == "float" || type == "int") {
                 n += 1;
@@ -102,7 +105,10 @@ string GLSLTranspiler::resolve_vector(vector<Expr_ptr> list) {
             if(type == "vec4") {
                 n += 4;
             }
-        } 
+        } else
+        if(expr->type == NODE_BINARY) {
+
+        }
     }
 
     return "vec" + to_string(n) + output + ")";

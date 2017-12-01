@@ -19,6 +19,7 @@ class GLSLTranspiler
         string eval_invoke(Invoke_ptr);
         string eval_binary(Binary_ptr);
         string eval_stmt(Stmt_ptr);
+        string resolve_ident(Ident_ptr);
         string resolve_vector(vector<Expr_ptr>);
 
         map<string, string> localtypes;
