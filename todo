@@ -11,3 +11,18 @@ BUG FIXES
 QOL CHANGES
 - Use shared_ptrs to get rid of memory leaks
 
+TODO
+- Remove use 
+- textures
+    - binding
+    - multi-textures :(
+- Transpiler type guessing
+- better GLSL syntax (typedef)
+- framebuffers :(
+- uniform arrays
+- Remove segfaults
+- Binary operations in 2d array of functions
+
+PAPER
+- grammar in appendix (EBNF), annotated
+- sample code
