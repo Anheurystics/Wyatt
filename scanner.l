@@ -31,7 +31,6 @@ frag           { return Parser::make_FRAGMENT(curr_location); }
 [0-9]+         { return Parser::make_INT(make_shared<Int>(atoi(yytext)), curr_location); }
 import         { return Parser::make_IMPORT(curr_location); }
 print          { return Parser::make_PRINT(curr_location); }
-allocate       { return Parser::make_ALLOCATE(curr_location); }
 func           { return Parser::make_FUNC(curr_location); }
 main           { return Parser::make_MAIN(curr_location); }
 return         { return Parser::make_RETURN(curr_location); }

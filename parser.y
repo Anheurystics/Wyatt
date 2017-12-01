@@ -146,6 +146,10 @@ imports:
 
 globals:
     |
+    decl SEMICOLON globals {
+        globals->push_back($1);
+    }
+    |
     decl EQUALS expr SEMICOLON globals {
         $1->value = $3;
         globals->push_back($1);

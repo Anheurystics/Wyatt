@@ -21,6 +21,13 @@ float resolve_scalar(Expr_ptr expr) {
 #define resolve_vec2(v) resolve_scalar(v->x), resolve_scalar(v->y)
 #define resolve_vec3(v) resolve_scalar(v->x), resolve_scalar(v->y), resolve_scalar(v->z)
 #define resolve_vec4(v) resolve_scalar(v->x), resolve_scalar(v->y), resolve_scalar(v->z), resolve_scalar(v->w)
+#define get_variable(dest, name) \
+    if(!functionScopeStack.empty()) { \
+        dest = functionScopeStack.top()->get(name); \
+    } \
+    if(dest == nullptr) { \
+        dest = globalScope->get(name); \
+    } \
 
 #define LOOP_TIMEOUT 5
 
@@ -38,7 +45,6 @@ Prototype::Interpreter::Interpreter(LogWindow* logger): scanner(&line, &column),
     } \
 
 void Prototype::Interpreter::reset() {
-    clear_map(Buffer_ptr, buffers);
     clear_map(Program_ptr, programs);
     clear_map(ShaderPair_ptr, shaders);
     clear_map(FuncDef_ptr, functions);
@@ -584,14 +590,7 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
             {
                 Ident_ptr ident = static_pointer_cast<Ident>(node);
                 Expr_ptr value = nullptr;
-                if(!functionScopeStack.empty()) {
-                    value = functionScopeStack.top()->get(ident->name);
-                    if(value != nullptr) {
-                        return value;
-                    }
-                }
-
-                value = globalScope->get(ident->name);
+                get_variable(value, ident->name);
                 if(value == nullptr) {
                     logger->log(ident, "ERROR", "Undefined variable " + ident->name);
                 }
@@ -678,6 +677,9 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
             return node;
 
         case NODE_LIST:
+            return node;
+
+        case NODE_BUFFER:
             return node;
 
         case NODE_VECTOR2:
@@ -956,6 +958,17 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 if(!functionScopeStack.empty()) {
                     scope = functionScopeStack.top()->current();
                 }
+
+                if(decl->datatype->name == "buffer") {
+                    Buffer_ptr buf = make_shared<Buffer>();
+                    buf->layout = make_shared<Layout>();
+
+                    gl->glGenBuffers(1, &(buf->handle));
+                    gl->glGenBuffers(1, &(buf->indexHandle));
+
+                    decl->value = buf;
+                }
+
                 scope->declare(decl->name->name, decl->datatype->name, decl->value == nullptr? null_expr : eval_expr(decl->value));
                 return nullptr;
             }
@@ -1188,16 +1201,18 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
             {
                 Alloc_ptr alloc = static_pointer_cast<Alloc>(stmt);
 
-                if(!buffers[alloc->ident->name]) {
-                    Buffer_ptr buf = make_shared<Buffer>();
-                    buf->layout = make_shared<Layout>();
-
-                    gl->glGenBuffers(1, &(buf->handle));
-                    gl->glGenBuffers(1, &(buf->indexHandle));
-                    buffers[alloc->ident->name] = buf;
-                } else {
-                    logger->log(alloc, "ERROR", "Can't allocate to " + alloc->ident->name + ": buffer already exists!");
+                Scope_ptr scope = globalScope;
+                if(!functionScopeStack.empty()) {
+                    scope = functionScopeStack.top()->current();
                 }
+
+                Buffer_ptr buf = make_shared<Buffer>();
+                buf->layout = make_shared<Layout>();
+
+                gl->glGenBuffers(1, &(buf->handle));
+                gl->glGenBuffers(1, &(buf->indexHandle));
+
+                scope->declare(alloc->ident->name, "buffer", buf);
 
                 return nullptr;
             }
@@ -1205,12 +1220,13 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
             {
                 Upload_ptr upload = static_pointer_cast<Upload>(stmt);
 
-                Buffer_ptr buffer = buffers[upload->ident->name];
-                if(buffer == nullptr) {
-                    logger->log(upload, "ERROR", "Can't upload to unallocated buffer");
-                    return nullptr;
+                Expr_ptr expr = nullptr;
+                get_variable(expr, upload->ident->name);
+                if(expr == nullptr || expr->type != NODE_BUFFER) {
+                    logger->log(upload, "ERROR", "Can't upload to non-buffer object");
                 }
 
+                Buffer_ptr buffer = static_pointer_cast<Buffer>(expr);
                 if(upload->attrib->name == "indices") {
                     for(unsigned int i = 0 ; i < upload->list->list.size(); i++) {
                         Expr_ptr e = eval_expr(upload->list->list[i]);
@@ -1265,7 +1281,14 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     return nullptr;
                 }
 
-                Buffer_ptr buffer = buffers[draw->ident->name];
+                Expr_ptr expr = nullptr;
+                get_variable(expr, draw->ident->name);
+                if(expr  == nullptr || expr->type != NODE_BUFFER) {
+                    logger->log(draw, "ERROR", "Can't draw non-buffer object");
+                    return nullptr;
+                }
+
+                Buffer_ptr buffer = static_pointer_cast<Buffer>(expr);
                 if(buffer != nullptr) {
                     Layout_ptr layout = buffer->layout;
                     vector<float> final_vector;
@@ -1513,12 +1536,11 @@ void Prototype::Interpreter::compile_program() {
 
 void Prototype::Interpreter::execute_init() {
     if(!init || status) return;
-    buffers.clear();
     globalScope->clear();
 
     for(vector<Decl_ptr>::iterator it = globals.begin(); it != globals.end(); ++it) {
         Decl_ptr decl = *it;
-        globalScope->declare(decl->name->name, decl->datatype->name, decl->value);
+        eval_stmt(decl);
     }
 
     invoke(init_invoke);

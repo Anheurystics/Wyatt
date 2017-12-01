@@ -25,21 +25,6 @@
 
 namespace Prototype {
 
-struct Layout {
-    map<string, unsigned int> attributes;
-    vector<string> list;
-};
-
-struct Buffer {
-    GLuint handle;
-    GLuint indexHandle;
-    map<string, vector<float>> data;
-    map<string, unsigned int> sizes;
-    vector<unsigned int> indices;
-
-    shared_ptr<Layout> layout = nullptr;
-};
-
 struct Program {
     GLuint handle;
     GLuint vert, frag;
@@ -74,12 +59,10 @@ class Interpreter {
 
         typedef shared_ptr<Layout> Layout_ptr;
         typedef shared_ptr<Program> Program_ptr;
-        typedef shared_ptr<Buffer> Buffer_ptr;
         typedef shared_ptr<Scope> Scope_ptr;
 
         Scope_ptr globalScope;
         std::stack<ScopeList_ptr> functionScopeStack;
-        map<string, shared_ptr<Buffer>> buffers;
         map<string, shared_ptr<Program>> programs;
         map<string, shared_ptr<ShaderPair>> shaders;
         map<string, FuncDef_ptr> functions;

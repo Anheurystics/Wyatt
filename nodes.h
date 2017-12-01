@@ -6,12 +6,13 @@
 #include <map>
 #include <regex>
 #include <iostream>
+#include <QOpenGLFunctions>
 
 using namespace std;
 
 enum NodeType {
     NODE_INVOKE,
-    NODE_EXPR, NODE_NULL, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_STRING, NODE_VECTOR2, NODE_VECTOR3, NODE_VECTOR4, NODE_MATRIX2, NODE_MATRIX3, NODE_MATRIX4, NODE_IDENT, NODE_DOT,
+    NODE_EXPR, NODE_NULL, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_STRING, NODE_VECTOR2, NODE_VECTOR3, NODE_VECTOR4, NODE_MATRIX2, NODE_MATRIX3, NODE_MATRIX4, NODE_IDENT, NODE_DOT, NODE_BUFFER,
     NODE_UPLOADLIST, NODE_FUNCEXPR, NODE_LIST, NODE_ARGLIST, NODE_PARAMLIST, NODE_INDEX,
     NODE_STMT, NODE_ASSIGN, NODE_DECL, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_USE, NODE_FUNCSTMT, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_FOR, NODE_SHADER, NODE_PRINT, NODE_FUNCDEF, NODE_RETURN
 };
@@ -27,6 +28,7 @@ inline string type_to_name(NodeType type) {
         case NODE_MATRIX2: return "mat2";
         case NODE_MATRIX3: return "mat3";
         case NODE_MATRIX4: return "mat4";
+        case NODE_BUFFER: return "buffer";
         default: return "";
     }
 }
@@ -52,6 +54,7 @@ class Matrix2;
 class Matrix3;
 class Matrix4;
 class Index;
+class Buffer;
 class Stmt;
 class Stmts;
 class List;
@@ -93,6 +96,7 @@ typedef shared_ptr<Matrix2> Matrix2_ptr;
 typedef shared_ptr<Matrix3> Matrix3_ptr;
 typedef shared_ptr<Matrix4> Matrix4_ptr;
 typedef shared_ptr<Index> Index_ptr;
+typedef shared_ptr<Buffer> Buffer_ptr;
 typedef shared_ptr<Stmt> Stmt_ptr;
 typedef shared_ptr<Stmts> Stmts_ptr;
 typedef shared_ptr<List> List_ptr;
@@ -302,6 +306,23 @@ class Index: public Expr {
             this->source = source;
             this->index = index;
         }
+};
+
+struct Layout {
+    map<string, unsigned int> attributes;
+    vector<string> list;
+};
+
+class Buffer: public Expr {
+    public:
+        GLuint handle, indexHandle;
+        map<string, vector<float>> data;
+        map<string, unsigned int> sizes;
+        vector<unsigned int> indices;
+
+        shared_ptr<Layout> layout;
+
+        Buffer(): Expr(NODE_BUFFER) {}
 };
 
 class Stmt: public Node {
