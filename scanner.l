@@ -35,7 +35,6 @@ func           { return Parser::make_FUNC(curr_location); }
 main           { return Parser::make_MAIN(curr_location); }
 return         { return Parser::make_RETURN(curr_location); }
 draw           { return Parser::make_DRAW(curr_location); }
-use            { return Parser::make_USE(curr_location); }
 if             { return Parser::make_IF(curr_location); }
 while          { return Parser::make_WHILE(curr_location); }
 for            { return Parser::make_FOR(curr_location); }

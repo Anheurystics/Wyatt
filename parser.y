@@ -101,7 +101,6 @@
 %token FRAGMENT "frag";
 %token MAIN "main";
 %token PRINT "print";
-%token USE "use";
 %token RETURN "return";
 
 %left PLUS MINUS
@@ -260,7 +259,6 @@ stmt: IDENTIFIER EQUALS expr { $$ = make_shared<Assign>($1, $3); set_lines($$, @
     | ALLOCATE IDENTIFIER { $$ = make_shared<Alloc>($2); set_lines($$, @1, @2); }
     | IDENTIFIER PERIOD IDENTIFIER COMP_PLUS upload_list { $$ = make_shared<Upload>($1, $3, $5); set_lines($$, @1, @5); }
     | DRAW IDENTIFIER { $$ = make_shared<Draw>($2); set_lines($$, @1, @2); }
-    | USE IDENTIFIER { $$ = make_shared<Use>($2); set_lines($$, @1, @2); }
     | PRINT expr { $$ = make_shared<Print>($2); set_lines($$, @1, @2); }
     | RETURN expr { $$ = make_shared<Return>($2); set_lines($$, @1, @2); }
     | invoke { $$ = make_shared<FuncStmt>($1); set_lines($$, @1, @1); }
