@@ -197,7 +197,7 @@ string GLSLTranspiler::eval_binary(Binary_ptr bin) {
             op_str = " * ";
             break;
         case OP_DIV:
-            op_str + " / " ;
+            op_str = " / " ;
             break;
         default:
             op_str = " ? ";
