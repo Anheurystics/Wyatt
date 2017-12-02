@@ -70,7 +70,13 @@ string tostring(Expr_ptr expr) {
         case NODE_INT:
             return to_string(resolve_int(expr));
         case NODE_FLOAT:
-            return to_string(resolve_float(expr));
+            {
+                float f = resolve_float(expr);
+                if(f == floor(f)) {
+                    return to_string(int(f));
+                }
+                return to_string(resolve_float(expr));
+            }
         case NODE_BOOL:
             return static_pointer_cast<Bool>(expr)->value? "true" : "false";
         case NODE_STRING:
@@ -78,38 +84,38 @@ string tostring(Expr_ptr expr) {
         case NODE_VECTOR2:
             {
                 Vector2_ptr vec2 = static_pointer_cast<Vector2>(expr);
-                return "[" + to_string(resolve_scalar(vec2->x)) + ", " + to_string(resolve_scalar(vec2->y)) + "]";
+                return "[" + tostring(vec2->x) + ", " + tostring(vec2->y) + "]";
             }
         case NODE_VECTOR3:
             {
                 Vector3_ptr vec3 = static_pointer_cast<Vector3>(expr);
-                return "[" + to_string(resolve_scalar(vec3->x)) + ", " + to_string(resolve_scalar(vec3->y)) + ", " + to_string(resolve_scalar(vec3->z)) + "]";
+                return "[" + tostring(vec3->x) + ", " + tostring(vec3->y) + ", " + tostring(vec3->z) + "]";
             }
         case NODE_VECTOR4:
             {
                 Vector4_ptr vec4 = static_pointer_cast<Vector4>(expr);
-                return "[" + to_string(resolve_scalar(vec4->x)) + ", " + to_string(resolve_scalar(vec4->y)) + ", " + to_string(resolve_scalar(vec4->z)) + ", " + to_string(resolve_scalar(vec4->w)) + "]";
+                return "[" + tostring(vec4->x) + ", " + tostring(vec4->y) + ", " + tostring(vec4->z) + ", " + tostring(vec4->w) + "]";
             }
         case NODE_MATRIX2:
             {
                 Matrix2_ptr mat2 = static_pointer_cast<Matrix2>(expr);
-                return "|" + to_string(resolve_scalar(mat2->v0->x)) + ", " + to_string(resolve_scalar(mat2->v0->y)) + "|\n" +
-                       "|" + to_string(resolve_scalar(mat2->v1->x)) + ", " + to_string(resolve_scalar(mat2->v1->y)) + "|";
+                return "|" + tostring(mat2->v0->x) + ", " + tostring(mat2->v0->y) + "|\n" +
+                       "|" + tostring(mat2->v1->x) + ", " + tostring(mat2->v1->y) + "|";
             }
         case NODE_MATRIX3:
             {
                 Matrix3_ptr mat3 = static_pointer_cast<Matrix3>(expr);
-                return "|" + to_string(resolve_scalar(mat3->v0->x)) + ", " + to_string(resolve_scalar(mat3->v0->y)) + ", " + to_string(resolve_scalar(mat3->v0->z)) + "|\n" +
-                       "|" + to_string(resolve_scalar(mat3->v1->x)) + ", " + to_string(resolve_scalar(mat3->v1->y)) + ", " + to_string(resolve_scalar(mat3->v1->z)) + "|\n" +
-                       "|" + to_string(resolve_scalar(mat3->v2->x)) + ", " + to_string(resolve_scalar(mat3->v2->y)) + ", " + to_string(resolve_scalar(mat3->v2->z)) + "|";
+                return "|" + tostring(mat3->v0->x) + ", " + tostring(mat3->v0->y) + ", " + tostring(mat3->v0->z) + "|\n" +
+                       "|" + tostring(mat3->v1->x) + ", " + tostring(mat3->v1->y) + ", " + tostring(mat3->v1->z) + "|\n" +
+                       "|" + tostring(mat3->v2->x) + ", " + tostring(mat3->v2->y) + ", " + tostring(mat3->v2->z) + "|";
             }
         case NODE_MATRIX4:
             {
                 Matrix4_ptr mat4 = static_pointer_cast<Matrix4>(expr);
-                return "|" + to_string(resolve_scalar(mat4->v0->x)) + ", " + to_string(resolve_scalar(mat4->v0->y)) + ", " + to_string(resolve_scalar(mat4->v0->z)) + ", " + to_string(resolve_scalar(mat4->v0->w)) + "|\n" +
-                       "|" + to_string(resolve_scalar(mat4->v1->x)) + ", " + to_string(resolve_scalar(mat4->v1->y)) + ", " + to_string(resolve_scalar(mat4->v1->z)) + ", " + to_string(resolve_scalar(mat4->v1->w)) + "|\n" +
-                       "|" + to_string(resolve_scalar(mat4->v2->x)) + ", " + to_string(resolve_scalar(mat4->v2->y)) + ", " + to_string(resolve_scalar(mat4->v2->z)) + ", " + to_string(resolve_scalar(mat4->v2->w)) + "|\n" +
-                       "|" + to_string(resolve_scalar(mat4->v3->x)) + ", " + to_string(resolve_scalar(mat4->v3->y)) + ", " + to_string(resolve_scalar(mat4->v3->z)) + ", " + to_string(resolve_scalar(mat4->v3->w)) + "|";
+                return "|" + tostring(mat4->v0->x) + ", " + tostring(mat4->v0->y) + ", " + tostring(mat4->v0->z) + ", " + tostring(mat4->v0->w) + "|\n" +
+                       "|" + tostring(mat4->v1->x) + ", " + tostring(mat4->v1->y) + ", " + tostring(mat4->v1->z) + ", " + tostring(mat4->v1->w) + "|\n" +
+                       "|" + tostring(mat4->v2->x) + ", " + tostring(mat4->v2->y) + ", " + tostring(mat4->v2->z) + ", " + tostring(mat4->v2->w) + "|\n" +
+                       "|" + tostring(mat4->v3->x) + ", " + tostring(mat4->v3->y) + ", " + tostring(mat4->v3->z) + ", " + tostring(mat4->v3->w) + "|";
             }
         default:
             return "";
