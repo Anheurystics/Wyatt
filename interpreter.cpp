@@ -707,6 +707,15 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                 Expr_ptr x = eval_expr(vec2->x);
                 Expr_ptr y = eval_expr(vec2->y);
 
+                if(x == nullptr) {
+                    logger->log(vec2->x, "ERROR", "Invalid component of index 0");
+                    return nullptr;
+                }
+                if(y == nullptr) {
+                    logger->log(vec2->y, "ERROR", "Invalid component of index 1");
+                    return nullptr;
+                }
+
                 if((x->type == NODE_INT || x->type == NODE_FLOAT) && (y->type == NODE_INT || y->type == NODE_FLOAT)) {
                     return make_shared<Vector2>(static_pointer_cast<Expr>(x), static_pointer_cast<Expr>(y));
                 }
@@ -724,6 +733,19 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                 Expr_ptr x = eval_expr(vec3->x);
                 Expr_ptr y = eval_expr(vec3->y);
                 Expr_ptr z = eval_expr(vec3->z);
+
+                if(x == nullptr) {
+                    logger->log(vec3->x, "ERROR", "Invalid component of index 0");
+                    return nullptr;
+                }
+                if(y == nullptr) {
+                    logger->log(vec3->y, "ERROR", "Invalid component of index 1");
+                    return nullptr;
+                }
+                if(z == nullptr) {
+                    logger->log(vec3->z, "ERROR", "Invalid component of index 2");
+                    return nullptr;
+                }
                 
                 if((x->type == NODE_INT || x->type == NODE_FLOAT) && (y->type == NODE_INT || y->type == NODE_FLOAT) && (z->type == NODE_INT || z->type == NODE_FLOAT)) {
                     return make_shared<Vector3>(x, y, z);
@@ -744,6 +766,23 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                 Expr_ptr z = eval_expr(vec4->z);
                 Expr_ptr w = eval_expr(vec4->w);
                 
+                if(x == nullptr) {
+                    logger->log(vec4->x, "ERROR", "Invalid component of index 0");
+                    return nullptr;
+                }
+                if(y == nullptr) {
+                    logger->log(vec4->y, "ERROR", "Invalid component of index 1");
+                    return nullptr;
+                }
+                if(z == nullptr) {
+                    logger->log(vec4->z, "ERROR", "Invalid component of index 2");
+                    return nullptr;
+                }
+                if(w == nullptr) {
+                    logger->log(vec4->w, "ERROR", "Invalid component of index 3");
+                    return nullptr;
+                }
+ 
                 if((x->type == NODE_INT || x->type == NODE_FLOAT) && (y->type == NODE_INT || y->type == NODE_FLOAT) && (z->type == NODE_INT || z->type == NODE_FLOAT) && (w->type == NODE_INT || w->type == NODE_FLOAT)) {
                     return make_shared<Vector4>(x, y, z, w);
                 }
@@ -758,27 +797,78 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
         case NODE_MATRIX2:
             {
                 Matrix2_ptr mat2 = static_pointer_cast<Matrix2>(node);
-                mat2->v0 = static_pointer_cast<Vector2>(eval_expr(mat2->v0));
-                mat2->v1 = static_pointer_cast<Vector2>(eval_expr(mat2->v1));
+                Expr_ptr v0 = eval_expr(mat2->v0);
+                Expr_ptr v1 = eval_expr(mat2->v1);
+
+                if(v0 == nullptr) {
+                    logger->log(mat2->v0, "ERROR", "Invalid component of index 0");
+                    return nullptr;
+                }
+                if(v1 == nullptr) {
+                    logger->log(mat2->v1, "ERROR", "Invalid component of index 1");
+                    return nullptr;
+                }
+
+                mat2->v0 = static_pointer_cast<Vector2>(v0);
+                mat2->v1 = static_pointer_cast<Vector2>(v1);
                 return mat2;
             }
 
         case NODE_MATRIX3:
             {
                 Matrix3_ptr mat3 = static_pointer_cast<Matrix3>(node);
-                mat3->v0 = static_pointer_cast<Vector3>(eval_expr(mat3->v0));
-                mat3->v1 = static_pointer_cast<Vector3>(eval_expr(mat3->v1));
-                mat3->v2 = static_pointer_cast<Vector3>(eval_expr(mat3->v2));
+                Expr_ptr v0 = eval_expr(mat3->v0);
+                Expr_ptr v1 = eval_expr(mat3->v1);
+                Expr_ptr v2 = eval_expr(mat3->v2);
+
+                if(v0 == nullptr) {
+                    logger->log(mat3->v0, "ERROR", "Invalid component of index 0");
+                    return nullptr;
+                }
+                if(v1 == nullptr) {
+                    logger->log(mat3->v1, "ERROR", "Invalid component of index 1");
+                    return nullptr;
+                }
+                if(v2 == nullptr) {
+                    logger->log(mat3->v2, "ERROR", "Invalid component of index 2");
+                    return nullptr;
+                }
+
+                mat3->v0 = static_pointer_cast<Vector3>(v0);
+                mat3->v1 = static_pointer_cast<Vector3>(v1);
+                mat3->v2 = static_pointer_cast<Vector3>(v2);
                 return mat3;
             }
 
         case NODE_MATRIX4:
             {
                 Matrix4_ptr mat4 = static_pointer_cast<Matrix4>(node);
-                mat4->v0 = static_pointer_cast<Vector4>(eval_expr(mat4->v0));
-                mat4->v1 = static_pointer_cast<Vector4>(eval_expr(mat4->v1));
-                mat4->v2 = static_pointer_cast<Vector4>(eval_expr(mat4->v2));
-                mat4->v3 = static_pointer_cast<Vector4>(eval_expr(mat4->v3));
+                Expr_ptr v0 = eval_expr(mat4->v0);
+                Expr_ptr v1 = eval_expr(mat4->v1);
+                Expr_ptr v2 = eval_expr(mat4->v2);
+                Expr_ptr v3 = eval_expr(mat4->v3);
+
+                if(v0 == nullptr) {
+                    logger->log(mat4->v0, "ERROR", "Invalid component of index 0");
+                    return nullptr;
+                }
+                if(v1 == nullptr) {
+                    logger->log(mat4->v1, "ERROR", "Invalid component of index 1");
+                    return nullptr;
+                }
+                if(v2 == nullptr) {
+                    logger->log(mat4->v2, "ERROR", "Invalid component of index 2");
+                    return nullptr;
+                }
+                if(v3 == nullptr) {
+                    logger->log(mat4->v3, "ERROR", "Invalid component of index 2");
+                    return nullptr;
+                }
+
+                mat4->v0 = static_pointer_cast<Vector4>(v0);
+                mat4->v1 = static_pointer_cast<Vector4>(v1);
+                mat4->v2 = static_pointer_cast<Vector4>(v2);
+                mat4->v3 = static_pointer_cast<Vector4>(v3);
                 return mat4;
             }
 
