@@ -13,7 +13,7 @@ vert basic(vec3 pos, vec3 norm, vec3 col) {
 	
 	func main() {
 		FinalPosition = proj * view * model * [pos, 1.0];
-		Position = vec3(view * model * [pos, 1.0]);
+		Position = vec3(model * [pos, 1.0]);
 		Color = col;
 		Normal = mat3(norm_model) * norm;
 	}
@@ -22,7 +22,6 @@ vert basic(vec3 pos, vec3 norm, vec3 col) {
 frag basic(vec3 Position, vec3 Normal, vec3 Color) {
 	vec3 LightPos;
 	vec3 LightColor;
-
 	func main() {
 		vec3 toLight = normalize(LightPos - Position);
 		float cos_angle = dot(normalize(Normal), toLight);
@@ -79,7 +78,7 @@ func init() {
     floor.norm += [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1];
 	floor.indices += 1, 0, 3, 1, 3, 2;
 
-    basic.LightPos = [0, 3, 0];
+    basic.LightPos = [0, 3, 3];
     basic.LightColor = [1, 1, 1];
 	
 	vec3 eye = [0, 0, 7];
