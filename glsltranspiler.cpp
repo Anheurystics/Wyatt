@@ -16,7 +16,11 @@ string GLSLTranspiler::transpile(Shader_ptr shader) {
     }
 
     for(map<string, string>::iterator it = shader->uniforms->begin(); it != shader->uniforms->end(); ++it) {
-        source += "uniform " + it->second + " " + it->first + ";\n";
+        string type = it->second;
+        if(type == "texture2D") {
+            type = "sampler2D";
+        }
+        source += "uniform " + type + " " + it->first + ";\n";
     }
 
     for(vector<Decl_ptr>::iterator it = shader->outputs->list.begin(); it != shader->outputs->list.end(); ++it) {

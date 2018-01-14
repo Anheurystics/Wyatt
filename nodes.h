@@ -12,7 +12,7 @@ using namespace std;
 
 enum NodeType {
     NODE_INVOKE,
-    NODE_EXPR, NODE_NULL, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_STRING, NODE_VECTOR2, NODE_VECTOR3, NODE_VECTOR4, NODE_MATRIX2, NODE_MATRIX3, NODE_MATRIX4, NODE_IDENT, NODE_DOT, NODE_BUFFER,
+    NODE_EXPR, NODE_NULL, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_STRING, NODE_VECTOR2, NODE_VECTOR3, NODE_VECTOR4, NODE_MATRIX2, NODE_MATRIX3, NODE_MATRIX4, NODE_IDENT, NODE_DOT, NODE_BUFFER, NODE_TEXTURE,
     NODE_UPLOADLIST, NODE_FUNCEXPR, NODE_LIST, NODE_ARGLIST, NODE_PARAMLIST, NODE_INDEX,
     NODE_STMT, NODE_ASSIGN, NODE_DECL, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_FUNCSTMT, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_FOR, NODE_SHADER, NODE_PRINT, NODE_FUNCDEF, NODE_RETURN
 };
@@ -29,6 +29,7 @@ inline string type_to_name(NodeType type) {
         case NODE_MATRIX3: return "mat3";
         case NODE_MATRIX4: return "mat4";
         case NODE_BUFFER: return "buffer";
+        case NODE_TEXTURE: return "texture2D";
         default: return "null";
     }
 }
@@ -55,6 +56,7 @@ class Matrix3;
 class Matrix4;
 class Index;
 class Buffer;
+class Texture;
 class Stmt;
 class Stmts;
 class List;
@@ -96,6 +98,7 @@ typedef shared_ptr<Matrix3> Matrix3_ptr;
 typedef shared_ptr<Matrix4> Matrix4_ptr;
 typedef shared_ptr<Index> Index_ptr;
 typedef shared_ptr<Buffer> Buffer_ptr;
+typedef shared_ptr<Texture> Texture_ptr;
 typedef shared_ptr<Stmt> Stmt_ptr;
 typedef shared_ptr<Stmts> Stmts_ptr;
 typedef shared_ptr<List> List_ptr;
@@ -321,6 +324,13 @@ class Buffer: public Expr {
         shared_ptr<Layout> layout;
 
         Buffer(): Expr(NODE_BUFFER) {}
+};
+
+class Texture: public Expr {
+    public:
+        GLuint handle;
+
+        Texture(): Expr(NODE_TEXTURE) {}
 };
 
 class Stmt: public Node {

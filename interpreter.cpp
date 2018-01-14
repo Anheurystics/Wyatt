@@ -701,6 +701,9 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
         case NODE_BUFFER:
             return node;
 
+        case NODE_TEXTURE:
+            return node;
+
         case NODE_VECTOR2:
             {
                 Vector2_ptr vec2 = static_pointer_cast<Vector2>(node);
@@ -1078,6 +1081,12 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     decl->value = buf;
                 }
 
+                if(decl->datatype->name == "texture2D") {
+                    Texture_ptr tex = make_shared<Texture>();
+                    gl->glGenTextures(1, &(tex->handle));
+                    decl->value = tex;
+                }
+
                 scope->declare(decl->name->name, decl->datatype->name, decl->value == nullptr? null_expr : eval_expr(decl->value));
                 return nullptr;
             }
@@ -1205,7 +1214,24 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                 logger->log(uniform, "ERROR", "Uniform upload mismatch: mat3 required for " + uniform->name + " of shader " + current_program_name);
                                 return nullptr;
                             }
+                        } else
+                        if(type == "texture2D") {
+                            Texture_ptr tex = static_pointer_cast<Texture>(lhs);
+                            switch(rhs->type) {
+                                case NODE_TEXTURE:
+                                        // Copy reference to existing texture
+                                    break;
+                                case NODE_STRING:
+                                    {
+                                        cout << "string to tex\n";
+                                        // Load texture from memory (SOIL? lodePNG?), bind to texture
+                                        String_ptr filename = static_pointer_cast<String>(rhs);
+                                    }
+                                    break;
+                                default:
+                                    break;
                         }
+                    }
                     } else if (lhs->type == NODE_INDEX) {
                         Index_ptr in = static_pointer_cast<Index>(lhs);
                         Expr_ptr source = eval_expr(in->source);
@@ -1309,7 +1335,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
 
                         logger->log(index,"ERROR", "Invalid use of [] operator");
                         return nullptr;
-                    } else {
+                    }  else {
                         logger->log(assign, "ERROR", "Invalid left-hand side expression in assignment");
                         return nullptr;
                     }
