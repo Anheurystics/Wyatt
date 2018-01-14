@@ -29,7 +29,7 @@ inline string type_to_name(NodeType type) {
         case NODE_MATRIX3: return "mat3";
         case NODE_MATRIX4: return "mat4";
         case NODE_BUFFER: return "buffer";
-        default: return "";
+        default: return "null";
     }
 }
 
