@@ -81,20 +81,18 @@ string tostring(Expr_ptr expr) {
             return static_pointer_cast<Bool>(expr)->value? "true" : "false";
         case NODE_STRING:
             return static_pointer_cast<String>(expr)->value;
-        case NODE_VECTOR2:
+        case NODE_VECTOR2: case NODE_VECTOR3: case NODE_VECTOR4:
             {
-                Vector2_ptr vec2 = static_pointer_cast<Vector2>(expr);
-                return "[" + tostring(vec2->x) + ", " + tostring(vec2->y) + "]";
-            }
-        case NODE_VECTOR3:
-            {
-                Vector3_ptr vec3 = static_pointer_cast<Vector3>(expr);
-                return "[" + tostring(vec3->x) + ", " + tostring(vec3->y) + ", " + tostring(vec3->z) + "]";
-            }
-        case NODE_VECTOR4:
-            {
-                Vector4_ptr vec4 = static_pointer_cast<Vector4>(expr);
-                return "[" + tostring(vec4->x) + ", " + tostring(vec4->y) + ", " + tostring(vec4->z) + ", " + tostring(vec4->w) + "]";
+                string result = "[";
+                Vector_ptr vec = static_pointer_cast<Vector>(expr);
+                for(unsigned int i = 0; i < vec->size(); i++) {
+                    result += tostring(vec->get(i));
+                    if(i < vec->size() - 1) {
+                        result += ", ";
+                    }
+                } 
+                result += "]";
+                return result;
             }
         case NODE_MATRIX2:
             {
@@ -555,26 +553,12 @@ Expr_ptr Prototype::Interpreter::resolve_vector(vector<Expr_ptr> list) {
             data.push_back(resolve_scalar(expr));
             n += 1;
         } else
-        if(expr->type == NODE_VECTOR2) {
-            Vector2_ptr vec2 = static_pointer_cast<Vector2>(eval_expr(expr));
-            data.push_back(resolve_scalar(vec2->x));
-            data.push_back(resolve_scalar(vec2->y));
-            n += 2;
-        } else
-        if(expr->type == NODE_VECTOR3) {
-            Vector3_ptr vec3 = static_pointer_cast<Vector3>(eval_expr(expr));
-            data.push_back(resolve_scalar(vec3->x));
-            data.push_back(resolve_scalar(vec3->y));
-            data.push_back(resolve_scalar(vec3->z));
-            n += 3;
-        } else
-        if(expr->type == NODE_VECTOR4) {
-            Vector4_ptr vec4 = static_pointer_cast<Vector4>(eval_expr(expr));
-            data.push_back(resolve_scalar(vec4->x));
-            data.push_back(resolve_scalar(vec4->y));
-            data.push_back(resolve_scalar(vec4->z));
-            data.push_back(resolve_scalar(vec4->w));
-            n += 4;
+        if(expr->type == NODE_VECTOR2 || expr->type == NODE_VECTOR3 || expr->type == NODE_VECTOR4) {
+            Vector_ptr vec = static_pointer_cast<Vector>(eval_expr(expr));
+            for(unsigned int i = 0; i < vec->size(); i++) {
+                data.push_back(resolve_scalar(vec->get(i)));
+            }
+            n += vec->size();
         } else {
             return nullptr;
         }
@@ -908,20 +892,14 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                     if(rhs->type == NODE_FLOAT) {
                         return make_shared<Float>(fabs(resolve_float(rhs)));
                     }
-                    if(rhs->type == NODE_VECTOR2) {
-                        Vector2_ptr vec2 = static_pointer_cast<Vector2>(rhs);
-                        float x = resolve_scalar(vec2->x), y = resolve_scalar(vec2->y);
-                        return make_shared<Float>(sqrtf(x * x + y * y));
-                    }
-                    if(rhs->type == NODE_VECTOR3) {
-                        Vector3_ptr vec3 = static_pointer_cast<Vector3>(rhs);
-                        float x = resolve_scalar(vec3->x), y = resolve_scalar(vec3->y), z = resolve_scalar(vec3->z);
-                        return make_shared<Float>(sqrtf(x * x + y * y + z * z));
-                    }
-                    if(rhs->type == NODE_VECTOR4) {
-                        Vector4_ptr vec4 = static_pointer_cast<Vector4>(rhs);
-                        float x = resolve_scalar(vec4->x), y = resolve_scalar(vec4->y), z = resolve_scalar(vec4->z), w = resolve_scalar(vec4->w);
-                        return make_shared<Float>(sqrtf(x * x + y * y + z * z + w * w));
+                    if(rhs->type == NODE_VECTOR2 || rhs->type == NODE_VECTOR3 || rhs->type == NODE_VECTOR4) {
+                        Vector_ptr vec = static_pointer_cast<Vector>(rhs);
+                        float square = 0;
+                        for(unsigned int i = 0; i < vec->size(); i++) {
+                            float c = resolve_scalar(vec->get(i));
+                            square += c * c;
+                        }
+                        return make_shared<Float>(sqrtf(square));
                     }
                     if(rhs->type == NODE_MATRIX2) {
                         Matrix2_ptr mat2 = static_pointer_cast<Matrix2>(rhs);
@@ -967,35 +945,17 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                 Expr_ptr source = eval_expr(in->source);
                 Expr_ptr index = eval_expr(in->index);
                 
-                if(source->type == NODE_VECTOR2 && index->type == NODE_INT) {
-                    Vector2_ptr vec2 = static_pointer_cast<Vector2>(source);
-                    int i = resolve_int(index);
-                    if(i == 0) return eval_expr(vec2->x);
-                    if(i == 1) return eval_expr(vec2->y);
-                        
-                    logger->log(index, "ERROR", "Index out of range for vec2 access");
-                    return nullptr;
-                } else
-                if(source->type == NODE_VECTOR3 && index->type == NODE_INT) {
-                    Vector3_ptr vec3 = static_pointer_cast<Vector3>(source);
-                    int i = resolve_int(index);
-                    if(i == 0) return eval_expr(vec3->x);
-                    if(i == 1) return eval_expr(vec3->y);
-                    if(i == 2) return eval_expr(vec3->z);
-                        
-                    logger->log(index, "ERROR", "Index out of range for vec3 access");
-                    return nullptr;
-                }
-                if(source->type == NODE_VECTOR4 && index->type == NODE_INT) {
-                    Vector4_ptr vec4 = static_pointer_cast<Vector4>(source);
-                    int i = resolve_int(index);
-                    if(i == 0) return eval_expr(vec4->x);
-                    if(i == 1) return eval_expr(vec4->y);
-                    if(i == 2) return eval_expr(vec4->z);
-                    if(i == 3) return eval_expr(vec4->w);
-                        
-                    logger->log(index, "ERROR", "Index out of range for vec4 access");
-                    return nullptr;
+                if(source->type == NODE_VECTOR2 || source->type == NODE_VECTOR3 || source->type == NODE_VECTOR4) {
+                    if(index->type == NODE_INT) {
+                        Vector_ptr vec = static_pointer_cast<Vector>(source);
+                        unsigned int i = resolve_int(index);
+                        if(i < vec->size()) {
+                            return eval_expr(vec->get(i));
+                        } else {
+                            logger->log(index, "ERROR", "Index " + to_string(i) + " out of range for " + type_to_name(vec->type) + " access");
+                            return nullptr;
+                        }
+                    }
                 }
                 if(source->type == NODE_MATRIX2 && index->type == NODE_INT) {
                     Matrix2_ptr mat2 = static_pointer_cast<Matrix2>(source);
@@ -1247,46 +1207,22 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                         }
 
                         bool is_scalar = (rhs->type == NODE_FLOAT || rhs->type == NODE_INT);
-                        if(source->type == NODE_VECTOR2 && index->type == NODE_INT) {
-                            if(!is_scalar) {
-                                logger->log(assign, "ERROR", "vec2 component needs to be a float or an int");
+                        if(source->type == NODE_VECTOR2 || source->type == NODE_VECTOR3 || source->type == NODE_VECTOR4) {
+                            if(index->type == NODE_INT) {
+                                if(!is_scalar) {
+                                    logger->log(assign, "ERROR", type_to_name(rhs->type) + " component needs to be a float or an int");
+                                    return nullptr;
+                                }
+                                Vector_ptr vec = static_pointer_cast<Vector>(source);
+                                unsigned int i = resolve_int(index);
+                                if(i < vec->size()) {
+                                    vec->set(i, rhs);
+                                } else {
+                                    logger->log(index, "ERROR", "Index out of range for " + type_to_name(rhs->type) + " access");
+                                }
                                 return nullptr;
                             }
-                            Vector2_ptr vec2 = static_pointer_cast<Vector2>(source);
-                            int i = resolve_int(index);
-                            if(i == 0) vec2->x = rhs;
-                            else if(i == 1) vec2->y = rhs;
-                            else logger->log(index, "ERROR", "Index out of range for vec2 access");
-                            return nullptr;
-                        } else
-                        if(source->type == NODE_VECTOR3 && index->type == NODE_INT) {
-                            if(!is_scalar) {
-                                logger->log(assign, "ERROR", "vec3 component needs to be a float or an int");
-                                return nullptr;
-                            }
-                            Vector3_ptr vec3 = static_pointer_cast<Vector3>(source);
-                            int i = resolve_int(index);
-                            if(i == 0) vec3->x = rhs;
-                            else if(i == 1) vec3->y = rhs;
-                            else if(i == 2) vec3->z = rhs;
-                            else logger->log(assign, "ERROR", "Index out of range for vec3 access");
-                            return nullptr;
                         }
-                        if(source->type == NODE_VECTOR4 && index->type == NODE_INT) {
-                            if(!is_scalar) {
-                                logger->log(assign, "ERROR", "vec4 component needs to be a float or an int");
-                                return nullptr;
-                            }
-                            Vector4_ptr vec4 = static_pointer_cast<Vector4>(source);
-                            int i = resolve_int(index);
-                            if(i == 0) vec4->x = rhs;
-                            else if(i == 1) vec4->y = rhs;
-                            else if(i == 2) vec4->z = rhs;
-                            else if(i == 3) vec4->w = rhs;
-                            else logger->log(assign, "ERROR", "Index out of range for vec4 access");
-                            return nullptr;
-                        }
-
                         if(source->type == NODE_MATRIX2 && index->type == NODE_INT) {
                             if(rhs->type != NODE_VECTOR2) {
                                 logger->log(assign, "ERROR", "mat2 component needs to be vec2");

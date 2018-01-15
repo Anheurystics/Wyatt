@@ -49,6 +49,7 @@ class Bool;
 class Int;
 class Float;
 class String;
+class Vector;
 class Vector2;
 class Vector3;
 class Vector4;
@@ -91,6 +92,7 @@ typedef shared_ptr<Bool> Bool_ptr;
 typedef shared_ptr<Int> Int_ptr;
 typedef shared_ptr<Float> Float_ptr;
 typedef shared_ptr<String> String_ptr;
+typedef shared_ptr<Vector> Vector_ptr;
 typedef shared_ptr<Vector2> Vector2_ptr;
 typedef shared_ptr<Vector3> Vector3_ptr;
 typedef shared_ptr<Vector4> Vector4_ptr;
@@ -218,36 +220,98 @@ class String: public Expr {
         }
 };
 
-class Vector2: public Expr {
+class Vector: public Expr {
+    public:
+        Vector(NodeType type): Expr(type) {}
+
+        virtual Expr_ptr get(unsigned int i) = 0;
+        virtual void set(unsigned int i, Expr_ptr val) = 0;
+        virtual unsigned int size() = 0;
+};
+
+class Vector2: public Vector {
     public:
         Expr_ptr x, y;
 
-        Vector2(Expr_ptr x, Expr_ptr y): Expr(NODE_VECTOR2) {
+        Vector2(Expr_ptr x, Expr_ptr y): Vector(NODE_VECTOR2) {
             this->x = x;
             this->y = y;
         }
+
+        Expr_ptr get(unsigned int i) {
+            if(i == 0) return x;
+            if(i == 1) return y;
+            return nullptr;
+        }
+
+        void set(unsigned int i, Expr_ptr val) {
+            if(i == 0) x = val;
+            if(i == 1) y = val;
+        }
+
+        unsigned int size() {
+            return 2;
+        }
 };
 
-class Vector3: public Expr {
+class Vector3: public Vector {
     public:
         Expr_ptr x, y, z;
 
-        Vector3(Expr_ptr x, Expr_ptr y, Expr_ptr z): Expr(NODE_VECTOR3) {
+        Vector3(Expr_ptr x, Expr_ptr y, Expr_ptr z): Vector(NODE_VECTOR3) {
             this->x = x;
             this->y = y;
             this->z = z;
         }
+
+        Expr_ptr get(unsigned int i) {
+            if(i == 0) return x;
+            if(i == 1) return y;
+            if(i == 2) return z;
+            return nullptr;
+        }
+
+        void set(unsigned int i, Expr_ptr val) {
+            if(i == 0) x = val;
+            if(i == 1) y = val;
+            if(i == 2) z = val;
+        }
+
+        unsigned int size() {
+            return 3;
+        }
+
 };
 
-class Vector4: public Expr {
+class Vector4: public Vector {
     public:
         Expr_ptr x, y, z, w;
 
-        Vector4(Expr_ptr x, Expr_ptr y, Expr_ptr z, Expr_ptr w): Expr(NODE_VECTOR4) {
+        Vector4(Expr_ptr x, Expr_ptr y, Expr_ptr z, Expr_ptr w): Vector(NODE_VECTOR4) {
             this->x = x;
             this->y = y;
             this->z = z;
             this->w = w;
+        }
+
+        Expr_ptr get(unsigned int i) {
+            if(i == 0) return x;
+            if(i == 1) return y;
+            if(i == 2) return z;
+            if(i == 3) return w;
+
+            return nullptr;
+        }
+
+        void set(unsigned int i, Expr_ptr val) {
+            if(i == 0) x = val;
+            if(i == 1) y = val;
+            if(i == 2) z = val;
+            if(i == 3) w = val;
+        }
+
+        unsigned int size() {
+            return 4;
         }
 };
 
