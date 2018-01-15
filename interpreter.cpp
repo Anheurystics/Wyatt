@@ -1229,9 +1229,10 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                     }
                                 case NODE_STRING:
                                     {
-                                        cout << "string to tex\n";
-                                        // Load texture from memory (SOIL? lodePNG?), bind to texture
                                         String_ptr filename = static_pointer_cast<String>(rhs);
+                                        gl->glBindTexture(GL_TEXTURE_2D, SOIL_load_OGL_texture(filename->value.c_str(), SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+                                        gl->glActiveTexture(GL_TEXTURE0);
+                                        break;
                                     }
                                     break;
                                 default:
