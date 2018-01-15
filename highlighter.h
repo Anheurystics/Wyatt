@@ -4,7 +4,6 @@
 #include <QSyntaxHighlighter>
 #include <QTextCharFormat>
 #include <QRegularExpression>
-#include <SOIL/SOIL.h>
 
 class Highlighter : public QSyntaxHighlighter
 {
