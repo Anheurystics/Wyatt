@@ -28,8 +28,21 @@ namespace Prototype {
             variables[name] = make_shared<Int>(int(static_pointer_cast<Float>(value)->value));
             return true;
         }
-        if(types[name] != "var" && types[name] != type_to_name(value->type)) {
-            logger->log(value, "ERROR", "Cannot assign value of type " + type_to_name(value->type) + " to variable of type " + types[name]);
+        if(types[name] == "texture2D") {
+            if(value_type == "string") {
+                Texture_ptr tex = make_shared<Texture>();
+                string filename = static_pointer_cast<String>(value)->value;
+                tex->image = SOIL_load_image(filename.c_str(), &(tex->width), &(tex->height), &(tex->channels), SOIL_LOAD_AUTO);
+                cout << SOIL_last_result() << endl;
+                variables[name] = tex;
+                return true;
+            } else
+            if(value_type == "texture2D") {
+
+            }
+        }
+        if(types[name] != "var" && types[name] != value_type) {
+            logger->log(value, "ERROR", "Cannot assign value of type " + value_type + " to variable of type " + types[name]);
             return true;
         }
 

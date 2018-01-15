@@ -6,6 +6,8 @@
 #include "logwindow.h"
 #include "nodes.h"
 
+#include <SOIL/SOIL.h>
+
 namespace Prototype {
 
 class Scope {

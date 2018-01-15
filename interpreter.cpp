@@ -1081,12 +1081,6 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     decl->value = buf;
                 }
 
-                if(decl->datatype->name == "texture2D") {
-                    Texture_ptr tex = make_shared<Texture>();
-                    gl->glGenTextures(1, &(tex->handle));
-                    decl->value = tex;
-                }
-
                 scope->declare(decl->name->name, decl->datatype->name, decl->value == nullptr? null_expr : eval_expr(decl->value));
                 return nullptr;
             }
@@ -1216,11 +1210,23 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                             }
                         } else
                         if(type == "texture2D") {
-                            Texture_ptr tex = static_pointer_cast<Texture>(lhs);
                             switch(rhs->type) {
                                 case NODE_TEXTURE:
-                                        // Copy reference to existing texture
-                                    break;
+                                    {
+                                        Texture_ptr tex = static_pointer_cast<Texture>(rhs);
+                                        if(tex->handle == 0) {
+                                            gl->glGenTextures(1, &(tex->handle));
+                                        }
+                                        gl->glBindTexture(GL_TEXTURE_2D, tex->handle);
+                                        gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                                        gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+                                        gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                                        gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                                        gl->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex->width, tex->height, 0, GL_RGB, GL_UNSIGNED_BYTE, tex->image);
+
+                                        gl->glActiveTexture(GL_TEXTURE0);
+                                        break;
+                                    }
                                 case NODE_STRING:
                                     {
                                         cout << "string to tex\n";

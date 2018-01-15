@@ -331,6 +331,9 @@ class Texture: public Expr {
     public:
         GLuint handle;
 
+        int width, height, channels;
+        unsigned char* image;
+
         Texture(): Expr(NODE_TEXTURE) {}
 };
 
