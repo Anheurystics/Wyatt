@@ -956,16 +956,11 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
             }
 
         case NODE_BINARY:
-            {
-                Binary_ptr bin = static_pointer_cast<Binary>((node));
-                return eval_binary(bin);
-            }
+            return eval_binary(static_pointer_cast<Binary>(node));
 
         case NODE_FUNCEXPR:
-            {
-                FuncExpr_ptr func = static_pointer_cast<FuncExpr>(node);
-                return invoke(func->invoke);
-            }
+            return invoke(static_pointer_cast<FuncExpr>(node)->invoke);
+
         case NODE_INDEX:
             {
                 Index_ptr in= static_pointer_cast<Index>(node);
@@ -1055,11 +1050,9 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
 Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
     switch(stmt->type) {
         case NODE_FUNCSTMT:
-            {
-                FuncStmt_ptr func = static_pointer_cast<FuncStmt>(stmt);
-                invoke(func->invoke);
+                invoke(static_pointer_cast<FuncStmt>(stmt)->invoke);
                 return nullptr;
-            }
+
         case NODE_DECL:
             {
                 Decl_ptr decl = static_pointer_cast<Decl>(stmt);
@@ -1580,7 +1573,6 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 Expr_ptr output = eval_expr(print->expr);
                 if(output == nullptr)
                     return nullptr;
-
 
                 logger->log(tostring(output));
                 return nullptr;
