@@ -891,11 +891,8 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                         Float_ptr fl = static_pointer_cast<Float>(rhs);
                         return make_shared<Float>(-(fl->value));
                     }
-                    if(rhs->type == NODE_VECTOR3) {
-                        Vector3_ptr vec3 = static_pointer_cast<Vector3>(rhs);
-
-                        //SHAMEFUL HACK
-                        return eval_binary(make_shared<Binary>(vec3, OP_MULT, make_shared<Float>(-1)));
+                    if(rhs->type == NODE_VECTOR2 || rhs->type == NODE_VECTOR3 || rhs->type == NODE_VECTOR4) {
+                        return eval_binary(make_shared<Binary>(rhs, OP_MULT, make_shared<Float>(-1)));
                     }
                 }
                 if(un->op == OP_NOT) {
