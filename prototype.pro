@@ -25,6 +25,10 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 LIBS += -lSOIL
 
+win32 {
+    LIBS += -lopengl32
+}
+
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
