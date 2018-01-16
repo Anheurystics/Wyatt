@@ -33,7 +33,12 @@ namespace Prototype {
                 Texture_ptr tex = make_shared<Texture>();
                 string filename = static_pointer_cast<String>(value)->value;
                 tex->image = SOIL_load_image(filename.c_str(), &(tex->width), &(tex->height), &(tex->channels), SOIL_LOAD_AUTO);
-                cout << SOIL_last_result() << endl;
+                if(tex->image == 0) {
+                    string message = "Cannot load " + filename + ": ";
+                    message += SOIL_last_result();
+                    logger->log(value, "ERROR", message);
+                    return false;
+                }
                 variables[name] = tex;
                 return true;
             } else

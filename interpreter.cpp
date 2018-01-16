@@ -75,7 +75,7 @@ string tostring(Expr_ptr expr) {
                 if(f == floor(f)) {
                     return to_string(int(f));
                 }
-                return to_string(resolve_float(expr));
+                return to_string(f);
             }
         case NODE_BOOL:
             return static_pointer_cast<Bool>(expr)->value? "true" : "false";
@@ -1179,9 +1179,21 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                     }
                                 case NODE_STRING:
                                     {
-                                        String_ptr filename = static_pointer_cast<String>(rhs);
-                                        gl->glBindTexture(GL_TEXTURE_2D, SOIL_load_OGL_texture(filename->value.c_str(), SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
-                                        gl->glActiveTexture(GL_TEXTURE0);
+                                        string filename = static_pointer_cast<String>(rhs)->value;
+                                        if(filename == "") {
+                                            gl->glBindTexture(GL_TEXTURE_2D, 0);
+                                            gl->glActiveTexture(0);
+                                        } else {
+                                            GLuint handle = SOIL_load_OGL_texture(filename.c_str(), SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
+                                            if(handle == 0) {
+                                                string message = "Cannot load " + filename + ": ";
+                                                message += SOIL_last_result();
+                                                logger->log(rhs, "ERROR", message);
+                                                break;
+                                            }
+                                            gl->glBindTexture(GL_TEXTURE_2D, handle);
+                                            gl->glActiveTexture(GL_TEXTURE0);
+                                        }
                                         break;
                                     }
                                     break;
