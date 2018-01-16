@@ -3,6 +3,9 @@ import "utils.txt";
 buffer cube;
 buffer floor;
 
+texture2D rivers = "rivers.png";
+texture2D grass = "grass.jpg";
+
 float angle = 0;
 
 vert basic(vec3 pos, vec3 norm, vec3 col, vec3 uv) {
@@ -101,9 +104,7 @@ func init() {
 	vec3 eye = [0, 0, 7];
 	vec3 at = [0, 0, 0];
 	vec3 up = [0, 1, 0];
-
-	texture2D tex = "rivers.png";	
-	basic.tex = tex;
+	
     basic.view = mat4_lookat(eye, at, up);
     basic.proj = mat4_perspective(pi() * 0.25, 1.0, 0.1, 100.0);
 }
@@ -113,8 +114,10 @@ func loop() {
 	
     basic.model = mat4_rotation_x(angle) * mat4_rotation_y(angle);
 	basic.norm_model = mat4_transpose(mat4_inverse(basic.model));
+	basic.tex = rivers;
 	draw cube;
 
+	basic.tex = grass;
 	basic.model = mat4_scale(10) * mat4_rotation_x(pi() * 0.5) * mat4_translation(0, -2, 0);
 	basic.norm_model = mat4_transpose(mat4_inverse(basic.model));
 	draw floor;
