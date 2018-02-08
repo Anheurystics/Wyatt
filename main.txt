@@ -8,7 +8,7 @@ texture2D grass = "grass.jpg";
 
 float angle = 0;
 
-vert basic(vec3 pos, vec3 norm, vec3 col, vec3 uv) {
+vert basic(vec3 pos, vec3 norm, vec3 col, vec2 uv) {
 	mat4 model;
 	mat4 norm_model;
 	mat4 view;
@@ -21,9 +21,9 @@ vert basic(vec3 pos, vec3 norm, vec3 col, vec3 uv) {
 		Normal = mat3(norm_model) * norm;
 		UV = uv;
 	}
-}(vec4 FinalPosition, vec3 Position, vec3 Normal, vec3 Color, vec3 UV)
+}(vec4 FinalPosition, vec3 Position, vec3 Normal, vec3 Color, vec2 UV)
 
-frag basic(vec3 Position, vec3 Normal, vec3 Color, vec3 UV) {
+frag basic(vec3 Position, vec3 Normal, vec3 Color, vec2 UV) {
 	vec3 LightPos;
 	vec3 LightColor;
 
@@ -32,7 +32,7 @@ frag basic(vec3 Position, vec3 Normal, vec3 Color, vec3 UV) {
 	func main() {
 		vec3 toLight = normalize(LightPos - Position);
 		float cos_angle = dot(normalize(Normal), toLight);
-		vec4 textureColor = texture2D(tex, UV.xy);
+		vec4 textureColor = texture2D(tex, UV);
 		vec3 litColor = LightColor * Color * cos_angle;
 		FinalColor = textureColor * [litColor, 1.0];
 	}
@@ -50,10 +50,10 @@ func init() {
     vec3 v6 = [-1, -1, -1];
     vec3 v7 = [ 1, -1, -1];
 
-	vec3 a = [0, 1, 0];
-	vec3 b = [0, 0, 0];
-	vec3 c = [1, 0, 0];
-	vec3 d = [1, 1, 0];
+	vec2 a = [0, 1];
+	vec2 b = [0, 0];
+	vec2 c = [1, 0];
+	vec2 d = [1, 1];
 
 	vec3 norm = [0, 0, 1];
     cube.pos += v1, v0, v3, v1, v3, v2;

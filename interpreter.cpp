@@ -1335,17 +1335,44 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
 
                 Layout_ptr layout = buffer->layout;
 
-                if(layout->attributes.find(upload->attrib->name) == layout->attributes.end()) {
-                    layout->attributes[upload->attrib->name] = 3;
-                    layout->list.push_back(upload->attrib->name);
-                }
-
+                #define attrib_size(type) ((type == NODE_FLOAT? 1 : (type == NODE_VECTOR2? 2 : (type == NODE_VECTOR3? 3 : (type == NODE_VECTOR4? 4 : 0)))))
                 vector<float>* target = &(buffer->data[upload->attrib->name]);
                 for(unsigned int i = 0; i < upload->list->list.size(); i++) {
-                    Expr_ptr expr = eval_expr(upload->list->list[i]);
-                    if(!expr) {
+                    if(upload->list->list[i] == nullptr) {
                         logger->log(upload, "ERROR", "Can't upload illegal value into buffer");
-                        break;
+                        return nullptr;
+                    }
+                    Expr_ptr expr = eval_expr(upload->list->list[i]);
+                    if(expr == nullptr) {
+                        logger->log(upload, "ERROR", "Can't upload illegal value into buffer");
+                        return nullptr;
+                    }
+
+                    unsigned int size = attrib_size(expr->type);
+                    if(size == 0) {
+                        logger->log(upload, "ERROR", "Attribute type must be float or vector!");
+                        return nullptr;
+                    }
+
+                    if(layout->attributes.find(upload->attrib->name) == layout->attributes.end()) {
+                        layout->attributes[upload->attrib->name] = size;
+                        layout->list.push_back(upload->attrib->name);
+                    } else {
+                        if(size != layout->attributes[upload->attrib->name]) {
+                            logger->log(upload, "ERROR", "Attribute size must be consistent!");
+                            return nullptr;
+                        }
+                    }
+
+                    if(expr->type == NODE_FLOAT) {
+                        Float_ptr f = static_pointer_cast<Float>(expr);
+                        target->insert(target->begin(), resolve_scalar(f));
+                    }
+                    
+                    if(expr->type == NODE_VECTOR2) {
+                        Vector2_ptr vec2 = static_pointer_cast<Vector2>(expr);
+                        target->insert(target->end(), resolve_scalar(vec2->x));
+                        target->insert(target->end(), resolve_scalar(vec2->y));
                     }
 
                     if(expr->type == NODE_VECTOR3) {
@@ -1355,9 +1382,12 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                         target->insert(target->end(), resolve_scalar(vec3->z));
                     }
 
-                    if(expr->type == NODE_FLOAT) {
-                        Float_ptr f = static_pointer_cast<Float>(expr);
-                        target->insert(target->begin(), resolve_scalar(f));
+                    if(expr->type == NODE_VECTOR4) {
+                        Vector4_ptr vec4 = static_pointer_cast<Vector4>(expr);
+                        target->insert(target->end(), resolve_scalar(vec4->x));
+                        target->insert(target->end(), resolve_scalar(vec4->y));
+                        target->insert(target->end(), resolve_scalar(vec4->z));
+                        target->insert(target->end(), resolve_scalar(vec4->w));
                     }
                 }
 
