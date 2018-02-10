@@ -2,6 +2,9 @@
 #include <sstream>
 #include <memory>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
 int resolve_int(Expr_ptr expr) {
     return static_pointer_cast<Int>(expr)->value;
 }
@@ -1172,8 +1175,8 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                         gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
                                         gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                                         gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                                        gl->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex->width, tex->height, 0, GL_RGB, GL_UNSIGNED_BYTE, tex->image);
-
+                                        gl->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex->width, tex->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex->image);
+                                        gl->glBindTexture(GL_TEXTURE_2D, tex->handle);
                                         gl->glActiveTexture(GL_TEXTURE0);
                                         break;
                                     }
@@ -1184,10 +1187,19 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                             gl->glBindTexture(GL_TEXTURE_2D, 0);
                                             gl->glActiveTexture(0);
                                         } else {
-                                            GLuint handle = SOIL_load_OGL_texture(filename.c_str(), SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
+                                            int width, height, n;
+                                            unsigned char* data = stbi_load(filename.c_str(), &width, &height, &n, 4);
+                                            GLuint handle = 0;
+                                            glGenTextures(1, &handle);
+                                            glBindTexture(GL_TEXTURE_2D, handle);
+                                            gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                                            gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+                                            gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                                            gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                                            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
                                             if(handle == 0) {
                                                 string message = "Cannot load " + filename + ": ";
-                                                message += SOIL_last_result();
+                                                message += stbi_failure_reason();
                                                 logger->log(rhs, "ERROR", message);
                                                 break;
                                             }

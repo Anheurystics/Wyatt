@@ -1,5 +1,7 @@
 #include "scope.h"
 
+#include <stb_image.h>
+
 namespace Prototype {
     Scope::Scope(string name, LogWindow* logger): name(name), logger(logger) { }
 
@@ -32,10 +34,10 @@ namespace Prototype {
             if(value_type == "string") {
                 Texture_ptr tex = make_shared<Texture>();
                 string filename = static_pointer_cast<String>(value)->value;
-                tex->image = SOIL_load_image(filename.c_str(), &(tex->width), &(tex->height), &(tex->channels), SOIL_LOAD_AUTO);
+                tex->image = stbi_load(filename.c_str(), &(tex->width), &(tex->height), &(tex->channels), 4);
                 if(tex->image == 0) {
                     string message = "Cannot load " + filename + ": ";
-                    message += SOIL_last_result();
+                    message += stbi_failure_reason();
                     logger->log(value, "ERROR", message);
                     return false;
                 }
