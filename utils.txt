@@ -143,7 +143,7 @@ func mat4_rotation_y(float angle) {
 
 func mat4_rotation_z(float angle) {
     float c = cos(angle); float s = sin(angle);
-    return [[c,-s,0,0],[s,c,0,0],[0,0,0,0],[0,0,0,1]];
+    return [[c,-s,0,0],[s,c,0,0],[0,0,1,0],[0,0,0,1]];
 }
 
 func mat4_scale(float s) {

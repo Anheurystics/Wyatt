@@ -578,6 +578,11 @@ Expr_ptr Prototype::Interpreter::resolve_vector(vector<Expr_ptr> list) {
 }
 
 Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
+
+    if(node == nullptr) {
+        return nullptr;
+    }
+
     switch(node->type) {
         case NODE_IDENT: 
             {
@@ -908,7 +913,7 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                         Matrix2_ptr mat2 = static_pointer_cast<Matrix2>(rhs);
                         return make_shared<Float>(resolve_scalar(mat2->v0->x) * resolve_scalar(mat2->v1->y) - resolve_scalar(mat2->v0->y) * resolve_scalar(mat2->v1->x));
                     }
-                    #define mat3_det(a,b,c,d,e,f,g,h,i) (a * (e * i - f * h)) - (b * (d * i - f * g)) + (c * (d * h - e * g))
+                    #define mat3_det(a,b,c,d,e,f,g,h,i) (a * e * i) + (b * f * g) + (c * d * h) - (a * f * h) - (b * d * i) - (c * e * g)
                     if(rhs->type == NODE_MATRIX3) {
                         Matrix3_ptr mat3 = static_pointer_cast<Matrix3>(rhs);
                         float a = resolve_scalar(mat3->v0->x), b = resolve_scalar(mat3->v0->y), c = resolve_scalar(mat3->v0->z);
@@ -923,10 +928,12 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                         float i = resolve_scalar(mat4->v2->x), j = resolve_scalar(mat4->v2->y), k = resolve_scalar(mat4->v2->z), l = resolve_scalar(mat4->v2->w);
                         float m = resolve_scalar(mat4->v3->x), n = resolve_scalar(mat4->v3->y), o = resolve_scalar(mat4->v3->z), p = resolve_scalar(mat4->v3->w);
 
-                        return make_shared<Float>((a * mat3_det(f, g, h, j, k, l, n, o, p))
-                                                - (b * mat3_det(e, g, h, i, k, l, m, o, p))
-                                                + (c * mat3_det(e, f, h, i, j, l, m, n, p))
-                                                - (d * mat3_det(e, f, g, i, j, k, m, n, o)));
+                        float d1 = mat3_det(f, g, h, j, k, l, n, o, p);
+                        float d2 = mat3_det(e, g, h, i, k, l, m, o, p);
+                        float d3 = mat3_det(e, f, h, i, j, l, m, n, p);
+                        float d4 = mat3_det(e, f, g, i, j, k, m, n, o);
+
+                        return make_shared<Float>((a * d1) - (b * d2) + (c * d3) - (d * d4));
                     }
                     if(rhs->type == NODE_LIST) {
                         List_ptr list = static_pointer_cast<List>(rhs);
@@ -944,9 +951,14 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
 
         case NODE_INDEX:
             {
-                Index_ptr in= static_pointer_cast<Index>(node);
+                Index_ptr in = static_pointer_cast<Index>(node);
                 Expr_ptr source = eval_expr(in->source);
                 Expr_ptr index = eval_expr(in->index);
+
+                if(source == nullptr || index == nullptr) {
+                    logger->log(in, "ERROR", "Invalid index expression");
+                    return nullptr;
+                }
                 
                 if(source->type == NODE_VECTOR2 || source->type == NODE_VECTOR3 || source->type == NODE_VECTOR4) {
                     if(index->type == NODE_INT) {
@@ -1169,14 +1181,16 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                         Texture_ptr tex = static_pointer_cast<Texture>(rhs);
                                         if(tex->handle == 0) {
                                             gl->glGenTextures(1, &(tex->handle));
+                                            gl->glBindTexture(GL_TEXTURE_2D, tex->handle);
+                                            gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                                            gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+                                            gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                                            gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                                            gl->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex->width, tex->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex->image);
+                                        } else {
+                                            gl->glBindTexture(GL_TEXTURE_2D, tex->handle);
                                         }
-                                        gl->glBindTexture(GL_TEXTURE_2D, tex->handle);
-                                        gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-                                        gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-                                        gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                                        gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                                        gl->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex->width, tex->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex->image);
-                                        gl->glBindTexture(GL_TEXTURE_2D, tex->handle);
+
                                         gl->glActiveTexture(GL_TEXTURE0);
                                         break;
                                     }
@@ -1217,6 +1231,10 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                         Index_ptr in = static_pointer_cast<Index>(lhs);
                         Expr_ptr source = eval_expr(in->source);
                         Expr_ptr index = eval_expr(in->index);
+                        if(source == nullptr || index == nullptr) {
+                            logger->log(in, "ERROR", "Invalid index expression");
+                            return nullptr;
+                        }
 
                         if(source->type == NODE_LIST && index->type == NODE_INT) {
                             List_ptr list = static_pointer_cast<List>(source);
