@@ -69,6 +69,10 @@ void Prototype::Interpreter::reset() {
 }
 
 string tostring(Expr_ptr expr) {
+    if(expr == nullptr) {
+        return "";
+    }
+
     switch(expr->type) {
         case NODE_INT:
             return to_string(resolve_int(expr));
@@ -125,12 +129,12 @@ string tostring(Expr_ptr expr) {
 
 Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
     Expr_ptr lhs = eval_expr(bin->lhs);
-    if(!lhs) return nullptr;
+    if(lhs == nullptr) return nullptr;
 
     OpType op = bin->op;
 
     Expr_ptr rhs = eval_expr(bin->rhs);
-    if(!rhs) return nullptr;
+    if(rhs == nullptr) return nullptr;
 
     NodeType ltype = lhs->type;
     NodeType rtype = rhs->type;
@@ -552,6 +556,10 @@ Expr_ptr Prototype::Interpreter::resolve_vector(vector<Expr_ptr> list) {
 
     for(unsigned int i = 0; i < list.size(); i++) {
         Expr_ptr expr = list[i];
+        if(expr == nullptr) {
+            logger->log(expr, "ERROR", "Invalid vector/matrix element");
+            return nullptr;
+        }
         if(expr->type == NODE_FLOAT || expr->type == NODE_INT) {
             data.push_back(resolve_scalar(expr));
             n += 1;
@@ -563,6 +571,7 @@ Expr_ptr Prototype::Interpreter::resolve_vector(vector<Expr_ptr> list) {
             }
             n += vec->size();
         } else {
+            logger->log(expr, "ERROR", "Invalid vector/matrix element of type " + to_string(expr->type));
             return nullptr;
         }
     }

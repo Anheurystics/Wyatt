@@ -315,6 +315,7 @@ class Vector4: public Vector {
         }
 };
 
+//TODO: Refactor MatrixN class to derive from VectorN class
 class Matrix2: public Expr {
     public:
         Vector2_ptr v0, v1;
