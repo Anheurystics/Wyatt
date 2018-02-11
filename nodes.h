@@ -14,7 +14,7 @@ enum NodeType {
     NODE_INVOKE,
     NODE_EXPR, NODE_NULL, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_STRING, NODE_VECTOR2, NODE_VECTOR3, NODE_VECTOR4, NODE_MATRIX2, NODE_MATRIX3, NODE_MATRIX4, NODE_IDENT, NODE_DOT, NODE_BUFFER, NODE_TEXTURE,
     NODE_UPLOADLIST, NODE_FUNCEXPR, NODE_LIST, NODE_ARGLIST, NODE_PARAMLIST, NODE_INDEX,
-    NODE_STMT, NODE_ASSIGN, NODE_DECL, NODE_ALLOC, NODE_UPLOAD, NODE_DRAW, NODE_FUNCSTMT, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_FOR, NODE_SHADER, NODE_PRINT, NODE_FUNCDEF, NODE_RETURN
+    NODE_STMT, NODE_ASSIGN, NODE_DECL, NODE_ALLOC, NODE_COMPBINARY, NODE_UPLOAD, NODE_APPEND, NODE_DRAW, NODE_FUNCSTMT, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_FOR, NODE_SHADER, NODE_PRINT, NODE_FUNCDEF, NODE_RETURN
 };
 
 inline string type_to_name(NodeType type) {
@@ -74,6 +74,7 @@ class Decl;
 class Alloc;
 class UploadList;
 class Upload;
+class CompBinary;
 class Draw;
 class Print;
 class Invoke;
@@ -117,6 +118,7 @@ typedef shared_ptr<Decl> Decl_ptr;
 typedef shared_ptr<Alloc> Alloc_ptr;
 typedef shared_ptr<UploadList> UploadList_ptr;
 typedef shared_ptr<Upload> Upload_ptr;
+typedef shared_ptr<CompBinary> CompBinary_ptr;
 typedef shared_ptr<Draw> Draw_ptr;
 typedef shared_ptr<Print> Print_ptr;
 typedef shared_ptr<Invoke> Invoke_ptr;
@@ -555,6 +557,14 @@ class Upload: public Stmt {
             this->attrib = attrib;
             this->list = list;
         }
+};
+
+class CompBinary: public Stmt {
+    public:
+        OpType op;
+        Expr_ptr lhs, rhs;
+
+        CompBinary(Expr_ptr lhs, OpType op, Expr_ptr rhs): Stmt(NODE_COMPBINARY), op(op), lhs(lhs), rhs(rhs) {}
 };
 
 class Draw: public Stmt {

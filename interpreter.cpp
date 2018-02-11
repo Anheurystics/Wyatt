@@ -705,6 +705,9 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
         case NODE_TEXTURE:
             return node;
 
+        case NODE_UPLOADLIST:
+            return node;
+
         case NODE_VECTOR2:
             {
                 Vector2_ptr vec2 = static_pointer_cast<Vector2>(node);
@@ -1431,6 +1434,55 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 }
 
                 buffer->sizes[upload->attrib->name] = target->size() / buffer->layout->attributes[upload->attrib->name];
+
+                return nullptr;
+            }
+        case NODE_COMPBINARY:
+            {
+                CompBinary_ptr compbin = static_pointer_cast<CompBinary>(stmt);
+                Expr_ptr lhs = eval_expr(compbin->lhs);
+                Expr_ptr rhs = eval_expr(compbin->rhs);
+                OpType op = compbin->op;
+
+                if(lhs == nullptr) {
+                    logger->log(lhs, "ERROR", "Illegal expression at the left-hand side");
+                    return nullptr;
+                }
+
+                if(rhs == nullptr) {
+                    logger->log(rhs, "ERROR", "Illegal expression at the right-hand side");
+                    return nullptr;
+                }
+
+                if(op == OP_PLUS && lhs->type == NODE_LIST) {
+                    List_ptr list = static_pointer_cast<List>(lhs);
+
+                    if(rhs->type != NODE_UPLOADLIST) {
+                       list->list.push_back(rhs);
+                    } else {
+                        UploadList_ptr uploadList = static_pointer_cast<UploadList>(rhs);
+                        for(unsigned int i = 0; i < uploadList->list.size(); i++) {
+                            Expr_ptr expr = eval_expr(uploadList->list[i]);
+                            if(expr != nullptr) {
+                                list->list.push_back(expr);
+                            } else {
+                                logger->log(expr, "ERROR", "Can't append illegal value to list");
+                                return nullptr;
+                            }
+                        }
+                    }
+                } else {
+                    rhs = compbin->rhs;
+                    if(op == OP_PLUS) {
+                        UploadList_ptr uploadList = static_pointer_cast<UploadList>(compbin->rhs);
+                        rhs = uploadList->list[0];
+                    }
+                    Binary_ptr bin = make_shared<Binary>(compbin->lhs, op, rhs);
+                    Assign_ptr assign = make_shared<Assign>(compbin->lhs, bin);
+                    bin->first_line = assign->first_line = compbin->first_line;
+                    bin->last_line = assign->last_line = compbin->last_line;
+                    return eval_stmt(assign);
+                }
 
                 return nullptr;
             }
