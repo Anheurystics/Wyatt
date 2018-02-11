@@ -424,7 +424,7 @@ class List: public Expr {
         vector<Expr_ptr> list;
 
         List(Expr_ptr init): Expr(NODE_LIST) {
-            if(init) list.insert(list.begin(), init);
+            if(init != nullptr) list.insert(list.begin(), init);
         }
 };
 

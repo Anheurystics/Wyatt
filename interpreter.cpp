@@ -697,7 +697,16 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
             return node;
 
         case NODE_LIST:
-            return node;
+            {
+                List_ptr list = static_pointer_cast<List>(node);
+                if(list->list.size() == 0) {
+                    List_ptr newlist = make_shared<List>(nullptr);
+                    newlist->first_line = list->first_line;
+                    newlist->last_line = list->last_line;
+                    return newlist;
+                }
+                return node;
+            }
 
         case NODE_BUFFER:
             return node;
@@ -1473,13 +1482,11 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     }
                 } else {
                     rhs = compbin->rhs;
-                    if(op == OP_PLUS) {
+                    if(op == OP_PLUS && rhs->type == NODE_UPLOADLIST) {
                         UploadList_ptr uploadList = static_pointer_cast<UploadList>(compbin->rhs);
                         rhs = uploadList->list[0];
                     }
                     Binary_ptr bin = make_shared<Binary>(compbin->lhs, op, rhs);
-                    UploadList_ptr uploadList = static_pointer_cast<UploadList>(compbin->rhs);
-                    Binary_ptr bin = make_shared<Binary>(compbin->lhs, op, uploadList->list[0]);
                     Assign_ptr assign = make_shared<Assign>(compbin->lhs, bin);
                     bin->first_line = assign->first_line = compbin->first_line;
                     bin->last_line = assign->last_line = compbin->last_line;
@@ -1618,7 +1625,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     time_t start = time(nullptr);
                     while(true) {
                         Bool_ptr terminate = static_pointer_cast<Bool>(eval_binary(make_shared<Binary>(iterator, OP_EQUAL, end)));
-                        if(terminate->value) {
+                        if(terminate == nullptr || terminate->value) {
                             break;
                         }
 
