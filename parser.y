@@ -262,16 +262,16 @@ stmt: IDENTIFIER EQUALS expr { $$ = make_shared<Assign>($1, $3); set_lines($$, @
     | PRINT expr { $$ = make_shared<Print>($2); set_lines($$, @1, @2); }
     | RETURN expr { $$ = make_shared<Return>($2); set_lines($$, @1, @2); }
     | invoke { $$ = make_shared<FuncStmt>($1); set_lines($$, @1, @1); }
-    | IDENTIFIER COMP_PLUS expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_PLUS, $3)); set_lines($$, @1, @3); }
-    | IDENTIFIER COMP_MINUS expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_MINUS, $3)); set_lines($$, @1, @3); }
-    | IDENTIFIER COMP_MULT expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_MULT, $3)); set_lines($$, @1, @3);}
-    | IDENTIFIER COMP_DIV expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_DIV, $3)); set_lines($$, @1, @3); }
-    | IDENTIFIER COMP_MOD expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_MOD, $3)); set_lines($$, @1, @3);}
-    | index COMP_PLUS expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_PLUS, $3)); set_lines($$, @1, @3); }
-    | index COMP_MINUS expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_MINUS, $3)); set_lines($$, @1, @3); }
-    | index COMP_MULT expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_MULT, $3)); set_lines($$, @1, @3);}
-    | index COMP_DIV expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_DIV, $3)); set_lines($$, @1, @3); }
-    | index COMP_MOD expr { $$ = make_shared<Assign>($1, make_shared<Binary>($1, OP_MOD, $3)); set_lines($$, @1, @3);}
+    | IDENTIFIER COMP_PLUS upload_list { $$ = make_shared<CompBinary>($1, OP_PLUS, $3); set_lines($$, @1, @3); }
+    | IDENTIFIER COMP_MINUS expr { $$ = make_shared<CompBinary>($1, OP_MINUS, $3); set_lines($$, @1, @3); }
+    | IDENTIFIER COMP_MULT expr { $$ = make_shared<CompBinary>($1, OP_MULT, $3); set_lines($$, @1, @3); }
+    | IDENTIFIER COMP_DIV expr { $$ = make_shared<CompBinary>($1, OP_DIV, $3); set_lines($$, @1, @3); }
+    | IDENTIFIER COMP_MOD expr { $$ = make_shared<CompBinary>($1, OP_MOD, $3); set_lines($$, @1, @3); }
+    | index COMP_PLUS expr { $$ = make_shared<CompBinary>($1, OP_PLUS, $3); set_lines($$, @1, @3); }
+    | index COMP_MINUS expr { $$ = make_shared<CompBinary>($1, OP_MINUS, $3); set_lines($$, @1, @3); }
+    | index COMP_MULT expr { $$ = make_shared<CompBinary>($1, OP_MULT, $3); set_lines($$, @1, @3); }
+    | index COMP_DIV expr { $$ = make_shared<CompBinary>($1, OP_DIV, $3); set_lines($$, @1, @3); }
+    | index COMP_MOD expr { $$ = make_shared<CompBinary>($1, OP_MOD, $3); set_lines($$, @1, @3); }
     ;
 
 arg_list: { $$ = make_shared<ArgList>(nullptr); }
