@@ -1478,6 +1478,8 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                         rhs = uploadList->list[0];
                     }
                     Binary_ptr bin = make_shared<Binary>(compbin->lhs, op, rhs);
+                    UploadList_ptr uploadList = static_pointer_cast<UploadList>(compbin->rhs);
+                    Binary_ptr bin = make_shared<Binary>(compbin->lhs, op, uploadList->list[0]);
                     Assign_ptr assign = make_shared<Assign>(compbin->lhs, bin);
                     bin->first_line = assign->first_line = compbin->first_line;
                     bin->last_line = assign->last_line = compbin->last_line;
