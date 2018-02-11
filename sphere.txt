@@ -1,0 +1,75 @@
+import "utils.txt";
+
+buffer buf;
+
+vert basic(vec3 pos) {
+	func main() {
+		FinalPosition = [pos, 1.0];
+	}
+}(vec4 FinalPosition)
+
+frag basic() {
+	vec3 color;
+	func main() {
+		FinalColor = [color, 1.0];
+	}
+}(vec4 FinalColor)	
+
+func generate_quad(float size, vec3 normal, vec3 right, int resolution) {
+	vec3 up = normal % right;
+	float half_size = size * 0.5;
+	vec3 topleft = (-right + up) * half_size;	
+
+	var vertices = {};
+	for(i in 0, resolution + 1, 1) {
+		for(j in 0, resolution + 1, 1) {
+			vec3 v = (topleft + (-up * size * i / resolution) + (right * size * j / resolution));
+			vertices += v;
+		}
+	}
+
+	var result = {};
+	for(i in 0, resolution, 1) {
+		for(j in 0, resolution, 1) {
+			vec3 v0 = vertices[(i * (resolution + 1)) + j];
+			vec3 v1 = vertices[(i * (resolution + 1)) + j + 1];
+			vec3 v2 = vertices[((i + 1) * (resolution + 1)) + j];
+			vec3 v3 = vertices[((i + 1) * (resolution + 1)) + j + 1];
+
+			result += v2, v1, v0, v2, v3, v1;
+		}
+	 }
+
+	return result;
+}
+
+func generate_cube(float size, int resolution) {
+	var vertices = {};
+	
+	var normals = {[0,0,1],[0,0,-1],[1,0,0],[-1,0,0],[0,1,0],[0,-1,0]};
+	var rights =  {[1,0,0],[-1,0,0],[0,0,-1],[0,0,1],[1,0,0],[1,0,0]};
+
+	for(i in 0,|normals|,1) {
+		var quad = generate_quad(size, normals[i], rights[i], resolution);
+		for(j in 0,|quad|,1) {
+			quad[j] += normals[i] * 0.5;
+			vertices += quad[j];
+		}
+	}
+
+	return vertices;
+}
+
+func init(){
+	var cube = generate_cube(1.0, 5);
+	for(i in 0,|cube|,1) {
+		cube[i] = normalize(cube[i]);
+		buf.pos += cube[i];
+	}
+
+	basic.color = [1.0, 0.3, 0.3];
+}
+
+func loop(){
+	draw buf;
+}
