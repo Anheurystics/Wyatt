@@ -20,7 +20,7 @@ func generate_quad(float size, vec3 normal, vec3 right, int resolution) {
 	float half_size = size * 0.5;
 	vec3 topleft = (-right + up) * half_size;	
 
-	var vertices = {};
+	list vertices = {};
 	for(i in 0, resolution + 1, 1) {
 		for(j in 0, resolution + 1, 1) {
 			vec3 v = (topleft + (-up * size * i / resolution) + (right * size * j / resolution));
@@ -28,7 +28,7 @@ func generate_quad(float size, vec3 normal, vec3 right, int resolution) {
 		}
 	}
 
-	var result = {};
+	list result = {};
 	for(i in 0, resolution, 1) {
 		for(j in 0, resolution, 1) {
 			vec3 v0 = vertices[(i * (resolution + 1)) + j];
@@ -44,7 +44,7 @@ func generate_quad(float size, vec3 normal, vec3 right, int resolution) {
 }
 
 func generate_cube(float size, int resolution) {
-	var vertices = {};
+	list vertices = {};
 	
 	var normals = {[0,0,1],[0,0,-1],[1,0,0],[-1,0,0],[0,1,0],[0,-1,0]};
 	var rights =  {[1,0,0],[-1,0,0],[0,0,-1],[0,0,1],[1,0,0],[1,0,0]};

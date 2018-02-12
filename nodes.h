@@ -23,6 +23,7 @@ inline string type_to_name(NodeType type) {
         case NODE_INT: return "int";
         case NODE_FLOAT: return "float";
         case NODE_STRING: return "string";
+        case NODE_LIST: return "list";
         case NODE_VECTOR2: return "vec2";
         case NODE_VECTOR3: return "vec3";
         case NODE_VECTOR4: return "vec4";
