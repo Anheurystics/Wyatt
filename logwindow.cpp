@@ -27,13 +27,13 @@ void LogWindow::log(LogInfo info, string msg) {
     }
 
     string output = info.label;
-    if(info.first_line != 0 && info.last_line != 0) {
+    //if(info.first_line != 0 && info.last_line != 0) {
         if(info.first_line == info.last_line) {
             output += " at line " + to_string(info.first_line);
         } else {
             output += " at lines " + to_string(info.first_line) + "-" + to_string(info.last_line);
         }
-    }
+    //}
     output += ": " + msg;
 
     this->log(output);

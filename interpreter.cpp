@@ -127,6 +127,10 @@ string tostring(Expr_ptr expr) {
     }
 }
 
+#define set_node_lines(node, first, last) \
+    node->first_line = first->first_line; \
+    node->last_line = last->last_line; \
+
 Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
     Expr_ptr lhs = eval_expr(bin->lhs);
     if(lhs == nullptr) return nullptr;
@@ -143,10 +147,15 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
         bool a = static_pointer_cast<Bool>(lhs)->value;
         bool b = static_pointer_cast<Bool>(rhs)->value;
 
+        Bool_ptr result = nullptr;
         switch(op) {
-            case OP_AND: return make_shared<Bool>(a && b);
-            case OP_OR: return make_shared<Bool>(a || b);
+            case OP_AND: result = make_shared<Bool>(a && b); break;
+            case OP_OR: result = make_shared<Bool>(a || b); break;
             default: break;
+        }
+        if(result != nullptr) {
+            set_node_lines(result, lhs, rhs);
+            return result;
         }
     }
 
@@ -154,22 +163,28 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
         int a = resolve_int(lhs);
         int b = resolve_int(rhs);
 
+        Expr_ptr result = nullptr;
         switch(op) {
-            case OP_PLUS: return make_shared<Int>(a + b);
-            case OP_MINUS: return make_shared<Int>(a - b);
-            case OP_MULT: return make_shared<Int>(a * b);
-            case OP_DIV: return make_shared<Float>(a / (float)b);
-            case OP_MOD: return make_shared<Int>(a % b);
-            case OP_EQUAL: return make_shared<Bool>(a == b);
-            case OP_LESSTHAN: return make_shared<Bool>(a < b);
-            case OP_GREATERTHAN: return make_shared<Bool>(a > b);
-            case OP_NEQUAL: return make_shared<Bool>(a != b);
-            case OP_LEQUAL: return make_shared<Bool>(a <= b);
-            case OP_GEQUAL: return make_shared<Bool>(a >= b);
+            case OP_PLUS: result = make_shared<Int>(a + b); break;
+            case OP_MINUS: result = make_shared<Int>(a - b); break;
+            case OP_MULT: result = make_shared<Int>(a * b); break;
+            case OP_DIV: result = make_shared<Float>(a / (float)b); break;
+            case OP_MOD: result = make_shared<Int>(a % b); break;
+            case OP_EQUAL: result = make_shared<Bool>(a == b); break;
+            case OP_LESSTHAN: result = make_shared<Bool>(a < b); break;
+            case OP_GREATERTHAN: result = make_shared<Bool>(a > b); break;
+            case OP_NEQUAL: result = make_shared<Bool>(a != b); break;
+            case OP_LEQUAL: result = make_shared<Bool>(a <= b); break;
+            case OP_GEQUAL: result = make_shared<Bool>(a >= b); break;
             default: break;
+        }
+        if(result != nullptr) {
+            set_node_lines(result, lhs, rhs);
+            return result;
         }
     }
 
+    /*
     if(ltype == NODE_FLOAT && rtype == NODE_FLOAT) {
         float a = resolve_float(lhs);
         float b = resolve_float(rhs);
@@ -188,23 +203,29 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
             default: break;
         }
     }
+    */
 
     if((ltype == NODE_FLOAT && rtype == NODE_INT) || (ltype == NODE_INT && rtype == NODE_FLOAT)) {
         float a = resolve_scalar(lhs);
         float b = resolve_scalar(rhs);
 
+        Expr_ptr result = nullptr;
         switch(op) {
-            case OP_PLUS: return make_shared<Float>(a + b);
-            case OP_MINUS: return make_shared<Float>(a - b);
-            case OP_MULT: return make_shared<Float>(a * b);
-            case OP_DIV: return make_shared<Float>(a / b);
-            case OP_EQUAL: return make_shared<Bool>(a == b);
-            case OP_LESSTHAN: return make_shared<Bool>(a < b);
-            case OP_GREATERTHAN: return make_shared<Bool>(a > b);
-            case OP_NEQUAL: return make_shared<Bool>(a != b);
-            case OP_LEQUAL: return make_shared<Bool>(a <= b);
-            case OP_GEQUAL: return make_shared<Bool>(a >= b);
+            case OP_PLUS: result = make_shared<Float>(a + b); break;
+            case OP_MINUS: result = make_shared<Float>(a - b); break;
+            case OP_MULT: result = make_shared<Float>(a * b); break;
+            case OP_DIV: result = make_shared<Float>(a / b); break;
+            case OP_EQUAL: result = make_shared<Bool>(a == b); break;
+            case OP_LESSTHAN: result = make_shared<Bool>(a < b); break;
+            case OP_GREATERTHAN: result = make_shared<Bool>(a > b); break;
+            case OP_NEQUAL: result = make_shared<Bool>(a != b); break;
+            case OP_LEQUAL: result = make_shared<Bool>(a <= b); break;
+            case OP_GEQUAL: result = make_shared<Bool>(a >= b); break;
             default: break;
+        }
+        if(result != nullptr) {
+            set_node_lines(result, lhs, rhs);
+            return result;
         }
     }
 
@@ -213,7 +234,9 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
         String_ptr str = String_ptr(left? static_pointer_cast<String>(lhs) : static_pointer_cast<String>(rhs));
         Expr_ptr other = eval_expr(left? rhs : lhs);
 
-        return make_shared<String>(left? (str->value + tostring(other)) : (tostring(other) + str->value));
+        String_ptr concat = make_shared<String>(left? (str->value + tostring(other)) : (tostring(other) + str->value));
+        set_node_lines(concat, lhs, rhs);
+        return concat;
     }
 
     if(ltype == NODE_VECTOR2 && rtype == NODE_VECTOR2) {
@@ -225,12 +248,17 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
         float bx = resolve_scalar(b->x);
         float by = resolve_scalar(b->y);
 
+        Expr_ptr result = nullptr;
         switch(op) {
-            case OP_PLUS: return make_shared<Vector2>(make_shared<Float>(ax+bx), make_shared<Float>(ay+by));
-            case OP_MINUS: return make_shared<Vector2>(make_shared<Float>(ax-bx), make_shared<Float>(ay-by));
-            case OP_MULT: return make_shared<Float>(ax*bx + ay*by);
-            case OP_MOD: return make_shared<Float>(ax*by - ay*bx);
+            case OP_PLUS: result = make_shared<Vector2>(make_shared<Float>(ax+bx), make_shared<Float>(ay+by)); break;
+            case OP_MINUS: result = make_shared<Vector2>(make_shared<Float>(ax-bx), make_shared<Float>(ay-by)); break;
+            case OP_MULT: result = make_shared<Float>(ax*bx + ay*by); break;
+            case OP_MOD: result = make_shared<Float>(ax*by - ay*bx); break;
             default: break;
+        }
+        if(result != nullptr) {
+            set_node_lines(result, lhs, rhs);
+            return result;
         }
     }
 
@@ -239,10 +267,15 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
         float ax = resolve_scalar(a->x), ay = resolve_scalar(a->y);
         float b = resolve_scalar(rhs);
 
+        Vector2_ptr result = nullptr;
         switch(op) {
-            case OP_MULT: return make_shared<Vector2>(make_shared<Float>(ax*b), make_shared<Float>(ay*b));
-            case OP_DIV: return make_shared<Vector2>(make_shared<Float>(ax/b), make_shared<Float>(ay/b));
+            case OP_MULT: result = make_shared<Vector2>(make_shared<Float>(ax*b), make_shared<Float>(ay*b)); break;
+            case OP_DIV: result = make_shared<Vector2>(make_shared<Float>(ax/b), make_shared<Float>(ay/b)); break;
             default: break;
+        }
+        if(result != nullptr) {
+            set_node_lines(result, lhs, rhs);
+            return result;
         }
     }
 
@@ -252,7 +285,11 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
         float bx = resolve_scalar(b->x), by = resolve_scalar(b->y);
 
         switch(op) {
-            case OP_MULT: return make_shared<Vector2>(make_shared<Float>(bx*a), make_shared<Float>(by*a));
+            case OP_MULT: {
+                Vector2_ptr result = make_shared<Vector2>(make_shared<Float>(bx*a), make_shared<Float>(by*a));
+                set_node_lines(result, lhs, rhs);
+                return result;
+            }
             default: break;
         }
     }
@@ -268,12 +305,17 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
         float by = resolve_scalar(b->y);
         float bz = resolve_scalar(b->z);
 
+        Expr_ptr result = nullptr;
         switch(op) {
-            case OP_PLUS: return make_shared<Vector3>(make_shared<Float>(ax+bx), make_shared<Float>(ay+by), make_shared<Float>(az+bz));
-            case OP_MINUS: return make_shared<Vector3>(make_shared<Float>(ax-bx), make_shared<Float>(ay-by), make_shared<Float>(az-bz));
-            case OP_MULT: return make_shared<Float>(ax*bx + ay*by + az*bz);
-            case OP_MOD: return make_shared<Vector3>(make_shared<Float>(ay*bz-az*by), make_shared<Float>(az*bx-ax*bz), make_shared<Float>(ax*by-ay*bx));
+            case OP_PLUS: result = make_shared<Vector3>(make_shared<Float>(ax+bx), make_shared<Float>(ay+by), make_shared<Float>(az+bz));
+            case OP_MINUS: result = make_shared<Vector3>(make_shared<Float>(ax-bx), make_shared<Float>(ay-by), make_shared<Float>(az-bz));
+            case OP_MULT: result = make_shared<Float>(ax*bx + ay*by + az*bz);
+            case OP_MOD: result = make_shared<Vector3>(make_shared<Float>(ay*bz-az*by), make_shared<Float>(az*bx-ax*bz), make_shared<Float>(ax*by-ay*bx));
             default: break;
+        }
+        if(result != nullptr) {
+            set_node_lines(result, lhs, rhs);
+            return result;
         }
     }
 
@@ -282,10 +324,15 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
         float ax = resolve_scalar(a->x), ay = resolve_scalar(a->y), az = resolve_scalar(a->z);
         float b = resolve_scalar(rhs);
 
+        Vector3_ptr result = nullptr;
         switch(op) {
-            case OP_MULT: return make_shared<Vector3>(make_shared<Float>(ax*b), make_shared<Float>(ay*b), make_shared<Float>(az*b));
-            case OP_DIV: return make_shared<Vector3>(make_shared<Float>(ax/b), make_shared<Float>(ay/b), make_shared<Float>(az/b));
+            case OP_MULT: result = make_shared<Vector3>(make_shared<Float>(ax*b), make_shared<Float>(ay*b), make_shared<Float>(az*b)); break;
+            case OP_DIV: result = make_shared<Vector3>(make_shared<Float>(ax/b), make_shared<Float>(ay/b), make_shared<Float>(az/b)); break;
             default: break;
+        }
+        if(result != nullptr) {
+            set_node_lines(result, lhs, rhs);
+            return result;
         }
     }
 
@@ -295,7 +342,11 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
         float bx = resolve_scalar(b->x), by = resolve_scalar(b->y), bz = resolve_scalar(b->z);
 
         switch(op) {
-            case OP_MULT: return make_shared<Vector3>(make_shared<Float>(bx*a), make_shared<Float>(by*a), make_shared<Float>(bz*a));
+            case OP_MULT: {
+                Vector3_ptr result = make_shared<Vector3>(make_shared<Float>(bx*a), make_shared<Float>(by*a), make_shared<Float>(bz*a));
+                set_node_lines(result, lhs, rhs);
+                return result;
+            }
             default: break;
         }
     }
@@ -313,11 +364,16 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
         float bz = resolve_scalar(b->z);
         float bw = resolve_scalar(b->w);
 
+        Expr_ptr result = nullptr;
         switch(op) {
-            case OP_PLUS: return make_shared<Vector4>(make_shared<Float>(ax+bx), make_shared<Float>(ay+by), make_shared<Float>(az+bz), make_shared<Float>(aw+bw));
-            case OP_MINUS: return make_shared<Vector4>(make_shared<Float>(ax-bx), make_shared<Float>(ay-by), make_shared<Float>(az-bz), make_shared<Float>(aw-bw));
-            case OP_MULT: return make_shared<Float>(ax*bx + ay*by + az*bz + aw*bw);
+            case OP_PLUS: result = make_shared<Vector4>(make_shared<Float>(ax+bx), make_shared<Float>(ay+by), make_shared<Float>(az+bz), make_shared<Float>(aw+bw)); break;
+            case OP_MINUS: result = make_shared<Vector4>(make_shared<Float>(ax-bx), make_shared<Float>(ay-by), make_shared<Float>(az-bz), make_shared<Float>(aw-bw)); break;
+            case OP_MULT: result = make_shared<Float>(ax*bx + ay*by + az*bz + aw*bw); break;
             default: break;
+        }
+        if(result != nullptr) {
+            set_node_lines(result, lhs, rhs);
+            return result;
         }
     }
 
@@ -326,10 +382,15 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
         float ax = resolve_scalar(a->x), ay = resolve_scalar(a->y), az = resolve_scalar(a->z), aw = resolve_scalar(a->w);
         float b = resolve_scalar(rhs);
 
+        Expr_ptr result = nullptr;
         switch(op) {
-            case OP_MULT: return make_shared<Vector4>(make_shared<Float>(ax*b), make_shared<Float>(ay*b), make_shared<Float>(az*b), make_shared<Float>(aw*b));
-            case OP_DIV: return make_shared<Vector4>(make_shared<Float>(ax/b), make_shared<Float>(ay/b), make_shared<Float>(az/b), make_shared<Float>(aw/b));
+            case OP_MULT: result = make_shared<Vector4>(make_shared<Float>(ax*b), make_shared<Float>(ay*b), make_shared<Float>(az*b), make_shared<Float>(aw*b)); break;
+            case OP_DIV: result = make_shared<Vector4>(make_shared<Float>(ax/b), make_shared<Float>(ay/b), make_shared<Float>(az/b), make_shared<Float>(aw/b)); break;
             default: break;
+        }
+        if(result != nullptr) {
+            set_node_lines(result, lhs, rhs);
+            return result;
         }
     }
 
@@ -339,7 +400,11 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
         float bx = resolve_scalar(b->x), by = resolve_scalar(b->y), bz = resolve_scalar(b->z), bw = resolve_scalar(b->w);
 
         switch(op) {
-            case OP_MULT: return make_shared<Vector4>(make_shared<Float>(bx*a), make_shared<Float>(by*a), make_shared<Float>(bz*a), make_shared<Float>(bw*a));
+            case OP_MULT: {
+                Vector4_ptr result = make_shared<Vector4>(make_shared<Float>(bx*a), make_shared<Float>(by*a), make_shared<Float>(bz*a), make_shared<Float>(bw*a));
+                set_node_lines(result, lhs, rhs);
+                return result;
+            }
             default: break;
         }
     }
@@ -350,7 +415,9 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
         if(op == OP_MULT || op == OP_DIV) {
             Vector2_ptr v0 = static_pointer_cast<Vector2>(eval_binary(make_shared<Binary>(a->v0, op, rhs)));
             Vector2_ptr v1 = static_pointer_cast<Vector2>(eval_binary(make_shared<Binary>(a->v1, op, rhs)));
-            return make_shared<Matrix2>(v0, v1);
+            Matrix2_ptr mat2 = make_shared<Matrix2>(v0, v1);
+            set_node_lines(mat2, lhs, rhs);
+            return mat2;
         }
     }
 
@@ -360,7 +427,9 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
         if(op == OP_MULT) {
             Vector2_ptr v0 = static_pointer_cast<Vector2>(eval_binary(make_shared<Binary>(a->v0, op, lhs)));
             Vector2_ptr v1 = static_pointer_cast<Vector2>(eval_binary(make_shared<Binary>(a->v1, op, lhs)));
-            return make_shared<Matrix2>(v0, v1);
+            Matrix2_ptr mat2 = make_shared<Matrix2>(v0, v1);
+            set_node_lines(mat2, lhs, rhs);
+            return mat2;
         }
     }
 
@@ -371,7 +440,9 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
         if(op == OP_MULT) {
             Vector2_ptr r0 = make_shared<Vector2>(make_shared<Binary>(a->v0, OP_MULT, b->c0), make_shared<Binary>(a->v0, OP_MULT, b->c1));
             Vector2_ptr r1 = make_shared<Vector2>(make_shared<Binary>(a->v1, OP_MULT, b->c0), make_shared<Binary>(a->v1, OP_MULT, b->c1));
-            return eval_expr(make_shared<Matrix2>(r0, r1));
+            Expr_ptr result = eval_expr(make_shared<Matrix2>(r0, r1));
+            set_node_lines(result, lhs, rhs);
+            return result;
         }
     }
 
@@ -380,7 +451,9 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
         Matrix2_ptr b = static_pointer_cast<Matrix2>(eval_expr(rhs));
 
         if(op == OP_MULT) {
-            return eval_expr(make_shared<Vector2>(make_shared<Binary>(a, OP_MULT, b->c0), make_shared<Binary>(a, OP_MULT, b->c1)));
+            Expr_ptr result = eval_expr(make_shared<Vector2>(make_shared<Binary>(a, OP_MULT, b->c0), make_shared<Binary>(a, OP_MULT, b->c1)));
+            set_node_lines(result, lhs, rhs);
+            return result;
         }
     }
 
@@ -391,7 +464,9 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
             Vector3_ptr v0 = static_pointer_cast<Vector3>(eval_binary(make_shared<Binary>(a->v0, op, rhs)));
             Vector3_ptr v1 = static_pointer_cast<Vector3>(eval_binary(make_shared<Binary>(a->v1, op, rhs)));
             Vector3_ptr v2 = static_pointer_cast<Vector3>(eval_binary(make_shared<Binary>(a->v2, op, rhs)));
-            return make_shared<Matrix3>(v0, v1, v2);
+            Matrix3_ptr mat3 = make_shared<Matrix3>(v0, v1, v2);
+            set_node_lines(mat3, lhs, rhs);
+            return mat3;
         }
     }
 
@@ -402,7 +477,9 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
             Vector3_ptr v0 = static_pointer_cast<Vector3>(eval_binary(make_shared<Binary>(a->v0, op, lhs)));
             Vector3_ptr v1 = static_pointer_cast<Vector3>(eval_binary(make_shared<Binary>(a->v1, op, lhs)));
             Vector3_ptr v2 = static_pointer_cast<Vector3>(eval_binary(make_shared<Binary>(a->v2, op, lhs)));
-            return make_shared<Matrix3>(v0, v1, v2);
+            Matrix3_ptr mat3 = make_shared<Matrix3>(v0, v1, v2);
+            set_node_lines(mat3, lhs, rhs);
+            return mat3;
         }
     }
 
@@ -414,7 +491,9 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
             Vector3_ptr r0 = make_shared<Vector3>(make_shared<Binary>(a->v0, OP_MULT, b->c0), make_shared<Binary>(a->v0, OP_MULT, b->c1), make_shared<Binary>(a->v0, OP_MULT, b->c2));
             Vector3_ptr r1 = make_shared<Vector3>(make_shared<Binary>(a->v1, OP_MULT, b->c0), make_shared<Binary>(a->v1, OP_MULT, b->c1), make_shared<Binary>(a->v1, OP_MULT, b->c2));
             Vector3_ptr r2 = make_shared<Vector3>(make_shared<Binary>(a->v2, OP_MULT, b->c0), make_shared<Binary>(a->v2, OP_MULT, b->c1), make_shared<Binary>(a->v2, OP_MULT, b->c2));
-            return eval_expr(make_shared<Matrix3>(r0, r1, r2));
+            Expr_ptr result = eval_expr(make_shared<Matrix3>(r0, r1, r2));
+            set_node_lines(result, lhs, rhs);
+            return result;
         }
     }
 
@@ -423,7 +502,9 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
         Matrix3_ptr b = static_pointer_cast<Matrix3>(eval_expr(rhs));
 
         if(op == OP_MULT) {
-            return eval_expr(make_shared<Vector3>(make_shared<Binary>(a, OP_MULT, b->c0), make_shared<Binary>(a, OP_MULT, b->c1), make_shared<Binary>(a, OP_MULT, b->c2)));
+            Expr_ptr vec3 = eval_expr(make_shared<Vector3>(make_shared<Binary>(a, OP_MULT, b->c0), make_shared<Binary>(a, OP_MULT, b->c1), make_shared<Binary>(a, OP_MULT, b->c2)));
+            set_node_lines(vec3, lhs, rhs);
+            return vec3;
         }
     }
 
@@ -435,7 +516,9 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
             Vector4_ptr v1 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v1, op, rhs)));
             Vector4_ptr v2 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v2, op, rhs)));
             Vector4_ptr v3 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v3, op, rhs)));
-            return make_shared<Matrix4>(v0, v1, v2, v3);
+            Matrix4_ptr mat4 = make_shared<Matrix4>(v0, v1, v2, v3);
+            set_node_lines(mat4, lhs, rhs);
+            return mat4;
         }
     }
 
@@ -447,7 +530,9 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
             Vector4_ptr v1 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v1, op, lhs)));
             Vector4_ptr v2 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v2, op, lhs)));
             Vector4_ptr v3 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v3, op, lhs)));
-            return make_shared<Matrix4>(v0, v1, v2, v3);
+            Matrix4_ptr mat4 = make_shared<Matrix4>(v0, v1, v2, v3);
+            set_node_lines(mat4, lhs, rhs);
+            return mat4;
         }
     }
 
@@ -460,7 +545,9 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
             Vector4_ptr r1 = make_shared<Vector4>(make_shared<Binary>(a->v1, OP_MULT, b->c0), make_shared<Binary>(a->v1, OP_MULT, b->c1), make_shared<Binary>(a->v1, OP_MULT, b->c2), make_shared<Binary>(a->v1, OP_MULT, b->c3));
             Vector4_ptr r2 = make_shared<Vector4>(make_shared<Binary>(a->v2, OP_MULT, b->c0), make_shared<Binary>(a->v2, OP_MULT, b->c1), make_shared<Binary>(a->v2, OP_MULT, b->c2), make_shared<Binary>(a->v2, OP_MULT, b->c3));
             Vector4_ptr r3 = make_shared<Vector4>(make_shared<Binary>(a->v3, OP_MULT, b->c0), make_shared<Binary>(a->v3, OP_MULT, b->c1), make_shared<Binary>(a->v3, OP_MULT, b->c2), make_shared<Binary>(a->v3, OP_MULT, b->c3));
-            return eval_expr(make_shared<Matrix4>(r0, r1, r2, r3));
+            Expr_ptr mat4 = eval_expr(make_shared<Matrix4>(r0, r1, r2, r3));
+            set_node_lines(mat4, lhs, rhs);
+            return mat4;
         }
     }
 
@@ -469,7 +556,9 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
         Matrix4_ptr b = static_pointer_cast<Matrix4>(eval_expr(rhs));
 
         if(op == OP_MULT) {
-            return eval_expr(make_shared<Vector4>(make_shared<Binary>(a, OP_MULT, b->c0), make_shared<Binary>(a, OP_MULT, b->c1), make_shared<Binary>(a, OP_MULT, b->c2), make_shared<Binary>(a, OP_MULT, b->c3)));
+            Expr_ptr vec4 = eval_expr(make_shared<Vector4>(make_shared<Binary>(a, OP_MULT, b->c0), make_shared<Binary>(a, OP_MULT, b->c1), make_shared<Binary>(a, OP_MULT, b->c2), make_shared<Binary>(a, OP_MULT, b->c3)));
+            set_node_lines(vec4, lhs, rhs);
+            return vec4;
         }
     }
 
@@ -1454,12 +1543,12 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 OpType op = compbin->op;
 
                 if(lhs == nullptr) {
-                    logger->log(lhs, "ERROR", "Illegal expression at the left-hand side");
+                    logger->log(compbin->lhs, "ERROR", "Illegal expression at the left-hand side");
                     return nullptr;
                 }
 
                 if(rhs == nullptr) {
-                    logger->log(rhs, "ERROR", "Illegal expression at the right-hand side");
+                    logger->log(compbin->rhs, "ERROR", "Illegal expression at the right-hand side");
                     return nullptr;
                 }
 
