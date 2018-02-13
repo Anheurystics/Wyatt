@@ -3,8 +3,12 @@ import "utils.txt";
 buffer buf;
 
 vert basic(vec3 pos) {
+	mat4 model;
+	mat4 view;
+	mat4 proj;
+
 	func main() {
-		FinalPosition = [pos, 1.0];
+		FinalPosition = proj * view * model * [pos, 1.0];
 	}
 }(vec4 FinalPosition)
 
@@ -60,14 +64,24 @@ func generate_cube(float size, int resolution) {
 	return vertices;
 }
 
-func init(){
-	var cube = generate_cube(1.0, 5);
+func generate_sphere(float radius, int resolution) {
+	var cube = generate_cube(1.0, resolution);
 	for(i in 0,|cube|,1) {
-		cube[i] = normalize(cube[i]);
+		cube[i] = normalize(cube[i]) * radius;
+	}
+	return cube;
+}
+
+func init(){
+	var cube = generate_sphere(1.0, 6);
+	for(i in 0,|cube|,1) {
 		buf.pos += cube[i];
 	}
 
 	basic.color = [1.0, 0.3, 0.3];
+	basic.model = mat4_identity();
+	basic.view = mat4_lookat([0, 0, 4], [0, 0, 0], [0, 1, 0]);
+	basic.proj = mat4_perspective(pi() / 4, 1, 0.1, 1000);
 }
 
 func loop(){

@@ -1475,7 +1475,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                             if(expr != nullptr) {
                                 list->list.push_back(expr);
                             } else {
-                                logger->log(expr, "ERROR", "Can't append illegal value to list");
+                                logger->log(uploadList->list[i], "ERROR", "Can't append illegal value to list");
                                 return nullptr;
                             }
                         }
