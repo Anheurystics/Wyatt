@@ -90,6 +90,7 @@
 %token OR "or";
 %token NOT "not";
 %token IF "if";
+%token ELSE "else";
 %token WHILE "while";
 %token FOR "for";
 %token IN "in";
@@ -123,6 +124,8 @@
 %type<shared_ptr<map<string, FuncDef_ptr>>> shader_functions;
 
 %type<shared_ptr<Stmt>> stmt stmt_block
+%type<shared_ptr<If>> if_stmt else_if_stmt
+%type<shared_ptr<vector<shared_ptr<If>>>> else_if_chain
 %type<shared_ptr<FuncDef>> function
 %type<shared_ptr<Stmts>> stmts block
 %type<shared_ptr<Shader>> vert_shader frag_shader
@@ -292,10 +295,25 @@ list: { $$ = make_shared<List>(nullptr); }
 invoke: IDENTIFIER OPEN_PAREN arg_list CLOSE_PAREN { $$ = make_shared<Invoke>($1, $3); set_lines($$, @1, @1); }
     ;
 
-stmt_block: IF OPEN_PAREN expr CLOSE_PAREN block { $$ = make_shared<If>($3, $5); }
-    | IF OPEN_PAREN expr CLOSE_PAREN stmt SEMICOLON { $$ = make_shared<If>($3, make_shared<Stmts>($5)); }
+stmt_block: if_stmt { $$ = $1; }
+    | if_stmt ELSE stmt SEMICOLON { $$ = $1; $1->elseBlock = make_shared<Stmts>($3); }
+    | if_stmt ELSE block { $$ = $1; $1->elseBlock = $3; }
+    | if_stmt else_if_chain { $$ = $1; $1->elseIfBlocks = $2; }
+    | if_stmt else_if_chain ELSE stmt SEMICOLON { $$ = $1; $1->elseIfBlocks = $2; $1->elseBlock = make_shared<Stmts>($4); }
+    | if_stmt else_if_chain ELSE block { $$ = $1; $1->elseIfBlocks = $2; $1->elseBlock = $4; }
     | WHILE OPEN_PAREN expr CLOSE_PAREN block { $$ = make_shared<While>($3, $5); }
     | FOR OPEN_PAREN IDENTIFIER IN expr COMMA expr COMMA expr CLOSE_PAREN block { $$ = make_shared<For>($3, $5, $7, $9, $11); }
+    ;
+
+if_stmt: IF OPEN_PAREN expr CLOSE_PAREN block { $$ = make_shared<If>($3, $5); }
+    | IF OPEN_PAREN expr CLOSE_PAREN stmt SEMICOLON { $$ = make_shared<If>($3, make_shared<Stmts>($5)); }
+   ;
+
+else_if_chain: else_if_stmt { $$ = make_shared<vector<shared_ptr<If>>>(); $$->push_back($1); }
+    | else_if_chain else_if_stmt { $$ = $1; $1->push_back($2); }
+    ;
+
+else_if_stmt: ELSE if_stmt { $$ = $2; }
     ;
 
 stmts: { $$ = make_shared<Stmts>(nullptr); }

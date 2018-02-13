@@ -1577,9 +1577,27 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 if(!condition) return nullptr;
                 if(condition->type == NODE_BOOL) {
                     bool b = (static_pointer_cast<Bool>(condition)->value);
-                    if(b) {
+                    Stmts_ptr execute = nullptr; 
+                    if(!b) {
+                        if(ifstmt->elseIfBlocks != nullptr) {
+                            for(auto it = ifstmt->elseIfBlocks->begin(); it != ifstmt->elseIfBlocks->end(); ++it) {
+                                If_ptr elseIf = *it;
+                                bool eb = static_pointer_cast<Bool>(eval_expr(elseIf->condition))->value;
+                                if(eb) {
+                                    execute = elseIf->block;
+                                    break;
+                                }
+                            }
+                        }
+                        if(execute == nullptr) {
+                            execute = ifstmt->elseBlock;
+                        }
+                    } else {
+                        execute = ifstmt->block;
+                    }
+                    if(execute != nullptr) {
                         functionScopeStack.top()->attach("if");
-                        Expr_ptr returnValue = execute_stmts(ifstmt->block);
+                        Expr_ptr returnValue = execute_stmts(execute);
                         functionScopeStack.top()->detach();
                         if(returnValue != nullptr) {
                             return returnValue;

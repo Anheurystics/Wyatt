@@ -473,6 +473,9 @@ class If: public Stmt {
     public:
         Expr_ptr condition;
         Stmts_ptr block;
+        Stmts_ptr elseBlock;
+
+        shared_ptr<vector<If_ptr>> elseIfBlocks;
 
         If(Expr_ptr condition, Stmts_ptr block): Stmt(NODE_IF) {
             this->condition = condition;

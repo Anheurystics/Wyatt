@@ -36,6 +36,7 @@ main           { return Parser::make_MAIN(curr_location); }
 return         { return Parser::make_RETURN(curr_location); }
 draw           { return Parser::make_DRAW(curr_location); }
 if             { return Parser::make_IF(curr_location); }
+else           { return Parser::make_ELSE(curr_location); }
 while          { return Parser::make_WHILE(curr_location); }
 for            { return Parser::make_FOR(curr_location); }
 in             { return Parser::make_IN(curr_location); }
