@@ -1643,27 +1643,52 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 For_ptr forstmt = static_pointer_cast<For>(stmt);
                 Ident_ptr iterator = forstmt->iterator;
                 Expr_ptr start = eval_expr(forstmt->start), end = eval_expr(forstmt->end), increment = eval_expr(forstmt->increment);
-                if(start->type == NODE_INT || end->type == NODE_INT || increment->type == NODE_INT) {
+                Expr_ptr list = eval_expr(forstmt->list);
+                if(list == nullptr) {
+                    if(start->type == NODE_INT || end->type == NODE_INT || increment->type == NODE_INT) {
+                        functionScopeStack.top()->attach("for");
+                        eval_stmt(make_shared<Decl>(make_shared<Ident>("int"), iterator, start));
+
+                        time_t start = time(nullptr);
+                        while(true) {
+                            Bool_ptr terminate = static_pointer_cast<Bool>(eval_binary(make_shared<Binary>(iterator, OP_EQUAL, end)));
+                            if(terminate == nullptr || terminate->value) {
+                                break;
+                            }
+
+                            Expr_ptr returnValue = execute_stmts(forstmt->block);
+                            if(returnValue != nullptr) {
+                                return returnValue;
+                            }
+
+                            eval_stmt(make_shared<Assign>(iterator, make_shared<Binary>(iterator, OP_PLUS, increment)));
+
+                            time_t now = time(nullptr);
+                            int diff = difftime(now, start);
+                            if(diff > LOOP_TIMEOUT) { break; }
+                        }
+                        functionScopeStack.top()->detach();
+                    }
+                } else if(list->type == NODE_LIST) {
+                    List_ptr lst = static_pointer_cast<List>(list);
                     functionScopeStack.top()->attach("for");
-                    eval_stmt(make_shared<Decl>(make_shared<Ident>("int"), iterator, start));
+                    eval_stmt(make_shared<Decl>(make_shared<Ident>("var"), iterator, nullptr));
+                    int i = 0; 
 
                     time_t start = time(nullptr);
-                    while(true) {
-                        Bool_ptr terminate = static_pointer_cast<Bool>(eval_binary(make_shared<Binary>(iterator, OP_EQUAL, end)));
-                        if(terminate == nullptr || terminate->value) {
-                            break;
-                        }
+                    while(i < lst->list.size()) {
+                        eval_stmt(make_shared<Assign>(iterator, lst->list[i]));
 
                         Expr_ptr returnValue = execute_stmts(forstmt->block);
                         if(returnValue != nullptr) {
                             return returnValue;
                         }
 
-                        eval_stmt(make_shared<Assign>(iterator, make_shared<Binary>(iterator, OP_PLUS, increment)));
+                        i++;
 
                         time_t now = time(nullptr);
                         int diff = difftime(now, start);
-                        if(diff > LOOP_TIMEOUT) { break;}
+                        if(diff > LOOP_TIMEOUT) { break; }
                     }
                     functionScopeStack.top()->detach();
                 }

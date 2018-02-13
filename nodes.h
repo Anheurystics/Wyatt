@@ -500,11 +500,19 @@ class For: public Stmt {
         Expr_ptr start, end, increment;
         Stmts_ptr block;
 
+        Expr_ptr list;
+
         For(Ident_ptr iterator, Expr_ptr start, Expr_ptr end, Expr_ptr increment, Stmts_ptr block): Stmt(NODE_FOR) {
             this->iterator = iterator;
             this->start = start;
             this->end = end;
             this->increment = increment;
+            this->block = block;
+        }
+
+        For(Ident_ptr iterator, Expr_ptr list, Stmts_ptr block): Stmt(NODE_FOR) {
+            this->iterator = iterator;
+            this->list = list;
             this->block = block;
         }
 };
