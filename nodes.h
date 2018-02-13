@@ -156,10 +156,10 @@ class Ident: public Expr {
 
 class Dot: public Ident {
     public:
-        string shader;
+        Ident_ptr shader;
 
         Dot(Ident_ptr shader, Ident_ptr name): Ident(name->name) {
-            this->shader = shader->name;
+            this->shader = shader;
             type = NODE_DOT;
         }
 };
@@ -619,13 +619,22 @@ class Shader: public Node {
     public:
         string name;
         shared_ptr<map<string, string>> uniforms;
+        shared_ptr<vector<string>> textureSlots;
         shared_ptr<map<string, FuncDef_ptr>> functions;
         ParamList_ptr inputs;
         ParamList_ptr outputs;
 
-        Shader(string name, shared_ptr<map<string, string>> uniforms, shared_ptr<map<string, FuncDef_ptr>> functions, ParamList_ptr inputs, ParamList_ptr outputs): Node(NODE_SHADER) {
+        Shader(string name, shared_ptr<vector<pair<string, string>>> uniforms, shared_ptr<map<string, FuncDef_ptr>> functions, ParamList_ptr inputs, ParamList_ptr outputs): Node(NODE_SHADER) {
             this->name = name;
-            this->uniforms = uniforms;
+            this->uniforms = make_shared<map<string, string>>();
+            this->textureSlots = make_shared<vector<string>>();
+            for(auto it = uniforms->begin(); it != uniforms->end(); ++it) {
+                this->uniforms->insert(pair<string, string>(it->first, it->second));
+                if(it->second == "texture2D") {
+                    std::cout << it->first << std::endl;
+                    this->textureSlots->push_back(it->first);
+                }
+            }
             this->functions = functions;
             this->inputs = inputs;
             this->outputs = outputs;

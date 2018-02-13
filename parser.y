@@ -119,7 +119,7 @@
 %type<shared_ptr<Dot>> dot;
 %type<shared_ptr<List>> list;
 %type<shared_ptr<Decl>> decl;
-%type<shared_ptr<map<string, string>>> shader_uniforms;
+%type<shared_ptr<vector<pair<string, string>>>> shader_uniforms;
 %type<shared_ptr<map<string, FuncDef_ptr>>> shader_functions;
 
 %type<shared_ptr<Stmt>> stmt stmt_block
@@ -190,8 +190,8 @@ funcshaders:
     }
     ;
 
-shader_uniforms: { $$ = make_shared<map<string, string>>(); }
-    | decl SEMICOLON shader_uniforms { $$ = $3; $3->insert(pair<string, string>($1->name->name, $1->datatype->name)); }
+shader_uniforms: { $$ = make_shared<vector<pair<string, string>>>(); }
+    | shader_uniforms decl SEMICOLON { $$ = $1; $1->push_back(pair<string, string>($2->name->name, $2->datatype->name)); }
     ;
 
 shader_functions: FUNC MAIN OPEN_PAREN CLOSE_PAREN block { $$ = make_shared<map<string, FuncDef_ptr>>(); $$->insert(pair<string, FuncDef_ptr>("main", make_shared<FuncDef>(make_shared<Ident>("main"), make_shared<ParamList>(nullptr), $5)));}

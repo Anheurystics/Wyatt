@@ -28,11 +28,12 @@ frag basic(vec3 Position, vec3 Normal, vec3 Color, vec2 UV) {
 	vec3 LightColor;
 
 	texture2D tex;
+	texture2D tex2;
 
 	func main() {
 		vec3 toLight = normalize(LightPos - Position);
 		float cos_angle = dot(normalize(Normal), toLight);
-		vec4 textureColor = texture2D(tex, UV);
+		vec4 textureColor = mix(texture2D(tex, UV), texture2D(tex2, UV), 0.5);
 		vec3 litColor = LightColor * Color * cos_angle;
 		FinalColor = textureColor * [litColor, 1.0];
 	}
@@ -115,6 +116,7 @@ func loop() {
     basic.model = mat4_rotation_x(angle) * mat4_rotation_y(angle);
 	basic.norm_model = mat4_transpose(mat4_inverse(basic.model));
 	basic.tex = rivers;
+	basic.tex2 = grass;
 	draw cube;
 
 	basic.tex = grass;

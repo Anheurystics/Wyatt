@@ -1,5 +1,6 @@
 #include "interpreter.h"
 #include <sstream>
+#include <algorithm>
 #include <memory>
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -608,8 +609,8 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
             {
                 Dot_ptr uniform = static_pointer_cast<Dot>(node);
                 bool reupload = false;
-                if(current_program_name != uniform->shader) {
-                    current_program_name = uniform->shader;
+                if(current_program_name != uniform->shader->name) {
+                    current_program_name = uniform->shader->name;
                     current_program = programs[current_program_name];
                     reupload = true;
                 }
@@ -1090,8 +1091,8 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     } else if(lhs->type == NODE_DOT) {
                         Dot_ptr uniform = static_pointer_cast<Dot>(lhs);
                         bool reupload = false;
-                        if(current_program_name != uniform->shader) {
-                            current_program_name = uniform->shader;
+                        if(current_program_name != uniform->shader->name) {
+                            current_program_name = uniform->shader->name;
                             current_program = programs[current_program_name];
                             reupload = true;
                         }
@@ -1199,7 +1200,13 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                             switch(rhs->type) {
                                 case NODE_TEXTURE:
                                     {
+                                        Shader_ptr frag = current_program->fragSource;
+                                        auto texSlots = frag->textureSlots;
+                                        auto it = find(texSlots->begin(), texSlots->end(), uniform->name);
+                                        activeTextureSlot = it - texSlots->begin();
+
                                         Texture_ptr tex = static_pointer_cast<Texture>(rhs);
+                                        gl->glActiveTexture(GL_TEXTURE0 + activeTextureSlot);
                                         if(tex->handle == 0) {
                                             gl->glGenTextures(1, &(tex->handle));
                                             gl->glBindTexture(GL_TEXTURE_2D, tex->handle);
@@ -1211,8 +1218,8 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                         } else {
                                             gl->glBindTexture(GL_TEXTURE_2D, tex->handle);
                                         }
+                                        gl->glUniform1i(loc, activeTextureSlot);
 
-                                        gl->glActiveTexture(GL_TEXTURE0);
                                         break;
                                     }
                                 case NODE_STRING:

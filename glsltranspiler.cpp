@@ -148,7 +148,7 @@ string GLSLTranspiler::eval_expr(Expr_ptr expr) {
         case NODE_DOT:
             {
                 Dot_ptr dot = static_pointer_cast<Dot>(expr);
-                return dot->shader + "." + dot->name;
+                return dot->shader->name + "." + dot->name;
             }
         case NODE_BINARY:
             {

@@ -71,6 +71,8 @@ class Interpreter {
         vector<string> imports;
         vector<Decl_ptr> globals;
 
+        int activeTextureSlot = 0;
+
         string current_program_name;
         shared_ptr<Program> current_program = nullptr;
 
