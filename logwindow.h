@@ -2,7 +2,7 @@
 #define LOGWINDOW_H
 
 #include <iostream>
-#include <cstring>
+#include <string>
 #include <QPlainTextEdit>
 #include <QTextCursor>
 
