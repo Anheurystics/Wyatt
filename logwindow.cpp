@@ -12,7 +12,6 @@ LogWindow::LogWindow(QWidget *parent = 0): QPlainTextEdit(parent)
 
     QFontMetrics metrics(monoFont);
     this->setTabStopWidth(4 * metrics.width(' '));
-
 }
 
 void LogWindow::log(string msg) {

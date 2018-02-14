@@ -546,7 +546,7 @@ Expr_ptr Prototype::Interpreter::invoke(Invoke_ptr invoke) {
         functionScopeStack.pop();
         return retValue;
     } else {
-        logger->log(invoke, "ERROR", "Call to undefined function " + name);
+        logger->log(invoke, "ERROR", "Function " + name + " does not exist");
     }
     return nullptr;
 }
@@ -600,7 +600,7 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                 Expr_ptr value = nullptr;
                 get_variable(value, ident->name);
                 if(value == nullptr) {
-                    logger->log(ident, "ERROR", "Undefined variable " + ident->name);
+                    logger->log(ident, "ERROR", "Variable " + ident->name + " does not exist");
                 }
 
                 return value;
@@ -633,7 +633,7 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                     if(src->uniforms->find(uniform->name) != src->uniforms->end()) {
                         type = src->uniforms->at(uniform->name);
                     } else {
-                        logger->log(uniform, "ERROR", "Uniform " + uniform->name + " of shader " + current_program_name + " does not exist!");
+                        logger->log(uniform, "ERROR", "Uniform " + uniform->name + " of shader " + current_program_name + " does not exist");
                         return nullptr;
                     }
                 }
@@ -1085,7 +1085,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                         if(globalScope->assign(static_pointer_cast<Ident>(lhs)->name, rhs)) {
                             return nullptr;
                         }
-                        logger->log(lhs, "ERROR", "Variable " + name + " does not exist!");
+                        logger->log(lhs, "ERROR", "Variable " + name + " does not exist");
 
                         return nullptr;
                     } else if(lhs->type == NODE_DOT) {
@@ -1115,7 +1115,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                             if(src->uniforms->find(uniform->name) != src->uniforms->end()) {
                                 type = src->uniforms->at(uniform->name);
                             } else {
-                                logger->log(uniform, "ERROR", "Uniform " + uniform->name + " of shader " + current_program_name + " does not exist!");
+                                logger->log(uniform, "ERROR", "Uniform " + uniform->name + " of shader " + current_program_name + " does not exist");
                                 return nullptr;
                             }
                         }
@@ -1374,7 +1374,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 Expr_ptr expr = nullptr;
                 get_variable(expr, upload->ident->name);
                 if(expr == nullptr || expr->type != NODE_BUFFER) {
-                    logger->log(upload, "ERROR", "Can't upload to non-buffer object");
+                    logger->log(upload, "ERROR", "Cannot upload to non-buffer object");
                 }
 
                 Buffer_ptr buffer = static_pointer_cast<Buffer>(expr);
@@ -1382,7 +1382,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     for(unsigned int i = 0 ; i < upload->list->list.size(); i++) {
                         Expr_ptr e = eval_expr(upload->list->list[i]);
                         if(e == nullptr || e->type != NODE_INT) {
-                            logger->log(upload, "ERROR", "Cannot upload non-int value into inded buffer!");
+                            logger->log(upload, "ERROR", "Cannot upload non-int value into index buffer");
                             return nullptr;
                         } else {
                             buffer->indices.push_back(resolve_int(e));
@@ -1408,7 +1408,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
 
                     unsigned int size = attrib_size(expr->type);
                     if(size == 0) {
-                        logger->log(upload, "ERROR", "Attribute type must be float or vector!");
+                        logger->log(upload, "ERROR", "Attribute type must be float or vector");
                         return nullptr;
                     }
 
@@ -1417,7 +1417,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                         layout->list.push_back(upload->attrib->name);
                     } else {
                         if(size != layout->attributes[upload->attrib->name]) {
-                            logger->log(upload, "ERROR", "Attribute size must be consistent!");
+                            logger->log(upload, "ERROR", "Attribute size must be consistent");
                             return nullptr;
                         }
                     }
@@ -1461,12 +1461,12 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 OpType op = compbin->op;
 
                 if(lhs == nullptr) {
-                    logger->log(lhs, "ERROR", "Illegal expression at the left-hand side");
+                    logger->log(compbin->lhs, "ERROR", "Illegal expression at the left-hand side");
                     return nullptr;
                 }
 
                 if(rhs == nullptr) {
-                    logger->log(rhs, "ERROR", "Illegal expression at the right-hand side");
+                    logger->log(compbin->rhs, "ERROR", "Illegal expression at the right-hand side");
                     return nullptr;
                 }
 
@@ -1525,7 +1525,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
 
                     map<string, unsigned int> attributes = layout->attributes;
                     if(attributes.size() == 0) {
-                        logger->log(draw, "ERROR", "Cannot draw empty buffer!");
+                        logger->log(draw, "ERROR", "Cannot draw empty buffer");
                         return nullptr;
                     }
 
@@ -1838,11 +1838,11 @@ void Prototype::Interpreter::prepare() {
 
     init = functions["init"];
     if(init == nullptr) {
-        logger->log("ERROR: init() function required!");
+        logger->log("WARNING: No init function detected");
     }
 
     loop = functions["loop"];
     if(loop == nullptr) {
-        logger->log("ERROR: loop() function required!");
+        logger->log("WARNING: No loop function detected");
     }
 }
