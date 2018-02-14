@@ -1673,7 +1673,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     List_ptr lst = static_pointer_cast<List>(list);
                     functionScopeStack.top()->attach("for");
                     eval_stmt(make_shared<Decl>(make_shared<Ident>("var"), iterator, nullptr));
-                    int i = 0; 
+                    unsigned int i = 0; 
 
                     time_t start = time(nullptr);
                     while(i < lst->list.size()) {

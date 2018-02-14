@@ -16,11 +16,11 @@
     #include <string>
     #include <memory>
 
-    using namespace std;
-
     namespace Prototype {
         class Scanner;
     }
+
+    using namespace std;
 
     #include "nodes.h"
     #include "logwindow.h"
@@ -31,7 +31,6 @@
 }
 
 %code top {
-    #include <iostream>
     #include "scanner.h"
     #include "parser.hpp"
     #include "interpreter.h"
@@ -40,8 +39,6 @@
     static Prototype::Parser::symbol_type yylex(Prototype::Scanner &scanner) {
         return scanner.get_next_token();
     }
-
-    using namespace Prototype;
 }
 
 %lex-param { Prototype::Scanner &scanner }
@@ -49,10 +46,10 @@
 %parse-param { LogWindow* logger }
 %parse-param { unsigned int* line }
 %parse-param { unsigned int* column }
-%parse-param { std::vector<string>* imports }
-%parse-param { std::vector<Decl_ptr>* globals }
-%parse-param { std::map<std::string, FuncDef_ptr>* functions }
-%parse-param { std::map<std::string, std::shared_ptr<ShaderPair>>* shaders }
+%parse-param { vector<string>* imports }
+%parse-param { vector<Decl_ptr>* globals }
+%parse-param { map<string, FuncDef_ptr>* functions }
+%parse-param { map<string, shared_ptr<ShaderPair>>* shaders }
 %locations
 %define parse.trace
 %define parse.error verbose
@@ -162,19 +159,19 @@ funcshaders:
     |
     function funcshaders{
         if(functions->find($1->ident->name) == functions->end()) {
-            functions->insert(std::pair<std::string, std::shared_ptr<FuncDef>>($1->ident->name, $1));
+            functions->insert(pair<string, shared_ptr<FuncDef>>($1->ident->name, $1));
         } else {
-            std::cout << "ERROR: Redefinition of function " << $1->ident->name << std::endl;
+            cout << "ERROR: Redefinition of function " << $1->ident->name << endl;
         }
     }
     |
     vert_shader funcshaders{
         if(shaders->find($1->name) == shaders->end()) {
-            std::shared_ptr<ShaderPair> pair = make_shared<ShaderPair>();
-            pair->name = $1->name;
-            pair->vertex = $1;
+            shared_ptr<ShaderPair> shaderPair = make_shared<ShaderPair>();
+            shaderPair->name = $1->name;
+            shaderPair->vertex = $1;
 
-            shaders->insert(std::pair<std::string, std::shared_ptr<ShaderPair>>($1->name, pair));
+            shaders->insert(pair<string, shared_ptr<ShaderPair>>($1->name, shaderPair));
         } else {
             (*shaders)[$1->name]->vertex = $1;
         }
@@ -182,17 +179,17 @@ funcshaders:
     |
     frag_shader funcshaders {
         if(shaders->find($1->name) == shaders->end()) {
-            std::shared_ptr<ShaderPair> pair = make_shared<ShaderPair>();
-            pair->name = $1->name;
-            pair->fragment = $1;
+            shared_ptr<ShaderPair> shaderPair = make_shared<ShaderPair>();
+            shaderPair->name = $1->name;
+            shaderPair->fragment = $1;
 
-            shaders->insert(std::pair<std::string, std::shared_ptr<ShaderPair>>($1->name, pair));
+            shaders->insert(pair<string, shared_ptr<ShaderPair>>($1->name, shaderPair));
         } else {
             (*shaders)[$1->name]->fragment = $1;
         }
     }
     ;
-
+    
 shader_uniforms: { $$ = make_shared<vector<pair<string, string>>>(); }
     | shader_uniforms decl SEMICOLON { $$ = $1; $1->push_back(pair<string, string>($2->name->name, $2->datatype->name)); }
     ;
@@ -318,14 +315,14 @@ else_if_stmt: ELSE if_stmt { $$ = $2; }
     ;
 
 stmts: { $$ = make_shared<Stmts>(nullptr); }
-    | stmts stmt SEMICOLON { $$ = $1; $1->list.insert($1->list.end(), $2); }
-    | stmts stmt_block { $$ = $1; $1->list.insert($1->list.end(), $2); }
+    | stmts stmt SEMICOLON { $$ = $1; $1->list.push_back($2); }
+    | stmts stmt_block { $$ = $1; $1->list.push_back($2); }
     ;
 
 block: OPEN_BRACE stmts CLOSE_BRACE { $$ = $2; }
 
 upload_list: expr { $$ = make_shared<UploadList>($1); }
-    | upload_list COMMA expr { $$ = $1; $1->list.insert($1->list.end(), $3); }
+    | upload_list COMMA expr { $$ = $1; $1->list.push_back($3); }
     ;
 
 vec2: OPEN_BRACKET expr COMMA expr CLOSE_BRACKET { $$ = make_shared<Vector2>($2, $4); set_lines($$, @1, @5); }
@@ -339,6 +336,6 @@ vec4: OPEN_BRACKET expr COMMA expr COMMA expr COMMA expr CLOSE_BRACKET { $$ = ma
 
 %%
 
-void Parser::error(const location &loc, const string &message) {
+void Prototype::Parser::error(const Prototype::location &loc, const string &message) {
     logger->log("ERROR: " + message + " at line " + to_string(loc.begin.line) + "\n");
 }
