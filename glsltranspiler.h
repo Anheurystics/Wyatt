@@ -21,6 +21,7 @@ class GLSLTranspiler
         string eval_stmt(Stmt_ptr);
         string resolve_ident(Ident_ptr);
         string resolve_vector(vector<Expr_ptr>);
+        string resolve_binary(Binary_ptr);
 
         map<string, string> localtypes;
 };

@@ -10,12 +10,12 @@ string GLSLTranspiler::transpile(Shader_ptr shader) {
 
     string source = "#version 130\n";
 
-    for(vector<Decl_ptr>::iterator it = shader->inputs->list.begin(); it != shader->inputs->list.end(); ++it) {
+    for(auto it = shader->inputs->list.begin(); it != shader->inputs->list.end(); ++it) {
         Decl_ptr decl = *it;
         source += "in " + decl->datatype->name + " " + decl->name->name + ";\n";
     }
 
-    for(map<string, string>::iterator it = shader->uniforms->begin(); it != shader->uniforms->end(); ++it) {
+    for(auto it = shader->uniforms->begin(); it != shader->uniforms->end(); ++it) {
         string type = it->second;
         if(type == "texture2D") {
             type = "sampler2D";
@@ -23,7 +23,7 @@ string GLSLTranspiler::transpile(Shader_ptr shader) {
         source += "uniform " + type + " " + it->first + ";\n";
     }
 
-    for(vector<Decl_ptr>::iterator it = shader->outputs->list.begin(); it != shader->outputs->list.end(); ++it) {
+    for(auto it = shader->outputs->list.begin(); it != shader->outputs->list.end(); ++it) {
         Decl_ptr decl = *it;
         if(decl->name->name == "FinalPosition") {
             continue;
@@ -31,7 +31,7 @@ string GLSLTranspiler::transpile(Shader_ptr shader) {
         source += "out " + decl->datatype->name + " " + decl->name->name + ";\n";
     }
 
-    for(map<string, FuncDef_ptr>::iterator it = shader->functions->begin(); it != shader->functions->end(); ++it) {
+    for(auto it = shader->functions->begin(); it != shader->functions->end(); ++it) {
         string type = "var";
         if(it->first == "main") {
             type = "void";
@@ -41,7 +41,7 @@ string GLSLTranspiler::transpile(Shader_ptr shader) {
 
         FuncDef_ptr def = it->second;
         Stmts_ptr stmts = def->stmts;
-        for(vector<Stmt_ptr>::iterator jt = stmts->list.begin(); jt != stmts->list.end(); ++jt) {
+        for(auto jt = stmts->list.begin(); jt != stmts->list.end(); ++jt) {
             source += eval_stmt(*jt) + "\n";
         }
 
@@ -59,7 +59,7 @@ string GLSLTranspiler::resolve_ident(Ident_ptr ident) {
     if(shader->uniforms->find(name) != shader->uniforms->end()) {
         return shader->uniforms->at(name);
     } else {
-        for(vector<Decl_ptr>::iterator jt = shader->inputs->list.begin(); jt != shader->inputs->list.end(); ++jt) {
+        for(auto jt = shader->inputs->list.begin(); jt != shader->inputs->list.end(); ++jt) {
             Decl_ptr decl = *jt;
             if(decl->name->name == name) {
                 return decl->datatype->name;
@@ -70,10 +70,71 @@ string GLSLTranspiler::resolve_ident(Ident_ptr ident) {
     return "";
 }
 
+string GLSLTranspiler::resolve_binary(Binary_ptr bin) {
+    OpType op = bin->op;
+    Expr_ptr lhs = bin->lhs;
+    Expr_ptr rhs = bin->rhs;
+
+    string ltype = "";
+    if(lhs->type == NODE_IDENT) {
+        ltype = resolve_ident(static_pointer_cast<Ident>(lhs));
+    } else {
+        if(lhs->type == NODE_FLOAT) {
+            ltype = "float";
+        } else if(lhs->type == NODE_INT) {
+            ltype = "int";
+        } else {
+            vector<Expr_ptr> list;
+            Vector_ptr vec = static_pointer_cast<Vector>(lhs);
+            for(unsigned int i = 0; i < vec->size(); i++) {
+                list.push_back(vec->get(i));
+            }
+            ltype = resolve_vector(list);
+        }
+    }
+
+    string rtype = "";
+    if(rhs->type == NODE_IDENT) {
+        rtype = resolve_ident(static_pointer_cast<Ident>(rhs));
+    } else {
+        if(rhs->type == NODE_FLOAT) {
+            rtype = "float";
+        } else if(rhs->type == NODE_INT) {
+            rtype = "int";
+        } else {
+            vector<Expr_ptr> list;
+            Vector_ptr vec = static_pointer_cast<Vector>(rhs);
+            for(unsigned int i = 0; i < vec->size(); i++) {
+                list.push_back(vec->get(i));
+            }
+            rtype = resolve_vector(list);
+        }
+    }
+
+    int n = 0;
+    if((ltype == "float"|| ltype == "int") && (rtype == "float"|| rtype == "int")) {
+        n = 1;
+    } else
+    if(op == OP_PLUS || op == OP_MINUS) {
+        if(ltype == rtype) {
+           if(ltype == "vec2") n = 2;
+           if(ltype == "vec3") n = 3;
+           if(ltype == "vec4") n = 4;
+        }
+    } else
+    if(op == OP_MULT) {
+        if(ltype == rtype) {
+           if(ltype == "vec2") n = 2;
+           if(ltype == "vec3") n = 3;
+           if(ltype == "vec4") n = 4;
+        }
+    }
+}
+
 string GLSLTranspiler::resolve_vector(vector<Expr_ptr> list) {
     string output = "(";
     int n = 0;
-    for(vector<Expr_ptr>::iterator it = list.begin(); it != list.end(); ++it) {
+    for(auto it = list.begin(); it != list.end(); ++it) {
         Expr_ptr expr = *it;
         if(expr->type == NODE_FLOAT || expr->type == NODE_INT) {
             output += (n != 0? ",":"") + eval_expr(expr);
