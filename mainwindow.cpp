@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-MainWindow::MainWindow(QWidget *parent) :
+MainWindow::MainWindow(QWidget *parent, std::string startupFile) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
@@ -9,7 +9,22 @@ MainWindow::MainWindow(QWidget *parent) :
     startupCode = "func init(){\n\n}\n\nfunc loop(){\n\n}\n";
 
     codeEditor = ui->codeEditor;
-    codeEditor->setPlainText(startupCode);
+
+    if(startupFile != "") {
+        setOpenedFile(QString::fromStdString(startupFile));
+
+        ifstream file;
+        file.open(openFileName.toStdString());
+        string contents = "";
+        string line = "";
+        while(getline(file, line)) {
+            contents += line + '\n';
+        }
+        file.close();
+        codeEditor->setPlainText(QString::fromStdString(contents));
+    } else {
+        codeEditor->setPlainText(startupCode);
+    }
 
     QObject::connect(codeEditor, SIGNAL(textChanged()), ui->openGLWidget, SLOT(updateCode()));
 
