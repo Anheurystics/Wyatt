@@ -44,7 +44,7 @@ Prototype::Interpreter::Interpreter(LogWindow* logger): scanner(&line, &column),
 }
 
 #define clear_map(type, name) \
-    for(map<string, type>::iterator it = name.begin(); it != name.end(); ++it) { \
+    for(auto it = name.begin(); it != name.end(); ++it) { \
         name.erase(it); \
     } \
 
@@ -128,6 +128,14 @@ string tostring(Expr_ptr expr) {
     }
 }
 
+#define init_line() Expr_ptr source, result;
+#define set_line_source(src) source = src;
+#define set_line_and_return(value) \
+    result = value; \
+    result->first_line = source->first_line; \
+    result->last_line = source->last_line; \
+    return result; \
+
 Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
     Expr_ptr lhs = eval_expr(bin->lhs);
     if(lhs == nullptr) return nullptr;
@@ -139,14 +147,17 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
 
     NodeType ltype = lhs->type;
     NodeType rtype = rhs->type;
+    
+    init_line();
+    set_line_source(bin);
 
     if(ltype == NODE_BOOL && rtype == NODE_BOOL) {
         bool a = static_pointer_cast<Bool>(lhs)->value;
         bool b = static_pointer_cast<Bool>(rhs)->value;
 
         switch(op) {
-            case OP_AND: return make_shared<Bool>(a && b);
-            case OP_OR: return make_shared<Bool>(a || b);
+            case OP_AND: set_line_and_return(make_shared<Bool>(a && b));
+            case OP_OR: set_line_and_return(make_shared<Bool>(a || b));
             default: break;
         }
     }
@@ -537,7 +548,7 @@ Expr_ptr Prototype::Interpreter::invoke(Invoke_ptr invoke) {
                 }
 
                 Decl_ptr param = def->params->list[i];
-                localScope->current()->declare(param->name->name, param->datatype->name, arg);
+                localScope->current()->declare(param, param->name, param->datatype->name, arg);
             }
         }
 
@@ -1068,7 +1079,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     decl->value = buf;
                 }
 
-                scope->declare(decl->name->name, decl->datatype->name, decl->value == nullptr? null_expr : eval_expr(decl->value));
+                scope->declare(decl, decl->name, decl->datatype->name, decl->value == nullptr? null_expr : eval_expr(decl->value));
                 return nullptr;
             }
         case NODE_ASSIGN:
@@ -1078,16 +1089,17 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 if(rhs != nullptr) {
                     Expr_ptr lhs = assign->lhs;
                     if(lhs->type == NODE_IDENT) {
-                        string name = static_pointer_cast<Ident>(lhs)->name;
-                        if(!functionScopeStack.empty() && functionScopeStack.top()->assign(name, rhs)) {
+                        Ident_ptr ident = static_pointer_cast<Ident>(lhs);
+                        if(!functionScopeStack.empty() && functionScopeStack.top()->assign(assign, ident, rhs)) {
                             return nullptr;
                         }
-                        if(globalScope->assign(static_pointer_cast<Ident>(lhs)->name, rhs)) {
+                        if(globalScope->assign(assign, ident, rhs)) {
                             return nullptr;
                         }
-                        logger->log(lhs, "ERROR", "Variable " + name + " does not exist");
 
+                        logger->log(lhs, "ERROR", "Variable " + ident->name + " does not exist");
                         return nullptr;
+
                     } else if(lhs->type == NODE_DOT) {
                         Dot_ptr uniform = static_pointer_cast<Dot>(lhs);
                         bool reupload = false;
@@ -1363,7 +1375,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 gl->glGenBuffers(1, &(buf->handle));
                 gl->glGenBuffers(1, &(buf->indexHandle));
 
-                scope->declare(alloc->ident->name, "buffer", buf);
+                scope->declare(alloc, alloc->ident, "buffer", buf);
 
                 return nullptr;
             }
@@ -1424,28 +1436,28 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
 
                     if(expr->type == NODE_FLOAT) {
                         Float_ptr f = static_pointer_cast<Float>(expr);
-                        target->insert(target->begin(), resolve_scalar(f));
+                        target->push_back(resolve_scalar(f));
                     }
                     
                     if(expr->type == NODE_VECTOR2) {
                         Vector2_ptr vec2 = static_pointer_cast<Vector2>(expr);
-                        target->insert(target->end(), resolve_scalar(vec2->x));
-                        target->insert(target->end(), resolve_scalar(vec2->y));
+                        target->push_back(resolve_scalar(vec2->x));
+                        target->push_back(resolve_scalar(vec2->y));
                     }
 
                     if(expr->type == NODE_VECTOR3) {
                         Vector3_ptr vec3 = static_pointer_cast<Vector3>(expr);
-                        target->insert(target->end(), resolve_scalar(vec3->x));
-                        target->insert(target->end(), resolve_scalar(vec3->y));
-                        target->insert(target->end(), resolve_scalar(vec3->z));
+                        target->push_back(resolve_scalar(vec3->x));
+                        target->push_back(resolve_scalar(vec3->y));
+                        target->push_back(resolve_scalar(vec3->z));
                     }
 
                     if(expr->type == NODE_VECTOR4) {
                         Vector4_ptr vec4 = static_pointer_cast<Vector4>(expr);
-                        target->insert(target->end(), resolve_scalar(vec4->x));
-                        target->insert(target->end(), resolve_scalar(vec4->y));
-                        target->insert(target->end(), resolve_scalar(vec4->z));
-                        target->insert(target->end(), resolve_scalar(vec4->w));
+                        target->push_back(resolve_scalar(vec4->x));
+                        target->push_back(resolve_scalar(vec4->y));
+                        target->push_back(resolve_scalar(vec4->z));
+                        target->push_back(resolve_scalar(vec4->w));
                     }
                 }
 
@@ -1534,7 +1546,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                         for(unsigned int j = 0; j < layout->list.size(); j++) {
                             string attrib = layout->list[j];
                             for(unsigned int k = 0; k < layout->attributes[attrib]; k++) {
-                                final_vector.insert(final_vector.end(), buffer->data[attrib][(i * layout->attributes[attrib]) + k]);
+                                final_vector.push_back(buffer->data[attrib][(i * layout->attributes[attrib]) + k]);
                             }
                         }
                     }
@@ -1542,7 +1554,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     gl->glBufferData(GL_ARRAY_BUFFER, final_vector.size() * sizeof(float), &final_vector[0], GL_STATIC_DRAW);
 
                     int total_size = 0;
-                    for(map<string, unsigned int>::iterator it = layout->attributes.begin(); it != layout->attributes.end(); ++it) {
+                    for(auto it = layout->attributes.begin(); it != layout->attributes.end(); ++it) {
                         total_size += it->second;
                     }
 
@@ -1753,7 +1765,7 @@ void Prototype::Interpreter::compile_shader(GLuint* handle, Shader_ptr shader) {
 
 void Prototype::Interpreter::compile_program() {
     programs.clear();
-    for(map<string, ShaderPair_ptr>::iterator it = shaders.begin(); it != shaders.end(); ++it) {
+    for(auto it = shaders.begin(); it != shaders.end(); ++it) {
         Program_ptr program = make_shared<Program>();
         program->handle = gl->glCreateProgram();
         program->vert = gl->glCreateShader(GL_VERTEX_SHADER);
@@ -1796,7 +1808,7 @@ void Prototype::Interpreter::execute_init() {
     if(!init || status) return;
     globalScope->clear();
 
-    for(vector<Decl_ptr>::iterator it = globals.begin(); it != globals.end(); ++it) {
+    for(auto it = globals.begin(); it != globals.end(); ++it) {
         Decl_ptr decl = *it;
         eval_stmt(decl);
     }

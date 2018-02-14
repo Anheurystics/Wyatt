@@ -19,7 +19,7 @@ class ScopeList {
         Scope_ptr attach(string name);
         void detach();
         Expr_ptr get(string name);
-        bool assign(string name, Expr_ptr value);
+        bool assign(Stmt_ptr assign, Ident_ptr, Expr_ptr);
 
     private:
         vector<Scope_ptr> chain;

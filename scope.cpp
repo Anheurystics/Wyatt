@@ -11,12 +11,14 @@ namespace Prototype {
         }
     }
 
-    void Scope::declare(string name, string type, Expr_ptr value) {
-        types[name] = type;
-        assign(name, (value != nullptr? value : null_expr));
+    void Scope::declare(Stmt_ptr decl, Ident_ptr ident, string type, Expr_ptr value) {
+        types[ident->name] = type;
+        assign(decl, ident, (value != nullptr? value : null_expr));
     }
 
-    bool Scope::assign(string name, Expr_ptr value) {
+    bool Scope::assign(Stmt_ptr assign, Ident_ptr ident, Expr_ptr value) {
+        string name = ident->name;
+
         if(types.find(name) == types.end()) {
             return false;
         }
@@ -38,7 +40,7 @@ namespace Prototype {
                 if(tex->image == 0) {
                     string message = "Cannot load " + filename + ": ";
                     message += stbi_failure_reason();
-                    logger->log(value, "ERROR", message);
+                    logger->log(assign, "ERROR", message);
                     return false;
                 }
                 variables[name] = tex;
@@ -49,7 +51,7 @@ namespace Prototype {
             }
         }
         if(types[name] != "var" && types[name] != value_type) {
-            logger->log(value, "ERROR", "Cannot assign value of type " + value_type + " to variable of type " + types[name]);
+            logger->log(assign, "ERROR", "Cannot assign value of type " + value_type + " to variable of type " + types[name]);
             return true;
         }
 

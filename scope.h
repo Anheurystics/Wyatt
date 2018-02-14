@@ -16,8 +16,8 @@ class Scope {
         Scope(string name, LogWindow* logger);
 
         void clear();
-        void declare(string name, string type, Expr_ptr value);
-        bool assign(string name, Expr_ptr value);
+        void declare(Stmt_ptr decl, Ident_ptr ident, string type, Expr_ptr value);
+        bool assign(Stmt_ptr assign, Ident_ptr ident, Expr_ptr value);
 
         Expr_ptr get(string name);
 
