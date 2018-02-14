@@ -7,7 +7,6 @@
 
 #include "mainwindow.h"
 #include "codeeditor.h"
-
 #include "interpreter.h"
 
 #include <iostream>

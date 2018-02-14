@@ -5,6 +5,7 @@
 #include <QFileDialog>
 #include <fstream>
 
+#include "customglwidget.h"
 #include "codeeditor.h"
 #include "highlighter.h"
 #include "helper.h"
@@ -25,6 +26,7 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    QOpenGLWidget* openGLWidget;
     CodeEditor* codeEditor;
     Highlighter* highlighter;
     QString openFileName;
@@ -49,7 +51,9 @@ private slots:
     }
 
     void openFile() {
+        openGLWidget->setUpdatesEnabled(false);
         QString selected = QFileDialog::getOpenFileName(this, tr("Open File"), Q_NULLPTR, txtFilter);
+        openGLWidget->setUpdatesEnabled(true);
         if(selected == Q_NULLPTR) {
             return;
         }

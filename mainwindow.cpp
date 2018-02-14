@@ -18,6 +18,8 @@ MainWindow::MainWindow(QWidget *parent) :
     CustomGLWidget* glWidget = ui->openGLWidget;
     glWidget->logger = ui->logWindow;
 
+    openGLWidget = glWidget;
+
     connect(ui->actionNew, &QAction::triggered, this, &MainWindow::newFile);
     connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::openFile);
     connect(ui->actionSave, &QAction::triggered, this, &MainWindow::saveFile);
