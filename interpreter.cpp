@@ -1079,7 +1079,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     decl->value = buf;
                 }
 
-                scope->declare(decl, decl->name, decl->datatype->name, decl->value == nullptr? null_expr : eval_expr(decl->value));
+                scope->declare(decl, decl->name, decl->datatype->name, eval_expr(decl->value));
                 return nullptr;
             }
         case NODE_ASSIGN:

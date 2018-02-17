@@ -32,7 +32,8 @@ inline string type_to_name(NodeType type) {
         case NODE_MATRIX4: return "mat4";
         case NODE_BUFFER: return "buffer";
         case NODE_TEXTURE: return "texture2D";
-        default: return "null";
+        case NODE_NULL: return "null";
+        default: return "undefined";
     }
 }
 

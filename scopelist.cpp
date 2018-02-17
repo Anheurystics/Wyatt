@@ -35,7 +35,7 @@ Expr_ptr ScopeList::get(string name) {
 bool ScopeList::assign(Stmt_ptr assign, Ident_ptr ident, Expr_ptr value) {
     for(vector<Scope_ptr>::reverse_iterator it = chain.rbegin(); it != chain.rend(); ++it) {
         Scope_ptr scope = *it;
-        if(scope->assign(assign, ident, value)) {
+        if(scope->assign(assign, ident, value == nullptr? null_expr : value)) {
             return true;
         }
     }
