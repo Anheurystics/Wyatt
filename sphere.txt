@@ -123,8 +123,7 @@ func init(){
 
 func loop(){
 	clear;
-	basic.lightPos = [4, 4, 4]; //Need this to implicitly use basic
-	draw buf, target;
+	draw buf to target using basic;
 
 	clear;
 	screen.tex = target;

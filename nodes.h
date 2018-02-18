@@ -590,10 +590,12 @@ class Draw: public Stmt {
     public:
         Ident_ptr ident;
         Ident_ptr target;
+        Ident_ptr program;
 
-        Draw(Ident_ptr ident, Ident_ptr target = nullptr): Stmt(NODE_DRAW) {
+        Draw(Ident_ptr ident, Ident_ptr target = nullptr, Ident_ptr program = nullptr): Stmt(NODE_DRAW) {
             this->ident = ident;
             this->target = target;
+            this->program = program;
         }
 };
 

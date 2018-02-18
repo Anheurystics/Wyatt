@@ -95,6 +95,8 @@
 %token ALLOCATE "allocate"; 
 %token UPLOAD "<-";
 %token DRAW "draw";
+%token TO "to";
+%token USING "using";
 %token CLEAR "clear";
 %token VERTEX "vert";
 %token FRAGMENT "frag";
@@ -261,7 +263,9 @@ stmt: IDENTIFIER EQUALS expr { $$ = make_shared<Assign>($1, $3); set_lines($$, @
     | IDENTIFIER PERIOD IDENTIFIER COMP_PLUS upload_list { $$ = make_shared<Upload>($1, $3, $5); set_lines($$, @1, @5); }
     | CLEAR { $$ = make_shared<Clear>(); set_lines($$, @1, @1); }
     | DRAW IDENTIFIER { $$ = make_shared<Draw>($2); set_lines($$, @1, @2); }
-    | DRAW IDENTIFIER COMMA IDENTIFIER { $$ = make_shared<Draw>($2, $4); set_lines($$, @1, @4); }
+    | DRAW IDENTIFIER TO IDENTIFIER { $$ = make_shared<Draw>($2, $4); set_lines($$, @1, @4); }
+    | DRAW IDENTIFIER USING IDENTIFIER { $$ = make_shared<Draw>($2, nullptr, $4); set_lines($$, @1, @4); }
+    | DRAW IDENTIFIER TO IDENTIFIER USING IDENTIFIER { $$ = make_shared<Draw>($2, $4, $6); set_lines($$, @1, @6); }
     | PRINT expr { $$ = make_shared<Print>($2); set_lines($$, @1, @2); }
     | RETURN expr { $$ = make_shared<Return>($2); set_lines($$, @1, @2); }
     | invoke { $$ = make_shared<FuncStmt>($1); set_lines($$, @1, @1); }

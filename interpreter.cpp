@@ -1518,9 +1518,18 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
             {
                 Draw_ptr draw = static_pointer_cast<Draw>(stmt);
 
+                if(draw->program != nullptr) {
+                    if(current_program_name != draw->program->name) {
+                        current_program_name = draw->program->name;
+                        current_program = programs[current_program_name];
+                    }
+                }
+
                 if(current_program == nullptr) {
                     logger->log(draw, "ERROR", "Cannot bind program with name " + current_program_name);
                     return nullptr;
+                } else {
+                    gl->glUseProgram(current_program->handle);
                 }
 
                 Expr_ptr expr = nullptr;
