@@ -39,6 +39,8 @@ class Interpreter {
 
         int status = -1;
 
+        unsigned int width, height;
+
         void parse(string);
         Expr_ptr execute_stmts(shared_ptr<Stmts>);
         void prepare();

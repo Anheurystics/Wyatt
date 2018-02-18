@@ -1,6 +1,9 @@
 import "utils.txt";
 
 buffer buf;
+buffer scrn;
+
+texture2D target;
 
 vert basic(vec3 pos, vec3 normal, vec3 color) {
 	mat4 model;
@@ -26,7 +29,22 @@ frag basic(vec3 Pos, vec3 Normal, vec3 Color) {
 		vec3 litColor = Color * (diffuse * [1.0, 1.0, 1.0]);
 		FinalColor = [litColor, 1.0];
 	}
-}(vec4 FinalColor)	
+}(vec4 FinalColor)
+
+vert screen(vec3 pos) {
+	func main() {
+		FinalPosition = [pos, 1.0];
+		UV = (pos.xy * 0.5) + 0.5;
+	}
+}(vec4 FinalPosition, vec2 UV)
+
+frag screen(vec2 UV) {
+	texture2D tex;
+
+	func main() {
+		FinalColor = texture(tex, UV) * 0.99;
+	}
+}(vec4 FinalColor)
 
 func generate_quad(float size, vec3 normal, vec3 right, int resolution) {
 	vec3 up = normal % right;
@@ -94,8 +112,21 @@ func init(){
 	basic.normal_model = mat4_transpose(mat4_inverse(basic.model));
 	basic.view = mat4_lookat([0, 0, 4], [0, 0, 0], [0, 1, 0]);
 	basic.proj = mat4_perspective(pi() / 4, 1, 0.1, 1000);
+
+	float screen_size = 2;
+	var quad = generate_quad(screen_size, [0.0, 0.0, 1.0], [1.0, 0.0, 0.0], 1);
+	for(i in 0,|quad|,1) {
+		vec3 v = quad[i];
+		scrn.pos += v;
+	}
 }
 
 func loop(){
-	draw buf;
+	clear;
+	basic.lightPos = [4, 4, 4]; //Need this to implicitly use basic
+	draw buf, target;
+
+	clear;
+	screen.tex = target;
+	draw scrn;
 }
