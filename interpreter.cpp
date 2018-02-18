@@ -1887,6 +1887,8 @@ void Prototype::Interpreter::load_import(string file) {
 
 void Prototype::Interpreter::parse(string code) {
     istringstream ss(code);
+    *(scanner.line) = 1;
+    *(scanner.column) = 1;
     scanner.switch_streams(&ss, nullptr);
     status = parser.parse();
 }
