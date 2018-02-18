@@ -1794,7 +1794,7 @@ Expr_ptr Prototype::Interpreter::execute_stmts(Stmts_ptr stmts) {
 
 void Prototype::Interpreter::compile_shader(GLuint* handle, Shader_ptr shader) {
     string code = transpiler->transpile(shader);
-    //cout << code << endl;
+    cout << code << endl;
     const char* src = code.c_str();
     gl->glShaderSource(*handle, 1, &src, nullptr);
     gl->glCompileShader(*handle);

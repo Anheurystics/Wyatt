@@ -27,8 +27,8 @@ frag basic(vec3 Pos, vec3 Normal, vec3 Color) {
 	func main() {
 		vec3 toLight = normalize(lightPos - Pos);
 		float diffuse = max(0.0, dot(toLight, normalize(Normal)));
-		vec3 litColor = Color * (diffuse * [1.0, 1.0, 1.0]);
-		FinalColor = [litColor, 1.0];
+		vec3 diffuseColor = diffuse * [1.0, 1.0, 1.0];
+		FinalColor = [Color * diffuseColor, 1.0];
 	}
 }(vec4 FinalColor)
 
