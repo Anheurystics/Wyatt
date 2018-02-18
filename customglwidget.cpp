@@ -28,7 +28,6 @@ void CustomGLWidget::initializeGL()
 }
 
 void CustomGLWidget::paintGL() {
-    glClear(GL_COLOR_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
 
@@ -54,7 +53,8 @@ void CustomGLWidget::paintGL() {
 void CustomGLWidget::resizeGL(int width, int height)
 {
     resize(width, width);
-    (void)height;
+    interpreter->width = width;
+    interpreter->height = width;
 }
 
 CustomGLWidget::~CustomGLWidget()

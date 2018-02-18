@@ -1530,6 +1530,32 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     return nullptr;
                 }
 
+                Texture_ptr target = static_pointer_cast<Texture>(eval_expr(draw->target));
+                if(draw->target != nullptr) {
+                    if(target->framebuffer == 0) {
+                        gl->glGenFramebuffers(1, &(target->framebuffer));
+                        gl->glBindFramebuffer(GL_FRAMEBUFFER, target->framebuffer);
+
+                        if(target->handle == 0) {
+                            //TODO: Handle resizing of screen
+                            target->width = width;
+                            target->height = width; 
+
+                            gl->glGenTextures(1, &(target->handle));
+                            gl->glBindTexture(GL_TEXTURE_2D, target->handle);
+                            gl->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, target->width, target->height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+                            gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                            gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                            gl->glBindTexture(GL_TEXTURE_2D, 0);
+                        }
+                        gl->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, target->handle, 0);
+                    } else {
+                        gl->glBindFramebuffer(GL_FRAMEBUFFER, target->framebuffer);
+                    }
+                } else {
+                    gl->glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                }
+
                 Buffer_ptr buffer = static_pointer_cast<Buffer>(expr);
                 if(buffer != nullptr) {
                     Layout_ptr layout = buffer->layout;
@@ -1560,6 +1586,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
 
                     int cumulative_size = 0;
                     for(unsigned int i = 0; i < layout->list.size(); i++) {
+                        //FIXME: Use VAOs, handle multiple shaders
                         string attrib = layout->list[i];
                         GLint location = gl->glGetAttribLocation(current_program->handle, attrib.c_str());
                         gl->glVertexAttribPointer(location, layout->attributes[attrib], GL_FLOAT, false, total_size * sizeof(float), (void*)(cumulative_size * sizeof(float)));
@@ -1572,14 +1599,24 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                         gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer->indexHandle);
                         gl->glBufferData(GL_ELEMENT_ARRAY_BUFFER, buffer->indices.size() * sizeof(unsigned int), &(buffer->indices)[0], GL_STATIC_DRAW);
                         gl->glDrawElements(GL_TRIANGLES, buffer->indices.size(), GL_UNSIGNED_INT, 0);
+                        gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
                     } else {
                         gl->glDrawArrays(GL_TRIANGLES, 0, final_vector.size() / total_size);
+                    }
+
+                    if(draw->target != nullptr) {
+                        gl->glBindFramebuffer(GL_FRAMEBUFFER, 0);
                     }
 
                 } else {
                     logger->log(draw, "ERROR", "Can't draw non-existent buffer " + draw->ident->name);
                 }
 
+                return nullptr;
+            }
+        case NODE_CLEAR:
+            {
+                gl->glClear(GL_COLOR_BUFFER_BIT);
                 return nullptr;
             }
         case NODE_IF:
@@ -1748,7 +1785,7 @@ Expr_ptr Prototype::Interpreter::execute_stmts(Stmts_ptr stmts) {
 
 void Prototype::Interpreter::compile_shader(GLuint* handle, Shader_ptr shader) {
     string code = transpiler->transpile(shader);
-    cout << code << endl;
+    //cout << code << endl;
     const char* src = code.c_str();
     gl->glShaderSource(*handle, 1, &src, nullptr);
     gl->glCompileShader(*handle);

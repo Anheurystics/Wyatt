@@ -52,7 +52,7 @@ namespace Prototype {
                 return true;
             } else
             if(value_type == NODE_NULL) {
-                variables[name] = value;
+                variables[name] = make_shared<Texture>();
                 return true;
             }
         }

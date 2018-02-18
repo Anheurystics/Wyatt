@@ -14,7 +14,7 @@ enum NodeType {
     NODE_INVOKE,
     NODE_EXPR, NODE_NULL, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_STRING, NODE_VECTOR2, NODE_VECTOR3, NODE_VECTOR4, NODE_MATRIX2, NODE_MATRIX3, NODE_MATRIX4, NODE_IDENT, NODE_DOT, NODE_BUFFER, NODE_TEXTURE,
     NODE_UPLOADLIST, NODE_FUNCEXPR, NODE_LIST, NODE_ARGLIST, NODE_PARAMLIST, NODE_INDEX,
-    NODE_STMT, NODE_ASSIGN, NODE_DECL, NODE_ALLOC, NODE_COMPBINARY, NODE_UPLOAD, NODE_APPEND, NODE_DRAW, NODE_FUNCSTMT, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_FOR, NODE_SHADER, NODE_PRINT, NODE_FUNCDEF, NODE_RETURN
+    NODE_STMT, NODE_ASSIGN, NODE_DECL, NODE_ALLOC, NODE_COMPBINARY, NODE_UPLOAD, NODE_APPEND, NODE_DRAW, NODE_CLEAR, NODE_FUNCSTMT, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_FOR, NODE_SHADER, NODE_PRINT, NODE_FUNCDEF, NODE_RETURN
 };
 
 inline string type_to_name(NodeType type) {
@@ -78,6 +78,7 @@ class UploadList;
 class Upload;
 class CompBinary;
 class Draw;
+class Clear;
 class Print;
 class Invoke;
 class FuncExpr;
@@ -122,6 +123,7 @@ typedef shared_ptr<UploadList> UploadList_ptr;
 typedef shared_ptr<Upload> Upload_ptr;
 typedef shared_ptr<CompBinary> CompBinary_ptr;
 typedef shared_ptr<Draw> Draw_ptr;
+typedef shared_ptr<Clear> Clear_ptr;
 typedef shared_ptr<Print> Print_ptr;
 typedef shared_ptr<Invoke> Invoke_ptr;
 typedef shared_ptr<FuncExpr> FuncExpr_ptr;
@@ -399,11 +401,15 @@ class Buffer: public Expr {
 class Texture: public Expr {
     public:
         GLuint handle;
+        GLuint framebuffer;
 
         int width, height, channels;
         unsigned char* image;
 
-        Texture(): Expr(NODE_TEXTURE) {}
+        Texture(): Expr(NODE_TEXTURE) {
+            handle = 0;
+            framebuffer = 0;
+        }
 };
 
 class Stmt: public Node {
@@ -583,10 +589,17 @@ class CompBinary: public Stmt {
 class Draw: public Stmt {
     public:
         Ident_ptr ident;
+        Ident_ptr target;
 
-        Draw(Ident_ptr ident): Stmt(NODE_DRAW) {
+        Draw(Ident_ptr ident, Ident_ptr target = nullptr): Stmt(NODE_DRAW) {
             this->ident = ident;
+            this->target = target;
         }
+};
+
+class Clear: public Stmt {
+    public:
+        Clear(): Stmt(NODE_CLEAR) {}
 };
 
 class Print: public Stmt {
@@ -643,7 +656,6 @@ class Shader: public Node {
             for(auto it = uniforms->begin(); it != uniforms->end(); ++it) {
                 this->uniforms->insert(pair<string, string>(it->first, it->second));
                 if(it->second == "texture2D") {
-                    std::cout << it->first << std::endl;
                     this->textureSlots->push_back(it->first);
                 }
             }
