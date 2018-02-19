@@ -41,6 +41,21 @@ private:
     int createOpenTab(QString, QString);
 
 private slots:
+    void closeTab(int tab) {
+        if(tabs->count() == 1) {
+            switchTab(createNewTab(startupCode));
+        } else 
+        if(tabs->currentIndex() == tab) {
+            if(tab + 1 < tabs->count()) {
+                switchTab(tab + 1);
+            } else {
+                switchTab(tab - 1);
+            }
+        }
+
+        tabs->removeTab(tab);
+    }
+
     void switchTab(int newTab) {
         if(currentEditor != nullptr) {
             QObject::disconnect(currentEditor, SIGNAL(textChanged()), 0, 0);

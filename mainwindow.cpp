@@ -9,10 +9,12 @@ MainWindow::MainWindow(QWidget *parent, std::string startupFile) :
     startupCode = "func init(){\n\n}\n\nfunc loop(){\n\n}\n";
 
     tabs = ui->tabWidget;
+    tabs->setTabsClosable(true);
     currentEditor = (CodeEditor*)tabs->currentWidget()->findChild<QPlainTextEdit*>();
     currentEditor->setFont(QFont("Monospace"));
 
-    QObject::connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(switchTab(int)));
+    connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(switchTab(int)));
+    connect(ui->tabWidget, SIGNAL(tabCloseRequested(int)), this, SLOT(closeTab(int)));
 
     if(startupFile != "") {
         QString startupFileStr = QString::fromStdString(startupFile);
@@ -31,7 +33,7 @@ MainWindow::MainWindow(QWidget *parent, std::string startupFile) :
         currentEditor->setPlainText(startupCode);
     }
 
-    QObject::connect(currentEditor, SIGNAL(textChanged()), ui->openGLWidget, SLOT(updateCode()));
+    connect(currentEditor, SIGNAL(textChanged()), ui->openGLWidget, SLOT(updateCode()));
 
     highlighter = new Highlighter(currentEditor->document());
 
