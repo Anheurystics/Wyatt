@@ -1552,7 +1552,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
 
                             gl->glGenTextures(1, &(target->handle));
                             gl->glBindTexture(GL_TEXTURE_2D, target->handle);
-                            gl->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, target->width, target->height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+                            gl->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, target->width, target->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
                             gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                             gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                             gl->glBindTexture(GL_TEXTURE_2D, 0);
@@ -1628,9 +1628,11 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 Clear_ptr clear = static_pointer_cast<Clear>(stmt);
                 if(clear->color != nullptr) {
                     Expr_ptr color = eval_expr(clear->color);
-                    if(color->type == NODE_VECTOR3) {
+                    if(color != nullptr && color->type == NODE_VECTOR3) {
                         Vector3_ptr v = static_pointer_cast<Vector3>(color);
                         gl->glClearColor(resolve_scalar(v->x), resolve_scalar(v->y), resolve_scalar(v->z), 1.0f);
+                    } else {
+                        logger->log(clear, "ERROR", "Invalid clear color");
                     }
                 }
                 gl->glClear(GL_COLOR_BUFFER_BIT);
