@@ -7,75 +7,75 @@ buffer scrn;
 texture2D target;
 
 vert basic(vec3 pos, vec3 normal, vec3 color) {
-	mat4 model;
-	mat4 normal_model;
-	mat4 view;
-	mat4 proj;
+    mat4 model;
+    mat4 normal_model;
+    mat4 view;
+    mat4 proj;
 
-	func main() {
-		vec4 modelPos = model * [pos, 1.0];
+    func main() {
+        vec4 modelPos = model * [pos, 1.0];
 
-		FinalPosition = proj * view * modelPos;
-		Pos = modelPos.xyz;
-		Normal = mat3(normal_model) * normal;
-		Color = color;
-	}
+        FinalPosition = proj * view * modelPos;
+        Pos = modelPos.xyz;
+        Normal = mat3(normal_model) * normal;
+        Color = color;
+    }
 }(vec4 FinalPosition, vec3 Pos, vec3 Normal, vec3 Color)
 
 frag basic(vec3 Pos, vec3 Normal, vec3 Color) {
-	vec3 lightPos;
-	func main() {
-		vec3 toLight = normalize(lightPos - Pos);
-		float diffuse = max(0.0, dot(toLight, normalize(Normal)));
-		vec3 diffuseColor = diffuse * [1.0, 1.0, 1.0];
-		FinalColor = [Color * diffuseColor, 1.0];
-	}
+    vec3 lightPos;
+    func main() {
+        vec3 toLight = normalize(lightPos - Pos);
+        float diffuse = max(0.0, dot(toLight, normalize(Normal)));
+        vec3 diffuseColor = diffuse * [1.0, 1.0, 1.0];
+        FinalColor = [Color * diffuseColor, 1.0];
+    }
 }(vec4 FinalColor)
 
 vert screen(vec3 pos) {
-	func main() {
-		FinalPosition = [pos, 1.0];
-		UV = (pos.xy * 0.5) + 0.5;
-	}
+    func main() {
+        FinalPosition = [pos, 1.0];
+        UV = (pos.xy * 0.5) + 0.5;
+    }
 }(vec4 FinalPosition, vec2 UV)
 
 frag screen(vec2 UV) {
-	texture2D tex;
+    texture2D tex;
 
-	func main() {
-		FinalColor = texture(tex, UV) * 0.99;
-	}
+    func main() {
+        FinalColor = texture(tex, UV) * 0.99;
+    }
 }(vec4 FinalColor)
 
 func init(){
-	var sphere = generate_sphere(1.0, 8);
-	var sphere_v = sphere[0];
-	var sphere_n = sphere[1];
-	for(i in 0,|sphere_v|,1) {
-		buf.pos += sphere_v[i];
-		buf.normal += sphere_n[i];
-		buf.color += [1, 0.3, 0.3];
-	}
+    var sphere = generate_sphere(1.0, 8);
+    var sphere_v = sphere[0];
+    var sphere_n = sphere[1];
+    for(i in 0,|sphere_v|,1) {
+        buf.pos += sphere_v[i];
+        buf.normal += sphere_n[i];
+        buf.color += [1, 0.3, 0.3];
+    }
 
-	basic.lightPos = [4, 4, 4];
-	basic.model = mat4_identity();
-	basic.normal_model = mat4_transpose(mat4_inverse(basic.model));
-	basic.view = mat4_lookat([0, 0, 4], [0, 0, 0], [0, 1, 0]);
-	basic.proj = mat4_perspective(pi() / 4, 1, 0.1, 1000);
+    basic.lightPos = [4, 4, 4];
+    basic.model = mat4_identity();
+    basic.normal_model = mat4_transpose(mat4_inverse(basic.model));
+    basic.view = mat4_lookat([0, 0, 4], [0, 0, 0], [0, 1, 0]);
+    basic.proj = mat4_perspective(pi() / 4, 1, 0.1, 1000);
 
-	float screen_size = 2;
-	var quad = generate_quad(screen_size, [0.0, 0.0, 1.0], [1.0, 0.0, 0.0], 1);
-	for(i in 0,|quad|,1) {
-		vec3 v = quad[i];
-		scrn.pos += v;
-	}
+    float screen_size = 2;
+    var quad = generate_quad(screen_size, [0.0, 0.0, 1.0], [1.0, 0.0, 0.0], 1);
+    for(i in 0,|quad|,1) {
+        vec3 v = quad[i];
+        scrn.pos += v;
+    }
 }
 
 func loop(){
-	clear;
-	draw buf to target using basic;
+    clear [0.3, 0.3, 0.3];
+    draw buf to target using basic;
 
-	clear;
-	screen.tex = target;
-	draw scrn;
+    clear;
+    screen.tex = target;
+    draw scrn;
 }

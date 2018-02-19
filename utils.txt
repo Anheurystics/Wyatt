@@ -156,9 +156,9 @@ func mat4_lookat(vec3 eye, vec3 at, vec3 up) {
     vec3 right = up % front;
     up = front % right;
     return [[right[0], up[0], front[0], 0],
-            [right[1], up[1], front[1], 0],
-            [right[2], up[2], front[2], 0],
-            [-(right*eye), -(up*eye), -(front*eye), 1]];
+    [right[1], up[1], front[1], 0],
+    [right[2], up[2], front[2], 0],
+    [-(right*eye), -(up*eye), -(front*eye), 1]];
 }
 
 func mat4_perspective(float fov, float aspect, float near, float far) {

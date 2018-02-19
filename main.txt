@@ -9,34 +9,34 @@ texture2D grass = "grass.jpg";
 float angle = 0;
 
 vert basic(vec3 pos, vec3 norm, vec3 col, vec2 uv) {
-	mat4 model;
-	mat4 norm_model;
-	mat4 view;
-	mat4 proj;
-	
-	func main() {
-		FinalPosition = proj * view * model * [pos, 1.0];
-		Position = vec3(model * [pos, 1.0]);
-		Color = col;
-		Normal = mat3(norm_model) * norm;
-		UV = uv;
-	}
+    mat4 model;
+    mat4 norm_model;
+    mat4 view;
+    mat4 proj;
+
+    func main() {
+        FinalPosition = proj * view * model * [pos, 1.0];
+        Position = vec3(model * [pos, 1.0]);
+        Color = col;
+        Normal = mat3(norm_model) * norm;
+        UV = uv;
+    }
 }(vec4 FinalPosition, vec3 Position, vec3 Normal, vec3 Color, vec2 UV)
 
 frag basic(vec3 Position, vec3 Normal, vec3 Color, vec2 UV) {
-	vec3 LightPos;
-	vec3 LightColor;
+    vec3 LightPos;
+    vec3 LightColor;
 
-	texture2D tex;
-	texture2D tex2;
+    texture2D tex;
+    texture2D tex2;
 
-	func main() {
-		vec3 toLight = normalize(LightPos - Position);
-		float cos_angle = dot(normalize(Normal), toLight);
-		vec4 textureColor = mix(texture2D(tex, UV), texture2D(tex2, UV), 0.5);
-		vec3 litColor = LightColor * Color * cos_angle;
-		FinalColor = textureColor * [litColor, 1.0];
-	}
+    func main() {
+        vec3 toLight = normalize(LightPos - Position);
+        float cos_angle = dot(normalize(Normal), toLight);
+        vec4 textureColor = mix(texture2D(tex, UV), texture2D(tex2, UV), 0.5);
+        vec3 litColor = LightColor * Color * cos_angle;
+        FinalColor = textureColor * [litColor, 1.0];
+    }
 }(vec4 FinalColor)
 
 func init() {
@@ -51,76 +51,76 @@ func init() {
     vec3 v6 = [-1, -1, -1];
     vec3 v7 = [ 1, -1, -1];
 
-	vec2 a = [0, 1];
-	vec2 b = [0, 0];
-	vec2 c = [1, 0];
-	vec2 d = [1, 1];
+    vec2 a = [0, 1];
+    vec2 b = [0, 0];
+    vec2 c = [1, 0];
+    vec2 d = [1, 1];
 
-	vec3 norm = [0, 0, 1];
+    vec3 norm = [0, 0, 1];
     cube.pos += v1, v0, v3, v1, v3, v2;
     cube.col += white, white, white, white, white, white;
-	cube.norm += norm, norm, norm, norm, norm, norm;
-	cube.uv += b, c, d, b, d, a;
+    cube.norm += norm, norm, norm, norm, norm, norm;
+    cube.uv += b, c, d, b, d, a;
 
-	norm = [0, 0, -1];
+    norm = [0, 0, -1];
     cube.pos += v5, v4, v7, v5, v7, v6;
     cube.col += white, white, white, white, white, white;
-	cube.norm += norm, norm, norm, norm, norm, norm;
-	cube.uv += b, c, d, b, d, a;
+    cube.norm += norm, norm, norm, norm, norm, norm;
+    cube.uv += b, c, d, b, d, a;
 
-	norm = [1, 0, 0];
+    norm = [1, 0, 0];
     cube.pos += v4, v1, v2, v4, v2, v7;
     cube.col += white, white, white, white, white, white;
-	cube.norm += norm, norm, norm, norm, norm, norm;
-	cube.uv += b, c, d, b, d, a;
+    cube.norm += norm, norm, norm, norm, norm, norm;
+    cube.uv += b, c, d, b, d, a;
 
-	norm = [-1, 0, 0];
+    norm = [-1, 0, 0];
     cube.pos += v0, v5, v6, v0, v6, v3;
     cube.col += white, white, white, white, white, white;
-	cube.norm += norm, norm, norm, norm, norm, norm;
-	cube.uv += b, c, d, b, d, a;
+    cube.norm += norm, norm, norm, norm, norm, norm;
+    cube.uv += b, c, d, b, d, a;
 
-	norm = [0, 1, 0];
+    norm = [0, 1, 0];
     cube.pos += v4, v5, v0, v4, v0, v1;
     cube.col += white, white, white, white, white, white;
-	cube.norm += norm, norm, norm, norm, norm, norm;
-	cube.uv += b, c, d, b, d, a;
+    cube.norm += norm, norm, norm, norm, norm, norm;
+    cube.uv += b, c, d, b, d, a;
 
-	norm = [0, -1, 0];
+    norm = [0, -1, 0];
     cube.pos += v2, v3, v6, v2, v6, v7;
     cube.col += white, white, white, white, white, white;
-	cube.norm += norm, norm, norm, norm, norm, norm;
-	cube.uv += b, c, d, b, d, a;
+    cube.norm += norm, norm, norm, norm, norm, norm;
+    cube.uv += b, c, d, b, d, a;
 
-	vec3 red = [1, 0, 0];
+    vec3 red = [1, 0, 0];
     floor.pos += [-0.5, 0.5, 0], [0.5, 0.5, 0], [0.5, -0.5, 0], [-0.5, -0.5, 0];
     floor.col += red, red, red, red;
     floor.norm += [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1];
-	floor.uv += a, b, c, d;
-	floor.indices += 1, 0, 3, 1, 3, 2;
-	
+    floor.uv += a, b, c, d;
+    floor.indices += 1, 0, 3, 1, 3, 2;
+
     basic.LightPos = [0, 3, 3];
     basic.LightColor = [1, 1, 1];
-	
-	vec3 eye = [0, 0, 7];
-	vec3 at = [0, 0, 0];
-	vec3 up = [0, 1, 0];
-	
+
+    vec3 eye = [0, 0, 7];
+    vec3 at = [0, 0, 0];
+    vec3 up = [0, 1, 0];
+
     basic.view = mat4_lookat(eye, at, up);
     basic.proj = mat4_perspective(pi() * 0.25, 1.0, 0.1, 100.0);
 }
 
 func loop() {
     angle += 0.01 * pi();
-	
-    basic.model = mat4_rotation_x(angle) * mat4_rotation_y(angle);
-	basic.norm_model = mat4_transpose(mat4_inverse(basic.model));
-	basic.tex = rivers;
-	basic.tex2 = grass;
-	draw cube;
 
-	basic.tex = grass;
-	basic.model = mat4_scale(10) * mat4_rotation_x(pi() * 0.5) * mat4_translation(0, -2, 0);
-	basic.norm_model = mat4_transpose(mat4_inverse(basic.model));
-	draw floor;
+    basic.model = mat4_rotation_x(angle) * mat4_rotation_y(angle);
+    basic.norm_model = mat4_transpose(mat4_inverse(basic.model));
+    basic.tex = rivers;
+    basic.tex2 = grass;
+    draw cube;
+
+    basic.tex = grass;
+    basic.model = mat4_scale(10) * mat4_rotation_x(pi() * 0.5) * mat4_translation(0, -2, 0);
+    basic.norm_model = mat4_transpose(mat4_inverse(basic.model));
+    draw floor;
 }
