@@ -16,6 +16,8 @@ string GLSLTranspiler::transpile(Shader_ptr shader) {
         source += "in " + decl->datatype->name + " " + decl->name->name + ";\n";
     }
 
+    source += "\n";
+
     for(auto it = shader->uniforms->begin(); it != shader->uniforms->end(); ++it) {
         string type = it->second;
         if(type == "texture2D") {
@@ -24,6 +26,8 @@ string GLSLTranspiler::transpile(Shader_ptr shader) {
         source += "uniform " + type + " " + it->first + ";\n";
     }
 
+    source += "\n";
+
     for(auto it = shader->outputs->list.begin(); it != shader->outputs->list.end(); ++it) {
         Decl_ptr decl = *it;
         if(decl->name->name == "FinalPosition") {
@@ -31,6 +35,8 @@ string GLSLTranspiler::transpile(Shader_ptr shader) {
         }
         source += "out " + decl->datatype->name + " " + decl->name->name + ";\n";
     }
+
+    source += "\n";
 
     for(auto it = shader->functions->begin(); it != shader->functions->end(); ++it) {
         string type = "var";
@@ -43,7 +49,7 @@ string GLSLTranspiler::transpile(Shader_ptr shader) {
         FuncDef_ptr def = it->second;
         Stmts_ptr stmts = def->stmts;
         for(auto jt = stmts->list.begin(); jt != stmts->list.end(); ++jt) {
-            source += eval_stmt(*jt) + "\n";
+            source += "\t" + eval_stmt(*jt) + "\n";
         }
 
         source += "}\n";
@@ -181,7 +187,6 @@ string GLSLTranspiler::eval_vector(vector<Expr_ptr> list) {
         Expr_ptr expr = *it;
         string type = type_to_name(expr->type);
         int type_len = type_to_n(type);
-        cout << type << endl;
         if(type_len != 0) {
             output += (n != 0? ",":"") + eval_expr(expr);
             n += type_len;
@@ -197,7 +202,6 @@ string GLSLTranspiler::eval_vector(vector<Expr_ptr> list) {
         if(expr->type == NODE_BINARY) {
             Binary_ptr bin = static_pointer_cast<Binary>(expr);
             string type = resolve_binary(bin);
-            cout << "bin type " << type << endl;
             if(type != "") {
                 output += (n != 0? "," : "") + eval_binary(bin);
             }
