@@ -56,7 +56,6 @@ int MainWindow::createNewTab(QString code) {
     layout->setMargin(0);
 
     CodeEditor* newEditor = new CodeEditor(0);
-    newEditor->setFont(QFont("Monospace"));
     newEditor->setPlainText(code);
     layout->addWidget(newEditor);
     paren->setLayout(layout);

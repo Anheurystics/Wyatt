@@ -2,17 +2,15 @@
 
 CodeEditor::CodeEditor(QWidget *parent = 0): QPlainTextEdit(parent)
 {
-    type = "";
-
-    monoFont.setFamily("Courier");
+    monoFont.setFamily("Monospace");
     monoFont.setStyleHint(QFont::Monospace);
     monoFont.setFixedPitch(true);
-    monoFont.setPointSize(12);
+    monoFont.setPointSize(11);
 
-    this->setFont(monoFont);
+    setFont(monoFont);
 
     QFontMetrics metrics(monoFont);
-    this->setTabStopWidth(4 * metrics.width(' '));
+    setTabStopWidth(4 * metrics.width(' '));
 
     lineNumberArea = new LineNumberArea(this);
 
@@ -100,14 +98,4 @@ void CodeEditor::resizeEvent(QResizeEvent *e) {
 
     QRect cr = contentsRect();
     lineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
-}
-
-void CodeEditor::setType(std::string _type)
-{
-    type = _type;
-}
-
-std::string CodeEditor::getType()
-{
-    return type;
 }

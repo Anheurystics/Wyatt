@@ -20,8 +20,6 @@ class CodeEditor: public QPlainTextEdit
     Q_OBJECT
 public:
     explicit CodeEditor(QWidget *parent);
-    void setType(std::string);
-    std::string getType();
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
@@ -39,7 +37,6 @@ private slots:
 private:
     LineNumberArea* lineNumberArea;
     QFont monoFont;
-    std::string type;
 };
 
 class LineNumberArea : public QWidget
