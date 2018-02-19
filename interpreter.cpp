@@ -1625,6 +1625,14 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
             }
         case NODE_CLEAR:
             {
+                Clear_ptr clear = static_pointer_cast<Clear>(stmt);
+                if(clear->color != nullptr) {
+                    Expr_ptr color = eval_expr(clear->color);
+                    if(color->type == NODE_VECTOR3) {
+                        Vector3_ptr v = static_pointer_cast<Vector3>(color);
+                        gl->glClearColor(resolve_scalar(v->x), resolve_scalar(v->y), resolve_scalar(v->z), 1.0f);
+                    }
+                }
                 gl->glClear(GL_COLOR_BUFFER_BIT);
                 return nullptr;
             }

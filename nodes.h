@@ -601,7 +601,11 @@ class Draw: public Stmt {
 
 class Clear: public Stmt {
     public:
-        Clear(): Stmt(NODE_CLEAR) {}
+        Expr_ptr color;
+
+        Clear(Expr_ptr color): Stmt(NODE_CLEAR) {
+            this->color = color;
+        }
 };
 
 class Print: public Stmt {
