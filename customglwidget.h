@@ -5,7 +5,6 @@
 #include <QOpenGLFunctions>
 #include <QTimer>
 
-#include "mainwindow.h"
 #include "codeeditor.h"
 #include "interpreter.h"
 

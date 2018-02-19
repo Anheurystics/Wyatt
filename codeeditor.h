@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QPainter>
 #include <QTextBlock>
+#include <QFileInfo>
 #include <iostream>
 
 class QPaintEvent;
@@ -24,6 +25,8 @@ public:
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
+
+    QFileInfo fileInfo;
 
 protected:
     void resizeEvent(QResizeEvent *event) override;

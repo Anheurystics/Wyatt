@@ -8,32 +8,35 @@ MainWindow::MainWindow(QWidget *parent, std::string startupFile) :
     ui->setupUi(this);
     startupCode = "func init(){\n\n}\n\nfunc loop(){\n\n}\n";
 
-    codeEditor = ui->codeEditor;
+    tabs = ui->tabWidget;
+    currentEditor = (CodeEditor*)tabs->currentWidget()->findChild<QPlainTextEdit*>();
+    currentEditor->setFont(QFont("Monospace"));
+
+    QObject::connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(switchTab(int)));
 
     if(startupFile != "") {
-        setOpenedFile(QString::fromStdString(startupFile));
-
+        QString startupFileStr = QString::fromStdString(startupFile);
         ifstream file;
-        file.open(openFileName.toStdString());
+        file.open(startupFile);
         string contents = "";
         string line = "";
         while(getline(file, line)) {
             contents += line + '\n';
         }
         file.close();
-        codeEditor->setPlainText(QString::fromStdString(contents));
+        currentEditor->fileInfo.setFile(startupFileStr);
+        currentEditor->setPlainText(QString::fromStdString(contents));
+        ui->tabWidget->setTabText(0, startupFileStr);
     } else {
-        codeEditor->setPlainText(startupCode);
+        currentEditor->setPlainText(startupCode);
     }
 
-    QObject::connect(codeEditor, SIGNAL(textChanged()), ui->openGLWidget, SLOT(updateCode()));
+    QObject::connect(currentEditor, SIGNAL(textChanged()), ui->openGLWidget, SLOT(updateCode()));
 
-    highlighter = new Highlighter(codeEditor->document());
+    highlighter = new Highlighter(currentEditor->document());
 
-    CustomGLWidget* glWidget = ui->openGLWidget;
+    glWidget = ui->openGLWidget;
     glWidget->logger = ui->logWindow;
-
-    openGLWidget = glWidget;
 
     connect(ui->actionNew, &QAction::triggered, this, &MainWindow::newFile);
     connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::openFile);
@@ -43,6 +46,29 @@ MainWindow::MainWindow(QWidget *parent, std::string startupFile) :
     glWidget->interpreter = new Prototype::Interpreter(ui->logWindow);
 
     txtFilter = tr("Text files (*.txt)");
+}
+
+int MainWindow::createNewTab(QString code) {
+    QWidget* paren = new QWidget;
+    QVBoxLayout* layout = new QVBoxLayout;
+    layout->setMargin(0);
+
+    CodeEditor* newEditor = new CodeEditor(0);
+    newEditor->setFont(QFont("Monospace"));
+    newEditor->setPlainText(code);
+    layout->addWidget(newEditor);
+    paren->setLayout(layout);
+    tabs->addTab(paren, "untitled");
+
+    return tabs->count() - 1;
+}
+
+int MainWindow::createOpenTab(QString code, QString fileName) {
+    int newTab = createNewTab(code);
+    CodeEditor* editor = (CodeEditor*)tabs->widget(newTab)->findChild<QPlainTextEdit*>();
+    editor->fileInfo.setFile(fileName);
+    tabs->setTabText(newTab, editor->fileInfo.fileName());
+    return newTab;
 }
 
 MainWindow::~MainWindow()

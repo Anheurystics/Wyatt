@@ -3,6 +3,9 @@
 
 #include <QMainWindow>
 #include <QFileDialog>
+#include <QFont>
+#include <QVBoxLayout>
+#include <QOpenGLWidget>
 #include <fstream>
 
 #include "customglwidget.h"
@@ -26,61 +29,73 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    QOpenGLWidget* openGLWidget;
-    CodeEditor* codeEditor;
+    CustomGLWidget* glWidget;
+    CodeEditor* currentEditor;
     Highlighter* highlighter;
-    QString openFileName;
+    QTabWidget* tabs;
 
-    QFileInfo openFileInfo;
     QString txtFilter;
     QString startupCode;
 
-    void setOpenedFile(QString fileName) {
-        openFileName = fileName;
-        openFileInfo.setFile(fileName);
-        setWindowTitle("Prototype - " + openFileInfo.fileName());
-    }
+    int createNewTab(QString);
+    int createOpenTab(QString, QString);
 
 private slots:
-    void newFile() {
-        openFileName.clear();
-        openFileInfo.setFile(openFileName);
-        setWindowTitle("Prototype - untitled");
+    void switchTab(int newTab) {
+        if(currentEditor != nullptr) {
+            QObject::disconnect(currentEditor, SIGNAL(textChanged()), 0, 0);
+        }
+        tabs->setCurrentIndex(newTab);
+        currentEditor = (CodeEditor*)tabs->currentWidget()->findChild<QPlainTextEdit*>();
+        highlighter->setDocument(currentEditor->document());
+        QObject::connect(currentEditor, SIGNAL(textChanged()), glWidget, SLOT(updateCode()));
 
-        codeEditor->setPlainText(startupCode);
+        emit currentEditor->textChanged();
+    }
+
+    void newFile() {
+        switchTab(createNewTab(startupCode));
     }
 
     void openFile() {
-        openGLWidget->setUpdatesEnabled(false);
+        glWidget->setUpdatesEnabled(false);
         QString selected = QFileDialog::getOpenFileName(this, tr("Open File"), Q_NULLPTR, txtFilter);
-        openGLWidget->setUpdatesEnabled(true);
+        glWidget->setUpdatesEnabled(true);
         if(selected == Q_NULLPTR) {
             return;
         }
 
-        setOpenedFile(selected);
-
         ifstream file;
-        file.open(openFileName.toStdString());
+        file.open(selected.toStdString());
         string contents = "";
         string line = "";
         while(getline(file, line)) {
             contents += line + '\n';
         }
         file.close();
-        codeEditor->setPlainText(QString::fromStdString(contents));
+
+        if(currentEditor->fileInfo.fileName().size() == 0) {
+            currentEditor->fileInfo.setFile(selected);
+            currentEditor->setPlainText(QString::fromStdString(contents));
+            tabs->setTabText(tabs->currentIndex(), currentEditor->fileInfo.fileName());
+        } else {
+            switchTab(createOpenTab(QString::fromStdString(contents), selected));
+        }
     }
 
     void saveFile() {
-        if(openFileName.length() == 0) {
+        QString fileName = currentEditor->fileInfo.fileName();
+        if(fileName.size() == 0) {
             saveAsFile();
             return;
         }
 
         ofstream file;
-        file.open(openFileName.toStdString());
-        file << codeEditor->document()->toPlainText().toStdString();
+        file.open(fileName.toStdString());
+        file << currentEditor->document()->toPlainText().toStdString();
         file.close();
+
+        tabs->setTabText(tabs->currentIndex(), fileName);
     }
 
     void saveAsFile() {
@@ -89,7 +104,6 @@ private slots:
             return;
         }
 
-        setOpenedFile(selected);
         saveFile();
     }
 };

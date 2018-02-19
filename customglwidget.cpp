@@ -24,7 +24,6 @@ void CustomGLWidget::updateCode()
 void CustomGLWidget::initializeGL()
 {
     initializeOpenGLFunctions();
-    glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 }
 
 void CustomGLWidget::paintGL() {
@@ -33,6 +32,9 @@ void CustomGLWidget::paintGL() {
 
     if(codeChanged) {
         codeChanged = false;
+
+        glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
 
         logger->clear();
 
