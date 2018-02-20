@@ -12,7 +12,7 @@ using namespace std;
 
 enum NodeType {
     NODE_INVOKE,
-    NODE_EXPR, NODE_NULL, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_STRING, NODE_VECTOR2, NODE_VECTOR3, NODE_VECTOR4, NODE_MATRIX2, NODE_MATRIX3, NODE_MATRIX4, NODE_IDENT, NODE_DOT, NODE_BUFFER, NODE_TEXTURE,
+    NODE_EXPR, NODE_NULL, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_STRING, NODE_VECTOR2, NODE_VECTOR3, NODE_VECTOR4, NODE_MATRIX2, NODE_MATRIX3, NODE_MATRIX4, NODE_IDENT, NODE_DOT, NODE_BUFFER, NODE_TEXTURE, NODE_PROGRAM,
     NODE_UPLOADLIST, NODE_FUNCEXPR, NODE_LIST, NODE_ARGLIST, NODE_PARAMLIST, NODE_INDEX,
     NODE_STMT, NODE_ASSIGN, NODE_DECL, NODE_ALLOC, NODE_COMPBINARY, NODE_UPLOAD, NODE_APPEND, NODE_DRAW, NODE_CLEAR, NODE_FUNCSTMT, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_FOR, NODE_SHADER, NODE_PRINT, NODE_FUNCDEF, NODE_RETURN
 };
@@ -32,6 +32,7 @@ inline string type_to_name(NodeType type) {
         case NODE_MATRIX4: return "mat4";
         case NODE_BUFFER: return "buffer";
         case NODE_TEXTURE: return "texture2D";
+        case NODE_PROGRAM: return "program";
         case NODE_NULL: return "null";
         default: return "undefined";
     }
@@ -84,6 +85,7 @@ class Invoke;
 class FuncExpr;
 class FuncStmt;
 class Shader;
+class Program;
 struct ShaderPair;
 
 typedef shared_ptr<Node> Node_ptr;
@@ -129,6 +131,7 @@ typedef shared_ptr<Invoke> Invoke_ptr;
 typedef shared_ptr<FuncExpr> FuncExpr_ptr;
 typedef shared_ptr<FuncStmt> FuncStmt_ptr;
 typedef shared_ptr<Shader> Shader_ptr;
+typedef shared_ptr<Program> Program_ptr;
 typedef shared_ptr<ShaderPair> ShaderPair_ptr;
 
 #define null_expr make_shared<Expr>(NODE_NULL)
@@ -669,6 +672,15 @@ class Shader: public Node {
             this->inputs = inputs;
             this->outputs = outputs;
         }
+};
+
+class Program: public Expr {
+    public:
+        GLuint handle;
+        GLuint vert, frag;
+        Shader_ptr vertSource, fragSource;
+
+        Program(): Expr(NODE_PROGRAM) { }
 };
 
 struct ShaderPair {

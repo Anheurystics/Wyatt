@@ -25,14 +25,6 @@
 
 namespace Prototype {
 
-struct Program {
-    GLuint handle;
-    GLuint vert, frag;
-
-    shared_ptr<Shader> vertSource;
-    shared_ptr<Shader> fragSource;
-};
-
 class Interpreter {
     public:
         Interpreter(LogWindow*);
@@ -60,7 +52,6 @@ class Interpreter {
         Prototype::Parser parser;
 
         typedef shared_ptr<Layout> Layout_ptr;
-        typedef shared_ptr<Program> Program_ptr;
         typedef shared_ptr<Scope> Scope_ptr;
 
         Scope_ptr globalScope;

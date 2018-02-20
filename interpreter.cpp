@@ -49,7 +49,6 @@ Prototype::Interpreter::Interpreter(LogWindow* logger): scanner(&line, &column),
     } \
 
 void Prototype::Interpreter::reset() {
-    clear_map(Program_ptr, programs);
     clear_map(ShaderPair_ptr, shaders);
     clear_map(FuncDef_ptr, functions);
 
@@ -622,7 +621,7 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                 bool reupload = false;
                 if(current_program_name != uniform->shader->name) {
                     current_program_name = uniform->shader->name;
-                    current_program = programs[current_program_name];
+                    current_program = static_pointer_cast<Program>(globalScope->get(current_program_name));
                     reupload = true;
                 }
 
@@ -1105,7 +1104,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                         bool reupload = false;
                         if(current_program_name != uniform->shader->name) {
                             current_program_name = uniform->shader->name;
-                            current_program = programs[current_program_name];
+                            current_program = static_pointer_cast<Program>(globalScope->get(current_program_name));
                             reupload = true;
                         }
 
@@ -1521,7 +1520,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 if(draw->program != nullptr) {
                     if(current_program_name != draw->program->name) {
                         current_program_name = draw->program->name;
-                        current_program = programs[current_program_name];
+                        current_program = static_pointer_cast<Program>(globalScope->get(current_program_name));
                     }
                 }
 
@@ -1820,7 +1819,6 @@ void Prototype::Interpreter::compile_shader(GLuint* handle, Shader_ptr shader) {
 }
 
 void Prototype::Interpreter::compile_program() {
-    programs.clear();
     for(auto it = shaders.begin(); it != shaders.end(); ++it) {
         Program_ptr program = make_shared<Program>();
         program->handle = gl->glCreateProgram();
@@ -1856,13 +1854,12 @@ void Prototype::Interpreter::compile_program() {
             logger->log(string(log));
         }
 
-        programs[it->first] = program;
+        globalScope->declare(nullptr, make_shared<Ident>(program->vertSource->name), "program", program);
     }
 }
 
 void Prototype::Interpreter::execute_init() {
     if(!init || status) return;
-    globalScope->clear();
 
     for(auto it = globals.begin(); it != globals.end(); ++it) {
         Decl_ptr decl = *it;
@@ -1904,6 +1901,7 @@ void Prototype::Interpreter::parse(string code) {
 }
 
 void Prototype::Interpreter::prepare() {
+    globalScope->clear();
     logger->clear();
 
     init = functions["init"];
