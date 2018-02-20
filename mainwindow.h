@@ -7,6 +7,7 @@
 #include <QVBoxLayout>
 #include <QOpenGLWidget>
 #include <fstream>
+#include <map>
 
 #include "customglwidget.h"
 #include "codeeditor.h"
@@ -34,6 +35,8 @@ private:
     Highlighter* highlighter;
     QTabWidget* tabs;
 
+    map<QString, int> openFiles;
+
     QString txtFilter;
     QString startupCode;
 
@@ -42,6 +45,10 @@ private:
 
 private slots:
     void closeTab(int tab) {
+        CodeEditor* editor = (CodeEditor*)tabs->widget(tab)->findChild<QPlainTextEdit*>();
+        QString file = editor->fileInfo.fileName();
+        openFiles.erase(file);
+
         if(tabs->count() == 1) {
             switchTab(createNewTab(startupCode));
         } else 
@@ -58,14 +65,16 @@ private slots:
 
     void switchTab(int newTab) {
         if(currentEditor != nullptr) {
-            QObject::disconnect(currentEditor, SIGNAL(textChanged()), 0, 0);
+            disconnect(currentEditor, SIGNAL(textChanged()), 0, 0);
         }
         tabs->setCurrentIndex(newTab);
         currentEditor = (CodeEditor*)tabs->currentWidget()->findChild<QPlainTextEdit*>();
         highlighter->setDocument(currentEditor->document());
-        QObject::connect(currentEditor, SIGNAL(textChanged()), glWidget, SLOT(updateCode()));
+        connect(currentEditor, SIGNAL(textChanged()), glWidget, SLOT(updateCode()));
 
+        //interpreter->reparse = false;
         emit currentEditor->textChanged();
+        //interpreter->reparse = true;
     }
 
     void newFile() {
@@ -77,6 +86,12 @@ private slots:
         QString selected = QFileDialog::getOpenFileName(this, tr("Open File"), Q_NULLPTR, txtFilter);
         glWidget->setUpdatesEnabled(true);
         if(selected == Q_NULLPTR) {
+            return;
+        }
+
+        QString selectedFileName = QFileInfo(selected).fileName();
+        if(openFiles.find(selectedFileName) != openFiles.end()) {
+            switchTab(openFiles[selectedFileName]);
             return;
         }
 
@@ -96,6 +111,8 @@ private slots:
         } else {
             switchTab(createOpenTab(QString::fromStdString(contents), selected));
         }
+
+        openFiles.insert(pair<QString, int>(selectedFileName, tabs->currentIndex()));
     }
 
     void saveFile() {

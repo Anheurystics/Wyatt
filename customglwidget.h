@@ -27,7 +27,7 @@ class CustomGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
         LogWindow* logger;
         Prototype::Interpreter* interpreter;
 
-        bool codeChanged;
+        bool codeChanged, reparse;
 
     private:
         std::string code;
