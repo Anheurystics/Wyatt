@@ -133,6 +133,24 @@ string Prototype::Interpreter::print_expr(Expr_ptr expr) {
                 output += "}";
                 return output;
             }
+        case NODE_BUFFER:
+            {
+                Buffer_ptr buffer = static_pointer_cast<Buffer>(expr);
+                string output = "";
+                for(auto it = buffer->layout->list.begin(); it != buffer->layout->list.end(); ++it) {
+                    string attrib = *it;
+                    output += attrib + " size: " + to_string(buffer->layout->attributes[attrib]) + " {";
+                    for(auto jt = buffer->data[attrib].begin(); jt != buffer->data[attrib].end(); ++jt) {
+                        if(jt != buffer->data[attrib].begin()) {
+                            output += ", ";
+                        }
+                        float f = *jt;
+                        output += to_string(f);
+                    }
+                }
+                output += "}";
+                return output;
+            }
         default:
             return "";
     }
