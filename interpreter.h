@@ -34,14 +34,14 @@ class Interpreter {
         unsigned int width, height;
 
         void parse(string);
-        Expr_ptr execute_stmts(shared_ptr<Stmts>);
+        Expr_ptr execute_stmts(Stmts_ptr);
         void prepare();
         void load_imports();
         void load_import(string);
         void execute_init();
         void execute_loop();
         void compile_program();
-        void compile_shader(GLuint*, shared_ptr<Shader>);
+        void compile_shader(GLuint*, Shader_ptr);
         void setFunctions(QOpenGLFunctions* gl) {
             this->gl = gl;
         }
@@ -56,7 +56,6 @@ class Interpreter {
 
         Scope_ptr globalScope;
         std::stack<ScopeList_ptr> functionScopeStack;
-        map<string, shared_ptr<Program>> programs;
         map<string, shared_ptr<ShaderPair>> shaders;
         map<string, FuncDef_ptr> functions;
         map<string, FuncDef_ptr> builtins;
@@ -67,7 +66,7 @@ class Interpreter {
         int activeTextureSlot = 0;
 
         string current_program_name;
-        shared_ptr<Program> current_program = nullptr;
+        Program_ptr current_program = nullptr;
 
         FuncDef_ptr init = nullptr;
         FuncDef_ptr loop = nullptr;

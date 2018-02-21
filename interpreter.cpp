@@ -617,81 +617,105 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
             }
        case NODE_DOT:
             {
-                Dot_ptr uniform = static_pointer_cast<Dot>(node);
-                bool reupload = false;
-                if(current_program_name != uniform->shader->name) {
-                    current_program_name = uniform->shader->name;
-                    current_program = static_pointer_cast<Program>(globalScope->get(current_program_name));
-                    reupload = true;
-                }
-
-                if(current_program == nullptr) {
-                    logger->log(uniform, "ERROR", "Cannot get uniform from nonexistent shader");
+                Dot_ptr dot = static_pointer_cast<Dot>(node);
+                Expr_ptr owner;
+                get_variable(owner, dot->owner->name);
+                if(owner == nullptr || owner->type == NODE_NULL) {
+                    logger->log(dot, "ERROR", "Can't access member of variable " + dot->owner->name);
                     return nullptr;
                 }
 
-                if(reupload) {
-                    gl->glUseProgram(current_program->handle);
-                }
+                if(owner->type == NODE_PROGRAM) {
+                    Program_ptr program = static_pointer_cast<Program>(owner);
 
-                Shader_ptr src = current_program->vertSource;
-                string type = "";
-                if(src->uniforms->find(uniform->name) != src->uniforms->end()) {
-                    type = src->uniforms->at(uniform->name);
-                } else {
-                    src = current_program->fragSource;
-                    if(src->uniforms->find(uniform->name) != src->uniforms->end()) {
-                        type = src->uniforms->at(uniform->name);
-                    } else {
-                        logger->log(uniform, "ERROR", "Uniform " + uniform->name + " of shader " + current_program_name + " does not exist");
+                    bool reupload = false;
+                    if(current_program_name != dot->owner->name) {
+                        current_program_name = dot->owner->name;
+                        current_program = program;
+                        reupload = true;
+                    }
+
+                    if(current_program == nullptr) {
+                        logger->log(dot, "ERROR", "Cannot get uniform from nonexistent shader");
                         return nullptr;
                     }
-                }
 
-                GLint loc = gl->glGetUniformLocation(current_program->handle, uniform->name.c_str());
-                if(type == "float") {
-                    Float_ptr f = make_shared<Float>(0);
-                    gl->glGetUniformfv(current_program->handle, loc, &(f->value));
-                    return f;
+                    if(reupload) {
+                        gl->glUseProgram(current_program->handle);
+                    }
+
+                    Shader_ptr src = current_program->vertSource;
+                    string type = "";
+                    if(src->uniforms->find(dot->name) != src->uniforms->end()) {
+                        type = src->uniforms->at(dot->name);
+                    } else {
+                        src = current_program->fragSource;
+                        if(src->uniforms->find(dot->name) != src->uniforms->end()) {
+                            type = src->uniforms->at(dot->name);
+                        } else {
+                            logger->log(dot, "ERROR", "Uniform " + dot->name + " of shader " + current_program_name + " does not exist");
+                            return nullptr;
+                        }
+                    }
+
+                    GLint loc = gl->glGetUniformLocation(current_program->handle, dot->name.c_str());
+                    if(type == "float") {
+                        Float_ptr f = make_shared<Float>(0);
+                        gl->glGetUniformfv(current_program->handle, loc, &(f->value));
+                        return f;
+                    } else
+                    if(type == "vec2") {
+                        float value[2];
+                        gl->glGetUniformfv(current_program->handle, loc, &value[0]);
+                        return make_shared<Vector2>(make_shared<Float>(value[0]), make_shared<Float>(value[1]));
+                    } else 
+                    if(type == "vec3") {
+                        float value[3];
+                        gl->glGetUniformfv(current_program->handle, loc, &value[0]);
+                        return make_shared<Vector3>(make_shared<Float>(value[0]), make_shared<Float>(value[1]), make_shared<Float>(value[2]));
+                    } else
+                    if(type == "vec4") {
+                        float value[4];
+                        gl->glGetUniformfv(current_program->handle, loc, &value[0]);
+                        return make_shared<Vector4>(make_shared<Float>(value[0]), make_shared<Float>(value[1]), make_shared<Float>(value[2]), make_shared<Float>(value[3]));
+                    } else 
+                    if(type == "mat2") {
+                        float value[4];
+                        gl->glGetUniformfv(current_program->handle, loc, &value[0]);
+                        return make_shared<Matrix2>(make_shared<Vector2>(make_shared<Float>(value[0]), make_shared<Float>(value[1])), make_shared<Vector2>(make_shared<Float>(value[2]), make_shared<Float>(value[3])));
+                    } else
+                    if(type == "mat3") {
+                        float value[9];
+                        gl->glGetUniformfv(current_program->handle, loc, &value[0]);
+                        return make_shared<Matrix3>(
+                            make_shared<Vector3>(make_shared<Float>(value[0]), make_shared<Float>(value[1]), make_shared<Float>(value[2])),
+                            make_shared<Vector3>(make_shared<Float>(value[3]), make_shared<Float>(value[4]), make_shared<Float>(value[5])),
+                            make_shared<Vector3>(make_shared<Float>(value[6]), make_shared<Float>(value[7]), make_shared<Float>(value[8]))
+                        );
+                    } else
+                    if(type == "mat4") {
+                        float value[16];
+                        gl->glGetUniformfv(current_program->handle, loc, &value[0]);
+                        return make_shared<Matrix4>(
+                            make_shared<Vector4>(make_shared<Float>(value[0]), make_shared<Float>(value[1]), make_shared<Float>(value[2]), make_shared<Float>(value[3])),
+                            make_shared<Vector4>(make_shared<Float>(value[4]), make_shared<Float>(value[5]), make_shared<Float>(value[6]), make_shared<Float>(value[7])),
+                            make_shared<Vector4>(make_shared<Float>(value[8]), make_shared<Float>(value[9]), make_shared<Float>(value[10]), make_shared<Float>(value[11])),
+                            make_shared<Vector4>(make_shared<Float>(value[12]), make_shared<Float>(value[13]), make_shared<Float>(value[14]), make_shared<Float>(value[15]))
+                        );
+                    }
                 } else
-                if(type == "vec2") {
-                    float value[2];
-                    gl->glGetUniformfv(current_program->handle, loc, &value[0]);
-                    return make_shared<Vector2>(make_shared<Float>(value[0]), make_shared<Float>(value[1]));
-                } else 
-                if(type == "vec3") {
-                    float value[3];
-                    gl->glGetUniformfv(current_program->handle, loc, &value[0]);
-                    return make_shared<Vector3>(make_shared<Float>(value[0]), make_shared<Float>(value[1]), make_shared<Float>(value[2]));
-                } else
-                if(type == "vec4") {
-                    float value[4];
-                    gl->glGetUniformfv(current_program->handle, loc, &value[0]);
-                    return make_shared<Vector4>(make_shared<Float>(value[0]), make_shared<Float>(value[1]), make_shared<Float>(value[2]), make_shared<Float>(value[3]));
-                } else 
-                if(type == "mat2") {
-                    float value[4];
-                    gl->glGetUniformfv(current_program->handle, loc, &value[0]);
-                    return make_shared<Matrix2>(make_shared<Vector2>(make_shared<Float>(value[0]), make_shared<Float>(value[1])), make_shared<Vector2>(make_shared<Float>(value[2]), make_shared<Float>(value[3])));
-                } else
-                if(type == "mat3") {
-                    float value[9];
-                    gl->glGetUniformfv(current_program->handle, loc, &value[0]);
-                    return make_shared<Matrix3>(
-                        make_shared<Vector3>(make_shared<Float>(value[0]), make_shared<Float>(value[1]), make_shared<Float>(value[2])),
-                        make_shared<Vector3>(make_shared<Float>(value[3]), make_shared<Float>(value[4]), make_shared<Float>(value[5])),
-                        make_shared<Vector3>(make_shared<Float>(value[6]), make_shared<Float>(value[7]), make_shared<Float>(value[8]))
-                    );
-                } else
-                if(type == "mat4") {
-                    float value[16];
-                    gl->glGetUniformfv(current_program->handle, loc, &value[0]);
-                    return make_shared<Matrix4>(
-                        make_shared<Vector4>(make_shared<Float>(value[0]), make_shared<Float>(value[1]), make_shared<Float>(value[2]), make_shared<Float>(value[3])),
-                        make_shared<Vector4>(make_shared<Float>(value[4]), make_shared<Float>(value[5]), make_shared<Float>(value[6]), make_shared<Float>(value[7])),
-                        make_shared<Vector4>(make_shared<Float>(value[8]), make_shared<Float>(value[9]), make_shared<Float>(value[10]), make_shared<Float>(value[11])),
-                        make_shared<Vector4>(make_shared<Float>(value[12]), make_shared<Float>(value[13]), make_shared<Float>(value[14]), make_shared<Float>(value[15]))
-                    );
+                if(owner->type == NODE_TEXTURE) {
+                    Texture_ptr texture = static_pointer_cast<Texture>(owner);
+                    if(dot->name == "width") {
+                        return make_shared<Int>(texture->width);
+                    }
+                    if(dot->name == "height") {
+                        return make_shared<Int>(texture->height);
+                    }
+                    if(dot->name == "channels") {
+                        return make_shared<Int>(texture->channels);
+                    }
+                    return nullptr;
                 }
             }
 
@@ -1100,172 +1124,182 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                         return nullptr;
 
                     } else if(lhs->type == NODE_DOT) {
-                        Dot_ptr uniform = static_pointer_cast<Dot>(lhs);
-                        bool reupload = false;
-                        if(current_program_name != uniform->shader->name) {
-                            current_program_name = uniform->shader->name;
-                            current_program = static_pointer_cast<Program>(globalScope->get(current_program_name));
-                            reupload = true;
-                        }
-
-                        if(current_program == nullptr) {
-                            logger->log(uniform, "ERROR", "Cannot upload to nonexistent shader");
+                        Dot_ptr dot = static_pointer_cast<Dot>(lhs);
+                        Expr_ptr owner;
+                        get_variable(owner, dot->owner->name);
+                        if(owner == nullptr || owner->type == NODE_NULL) {
+                            logger->log(dot, "ERROR", "Can't assign to member of variable " + dot->owner->name);
                             return nullptr;
                         }
 
-                        if(reupload) {
-                            gl->glUseProgram(current_program->handle);
-                        }
+                        if(owner->type == NODE_PROGRAM) {
+                            Program_ptr program = static_pointer_cast<Program>(owner);
+                            bool reupload = false;
+                            if(current_program_name != dot->owner->name) {
+                                current_program_name = dot->owner->name;
+                                current_program = program;
+                                reupload = true;
+                            }
 
-                        Shader_ptr src = current_program->vertSource;
-                        string type = "";
-                        if(src->uniforms->find(uniform->name) != src->uniforms->end()) {
-                            type = src->uniforms->at(uniform->name);
-                        } else {
-                            src = current_program->fragSource;
-                            if(src->uniforms->find(uniform->name) != src->uniforms->end()) {
-                                type = src->uniforms->at(uniform->name);
-                            } else {
-                                logger->log(uniform, "ERROR", "Uniform " + uniform->name + " of shader " + current_program_name + " does not exist");
+                            if(current_program == nullptr) {
+                                logger->log(dot, "ERROR", "Cannot upload to nonexistent shader");
                                 return nullptr;
                             }
-                        }
 
-                        GLint loc = gl->glGetUniformLocation(current_program->handle, uniform->name.c_str());
-                        if(type == "float") {
-                            if(rhs->type == NODE_FLOAT) {
-                                Float_ptr f = static_pointer_cast<Float>(rhs);
-                                gl->glUniform1f(loc, resolve_float(f));
-                            } else {
-                                logger->log(uniform, "ERROR", "Uniform upload mismatch: float required for " + uniform->name + " of shader " + current_program_name);
-                                return nullptr;
+                            if(reupload) {
+                                gl->glUseProgram(current_program->handle);
                             }
-                        } else
-                        if(type == "vec2") {
-                            if(rhs->type == NODE_VECTOR2) {
-                                Vector2_ptr vec2 = static_pointer_cast<Vector2>(eval_expr(rhs));
-                                gl->glUniform2f(loc, resolve_vec2(vec2));
-                            } else {
-                                logger->log(uniform, "ERROR", "Uniform upload mismatch: vec2 required for " + uniform->name + " of shader " + current_program_name);
-                                return nullptr;
-                            }
-                        } else 
-                        if(type == "vec3") {
-                            if(rhs->type == NODE_VECTOR3) {
-                                Vector3_ptr vec3 = static_pointer_cast<Vector3>(eval_expr(rhs));
-                                gl->glUniform3f(loc, resolve_vec3(vec3));
-                            } else {
-                                logger->log(uniform, "ERROR", "Uniform upload mismatch: vec3 required for " + uniform->name + " of shader " + current_program_name);
-                                return nullptr;
-                            }
-                        } else
-                        if(type == "vec4") {
-                            if(rhs->type == NODE_VECTOR4) {
-                                Vector4_ptr vec4 = static_pointer_cast<Vector4>(eval_expr(rhs));
-                                gl->glUniform4f(loc, resolve_vec4(vec4));
-                            } else {
-                                logger->log(uniform, "ERROR", "Uniform upload mismatch: vec4 required for " + uniform->name + " of shader " + current_program_name);
-                                return nullptr;
-                            }
-                        } else
-                        if(type == "mat2") {
-                            if(rhs->type == NODE_MATRIX2) {
-                                Matrix2_ptr mat2 = static_pointer_cast<Matrix2>(eval_expr(rhs));
-                                float data[4];
-                                data[0] = resolve_scalar(mat2->v0->x); data[1] = resolve_scalar(mat2->v0->y);
-                                data[2] = resolve_scalar(mat2->v1->x); data[3] = resolve_scalar(mat2->v1->y);
-                                gl->glUniform2fv(loc, 1, data);
-                            } else {
-                                logger->log(uniform, "ERROR", "Uniform upload mismatch: vec4 required for " + uniform->name + " of shader " + current_program_name);
-                                return nullptr;
-                            }
-                        } else
-                        if(type == "mat3") {
-                            if(rhs->type == NODE_MATRIX3) {
-                                Matrix3_ptr mat3 = static_pointer_cast<Matrix3>(eval_expr(rhs));
-                                float data[9];
-                                data[0] = resolve_scalar(mat3->v0->x); data[1] = resolve_scalar(mat3->v0->y); data[2] = resolve_scalar(mat3->v0->z);
-                                data[3] = resolve_scalar(mat3->v1->x); data[4] = resolve_scalar(mat3->v1->y); data[5] = resolve_scalar(mat3->v1->z);
-                                data[6] = resolve_scalar(mat3->v2->x); data[7] = resolve_scalar(mat3->v2->y); data[8] = resolve_scalar(mat3->v2->z);
-                                gl->glUniformMatrix3fv(loc, 1, false, data);
-                            } else {
-                                logger->log(uniform, "ERROR", "Uniform upload mismatch: mat3 required for " + uniform->name + " of shader " + current_program_name);
-                                return nullptr;
-                            }
-                        } else
-                        if(type == "mat4") {
-                            if(rhs->type == NODE_MATRIX4) {
-                                Matrix4_ptr mat4 = static_pointer_cast<Matrix4>(eval_expr(rhs));
-                                float data[16];
-                                data[0] = resolve_scalar(mat4->v0->x); data[1] = resolve_scalar(mat4->v0->y); data[2] = resolve_scalar(mat4->v0->z); data[3] = resolve_scalar(mat4->v0->w);
-                                data[4] = resolve_scalar(mat4->v1->x); data[5] = resolve_scalar(mat4->v1->y); data[6] = resolve_scalar(mat4->v1->z); data[7] = resolve_scalar(mat4->v1->w);
-                                data[8] = resolve_scalar(mat4->v2->x); data[9] = resolve_scalar(mat4->v2->y); data[10] = resolve_scalar(mat4->v2->z); data[11] = resolve_scalar(mat4->v2->w);
-                                data[12] = resolve_scalar(mat4->v3->x); data[13] = resolve_scalar(mat4->v3->y); data[14] = resolve_scalar(mat4->v3->z); data[15] = resolve_scalar(mat4->v3->w);
-                                gl->glUniformMatrix4fv(loc, 1, false, data);
-                            } else {
-                                logger->log(uniform, "ERROR", "Uniform upload mismatch: mat3 required for " + uniform->name + " of shader " + current_program_name);
-                                return nullptr;
-                            }
-                        } else
-                        if(type == "texture2D") {
-                            switch(rhs->type) {
-                                case NODE_TEXTURE:
-                                    {
-                                        Shader_ptr frag = current_program->fragSource;
-                                        auto texSlots = frag->textureSlots;
-                                        auto it = find(texSlots->begin(), texSlots->end(), uniform->name);
-                                        activeTextureSlot = it - texSlots->begin();
 
-                                        Texture_ptr tex = static_pointer_cast<Texture>(rhs);
-                                        gl->glActiveTexture(GL_TEXTURE0 + activeTextureSlot);
-                                        if(tex->handle == 0) {
-                                            gl->glGenTextures(1, &(tex->handle));
-                                            gl->glBindTexture(GL_TEXTURE_2D, tex->handle);
-                                            gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-                                            gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-                                            gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                                            gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                                            gl->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex->width, tex->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex->image);
-                                        } else {
-                                            gl->glBindTexture(GL_TEXTURE_2D, tex->handle);
-                                        }
-                                        gl->glUniform1i(loc, activeTextureSlot);
+                            Shader_ptr src = current_program->vertSource;
+                            string type = "";
+                            if(src->uniforms->find(dot->name) != src->uniforms->end()) {
+                                type = src->uniforms->at(dot->name);
+                            } else {
+                                src = current_program->fragSource;
+                                if(src->uniforms->find(dot->name) != src->uniforms->end()) {
+                                    type = src->uniforms->at(dot->name);
+                                } else {
+                                    logger->log(dot, "ERROR", "Uniform " + dot->name + " of shader " + current_program_name + " does not exist");
+                                    return nullptr;
+                                }
+                            }
 
-                                        break;
-                                    }
-                                case NODE_STRING:
-                                    {
-                                        string filename = static_pointer_cast<String>(rhs)->value;
-                                        if(filename == "") {
-                                            gl->glBindTexture(GL_TEXTURE_2D, 0);
-                                            gl->glActiveTexture(0);
-                                        } else {
-                                            int width, height, n;
-                                            unsigned char* data = stbi_load(filename.c_str(), &width, &height, &n, 4);
-                                            GLuint handle = 0;
-                                            glGenTextures(1, &handle);
-                                            glBindTexture(GL_TEXTURE_2D, handle);
-                                            gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-                                            gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-                                            gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                                            gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                                            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-                                            if(handle == 0) {
-                                                string message = "Cannot load " + filename + ": ";
-                                                message += stbi_failure_reason();
-                                                logger->log(rhs, "ERROR", message);
-                                                break;
+                            GLint loc = gl->glGetUniformLocation(current_program->handle, dot->name.c_str());
+                            if(type == "float") {
+                                if(rhs->type == NODE_FLOAT) {
+                                    Float_ptr f = static_pointer_cast<Float>(rhs);
+                                    gl->glUniform1f(loc, resolve_float(f));
+                                } else {
+                                    logger->log(dot, "ERROR", "Uniform upload mismatch: float required for " + dot->name + " of shader " + current_program_name);
+                                    return nullptr;
+                                }
+                            } else
+                            if(type == "vec2") {
+                                if(rhs->type == NODE_VECTOR2) {
+                                    Vector2_ptr vec2 = static_pointer_cast<Vector2>(eval_expr(rhs));
+                                    gl->glUniform2f(loc, resolve_vec2(vec2));
+                                } else {
+                                    logger->log(dot, "ERROR", "Uniform upload mismatch: vec2 required for " + dot->name + " of shader " + current_program_name);
+                                    return nullptr;
+                                }
+                            } else 
+                            if(type == "vec3") {
+                                if(rhs->type == NODE_VECTOR3) {
+                                    Vector3_ptr vec3 = static_pointer_cast<Vector3>(eval_expr(rhs));
+                                    gl->glUniform3f(loc, resolve_vec3(vec3));
+                                } else {
+                                    logger->log(dot, "ERROR", "Uniform upload mismatch: vec3 required for " + dot->name + " of shader " + current_program_name);
+                                    return nullptr;
+                                }
+                            } else
+                            if(type == "vec4") {
+                                if(rhs->type == NODE_VECTOR4) {
+                                    Vector4_ptr vec4 = static_pointer_cast<Vector4>(eval_expr(rhs));
+                                    gl->glUniform4f(loc, resolve_vec4(vec4));
+                                } else {
+                                    logger->log(dot, "ERROR", "Uniform upload mismatch: vec4 required for " + dot->name + " of shader " + current_program_name);
+                                    return nullptr;
+                                }
+                            } else
+                            if(type == "mat2") {
+                                if(rhs->type == NODE_MATRIX2) {
+                                    Matrix2_ptr mat2 = static_pointer_cast<Matrix2>(eval_expr(rhs));
+                                    float data[4];
+                                    data[0] = resolve_scalar(mat2->v0->x); data[1] = resolve_scalar(mat2->v0->y);
+                                    data[2] = resolve_scalar(mat2->v1->x); data[3] = resolve_scalar(mat2->v1->y);
+                                    gl->glUniform2fv(loc, 1, data);
+                                } else {
+                                    logger->log(dot, "ERROR", "Uniform upload mismatch: vec4 required for " + dot->name + " of shader " + current_program_name);
+                                    return nullptr;
+                                }
+                            } else
+                            if(type == "mat3") {
+                                if(rhs->type == NODE_MATRIX3) {
+                                    Matrix3_ptr mat3 = static_pointer_cast<Matrix3>(eval_expr(rhs));
+                                    float data[9];
+                                    data[0] = resolve_scalar(mat3->v0->x); data[1] = resolve_scalar(mat3->v0->y); data[2] = resolve_scalar(mat3->v0->z);
+                                    data[3] = resolve_scalar(mat3->v1->x); data[4] = resolve_scalar(mat3->v1->y); data[5] = resolve_scalar(mat3->v1->z);
+                                    data[6] = resolve_scalar(mat3->v2->x); data[7] = resolve_scalar(mat3->v2->y); data[8] = resolve_scalar(mat3->v2->z);
+                                    gl->glUniformMatrix3fv(loc, 1, false, data);
+                                } else {
+                                    logger->log(dot, "ERROR", "Uniform upload mismatch: mat3 required for " + dot->name + " of shader " + current_program_name);
+                                    return nullptr;
+                                }
+                            } else
+                            if(type == "mat4") {
+                                if(rhs->type == NODE_MATRIX4) {
+                                    Matrix4_ptr mat4 = static_pointer_cast<Matrix4>(eval_expr(rhs));
+                                    float data[16];
+                                    data[0] = resolve_scalar(mat4->v0->x); data[1] = resolve_scalar(mat4->v0->y); data[2] = resolve_scalar(mat4->v0->z); data[3] = resolve_scalar(mat4->v0->w);
+                                    data[4] = resolve_scalar(mat4->v1->x); data[5] = resolve_scalar(mat4->v1->y); data[6] = resolve_scalar(mat4->v1->z); data[7] = resolve_scalar(mat4->v1->w);
+                                    data[8] = resolve_scalar(mat4->v2->x); data[9] = resolve_scalar(mat4->v2->y); data[10] = resolve_scalar(mat4->v2->z); data[11] = resolve_scalar(mat4->v2->w);
+                                    data[12] = resolve_scalar(mat4->v3->x); data[13] = resolve_scalar(mat4->v3->y); data[14] = resolve_scalar(mat4->v3->z); data[15] = resolve_scalar(mat4->v3->w);
+                                    gl->glUniformMatrix4fv(loc, 1, false, data);
+                                } else {
+                                    logger->log(dot, "ERROR", "Uniform upload mismatch: mat3 required for " + dot->name + " of shader " + current_program_name);
+                                    return nullptr;
+                                }
+                            } else
+                            if(type == "texture2D") {
+                                switch(rhs->type) {
+                                    case NODE_TEXTURE:
+                                        {
+                                            Shader_ptr frag = current_program->fragSource;
+                                            auto texSlots = frag->textureSlots;
+                                            auto it = find(texSlots->begin(), texSlots->end(), dot->name);
+                                            activeTextureSlot = it - texSlots->begin();
+
+                                            Texture_ptr tex = static_pointer_cast<Texture>(rhs);
+                                            gl->glActiveTexture(GL_TEXTURE0 + activeTextureSlot);
+                                            if(tex->handle == 0) {
+                                                gl->glGenTextures(1, &(tex->handle));
+                                                gl->glBindTexture(GL_TEXTURE_2D, tex->handle);
+                                                gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                                                gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+                                                gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                                                gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                                                gl->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex->width, tex->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex->image);
+                                            } else {
+                                                gl->glBindTexture(GL_TEXTURE_2D, tex->handle);
                                             }
-                                            gl->glBindTexture(GL_TEXTURE_2D, handle);
-                                            gl->glActiveTexture(GL_TEXTURE0);
+                                            gl->glUniform1i(loc, activeTextureSlot);
+
+                                            break;
+                                        }
+                                    case NODE_STRING:
+                                        {
+                                            string filename = static_pointer_cast<String>(rhs)->value;
+                                            if(filename == "") {
+                                                gl->glBindTexture(GL_TEXTURE_2D, 0);
+                                                gl->glActiveTexture(0);
+                                            } else {
+                                                int width, height, n;
+                                                unsigned char* data = stbi_load(filename.c_str(), &width, &height, &n, 4);
+                                                GLuint handle = 0;
+                                                glGenTextures(1, &handle);
+                                                glBindTexture(GL_TEXTURE_2D, handle);
+                                                gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                                                gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+                                                gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                                                gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                                                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+                                                if(handle == 0) {
+                                                    string message = "Cannot load " + filename + ": ";
+                                                    message += stbi_failure_reason();
+                                                    logger->log(rhs, "ERROR", message);
+                                                    break;
+                                                }
+                                                gl->glBindTexture(GL_TEXTURE_2D, handle);
+                                                gl->glActiveTexture(GL_TEXTURE0);
+                                            }
+                                            break;
                                         }
                                         break;
-                                    }
-                                    break;
-                                default:
-                                    break;
+                                    default:
+                                        break;
+                                }
+                            }
                         }
-                    }
                     } else if (lhs->type == NODE_INDEX) {
                         Index_ptr in = static_pointer_cast<Index>(lhs);
                         Expr_ptr source = eval_expr(in->source);

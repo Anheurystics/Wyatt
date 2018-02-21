@@ -162,10 +162,10 @@ class Ident: public Expr {
 
 class Dot: public Ident {
     public:
-        Ident_ptr shader;
+        Ident_ptr owner;
 
         Dot(Ident_ptr shader, Ident_ptr name): Ident(name->name) {
-            this->shader = shader;
+            this->owner = shader;
             type = NODE_DOT;
         }
 };
