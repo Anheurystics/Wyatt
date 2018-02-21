@@ -74,6 +74,7 @@ class Interpreter {
         Invoke_ptr loop_invoke;
         QOpenGLFunctions* gl;
 
+        string print_expr(Expr_ptr);
         Expr_ptr eval_expr(Expr_ptr);
         Expr_ptr eval_binary(shared_ptr<Binary>);
         Expr_ptr invoke(shared_ptr<Invoke>);

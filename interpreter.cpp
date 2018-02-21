@@ -68,7 +68,7 @@ void Prototype::Interpreter::reset() {
     column = 1;
 }
 
-string tostring(Expr_ptr expr) {
+string Prototype::Interpreter::print_expr(Expr_ptr expr) {
     if(expr == nullptr) {
         return "";
     }
@@ -93,7 +93,7 @@ string tostring(Expr_ptr expr) {
                 string result = "[";
                 Vector_ptr vec = static_pointer_cast<Vector>(expr);
                 for(unsigned int i = 0; i < vec->size(); i++) {
-                    result += tostring(vec->get(i));
+                    result += print_expr(vec->get(i));
                     if(i < vec->size() - 1) {
                         result += ", ";
                     }
@@ -104,23 +104,34 @@ string tostring(Expr_ptr expr) {
         case NODE_MATRIX2:
             {
                 Matrix2_ptr mat2 = static_pointer_cast<Matrix2>(expr);
-                return "|" + tostring(mat2->v0->x) + ", " + tostring(mat2->v0->y) + "|\n" +
-                       "|" + tostring(mat2->v1->x) + ", " + tostring(mat2->v1->y) + "|";
+                return "|" + print_expr(mat2->v0->x) + ", " + print_expr(mat2->v0->y) + "|\n" +
+                       "|" + print_expr(mat2->v1->x) + ", " + print_expr(mat2->v1->y) + "|";
             }
         case NODE_MATRIX3:
             {
                 Matrix3_ptr mat3 = static_pointer_cast<Matrix3>(expr);
-                return "|" + tostring(mat3->v0->x) + ", " + tostring(mat3->v0->y) + ", " + tostring(mat3->v0->z) + "|\n" +
-                       "|" + tostring(mat3->v1->x) + ", " + tostring(mat3->v1->y) + ", " + tostring(mat3->v1->z) + "|\n" +
-                       "|" + tostring(mat3->v2->x) + ", " + tostring(mat3->v2->y) + ", " + tostring(mat3->v2->z) + "|";
+                return "|" + print_expr(mat3->v0->x) + ", " + print_expr(mat3->v0->y) + ", " + print_expr(mat3->v0->z) + "|\n" +
+                       "|" + print_expr(mat3->v1->x) + ", " + print_expr(mat3->v1->y) + ", " + print_expr(mat3->v1->z) + "|\n" +
+                       "|" + print_expr(mat3->v2->x) + ", " + print_expr(mat3->v2->y) + ", " + print_expr(mat3->v2->z) + "|";
             }
         case NODE_MATRIX4:
             {
                 Matrix4_ptr mat4 = static_pointer_cast<Matrix4>(expr);
-                return "|" + tostring(mat4->v0->x) + ", " + tostring(mat4->v0->y) + ", " + tostring(mat4->v0->z) + ", " + tostring(mat4->v0->w) + "|\n" +
-                       "|" + tostring(mat4->v1->x) + ", " + tostring(mat4->v1->y) + ", " + tostring(mat4->v1->z) + ", " + tostring(mat4->v1->w) + "|\n" +
-                       "|" + tostring(mat4->v2->x) + ", " + tostring(mat4->v2->y) + ", " + tostring(mat4->v2->z) + ", " + tostring(mat4->v2->w) + "|\n" +
-                       "|" + tostring(mat4->v3->x) + ", " + tostring(mat4->v3->y) + ", " + tostring(mat4->v3->z) + ", " + tostring(mat4->v3->w) + "|";
+                return "|" + print_expr(mat4->v0->x) + ", " + print_expr(mat4->v0->y) + ", " + print_expr(mat4->v0->z) + ", " + print_expr(mat4->v0->w) + "|\n" +
+                       "|" + print_expr(mat4->v1->x) + ", " + print_expr(mat4->v1->y) + ", " + print_expr(mat4->v1->z) + ", " + print_expr(mat4->v1->w) + "|\n" +
+                       "|" + print_expr(mat4->v2->x) + ", " + print_expr(mat4->v2->y) + ", " + print_expr(mat4->v2->z) + ", " + print_expr(mat4->v2->w) + "|\n" +
+                       "|" + print_expr(mat4->v3->x) + ", " + print_expr(mat4->v3->y) + ", " + print_expr(mat4->v3->z) + ", " + print_expr(mat4->v3->w) + "|";
+            }
+        case NODE_LIST:
+            {
+                List_ptr lst = static_pointer_cast<List>(expr);
+                string output = "{";
+                for(unsigned int i = 0; i < lst->list.size(); i++) {
+                    if(i != 0) output += ", ";
+                    output += print_expr(eval_expr(lst->list[i]));
+                }
+                output += "}";
+                return output;
             }
         default:
             return "";
@@ -224,7 +235,7 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
         String_ptr str = String_ptr(left? static_pointer_cast<String>(lhs) : static_pointer_cast<String>(rhs));
         Expr_ptr other = eval_expr(left? rhs : lhs);
 
-        return make_shared<String>(left? (str->value + tostring(other)) : (tostring(other) + str->value));
+        return make_shared<String>(left? (str->value + print_expr(other)) : (print_expr(other) + str->value));
     }
 
     if(ltype == NODE_VECTOR2 && rtype == NODE_VECTOR2) {
@@ -1803,7 +1814,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 if(output == nullptr)
                     return nullptr;
 
-                logger->log(tostring(output));
+                logger->log(print_expr(output));
                 return nullptr;
             }
 
