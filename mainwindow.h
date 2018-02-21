@@ -136,6 +136,8 @@ private slots:
             return;
         }
 
+        currentEditor->fileInfo.setFile(selected);
+
         saveFile();
     }
 };
