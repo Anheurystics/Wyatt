@@ -52,7 +52,6 @@ namespace Prototype {
                 return true;
             } else
             if(value_type == NODE_NULL) {
-                variables[name] = make_shared<Texture>();
                 return true;
             }
         }

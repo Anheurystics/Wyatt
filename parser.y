@@ -248,7 +248,7 @@ index: IDENTIFIER OPEN_BRACKET expr CLOSE_BRACKET { $$ = make_shared<Index>($1, 
     | index OPEN_BRACKET expr CLOSE_BRACKET { $$ = make_shared<Index>($1, $3); set_lines($$, @1, @4); }
     ;
 
-dot: IDENTIFIER PERIOD IDENTIFIER { $$ = make_shared<Dot>($1, $3); }
+dot: IDENTIFIER PERIOD IDENTIFIER { $$ = make_shared<Dot>($1, $3); set_lines($$, @1, @3); }
     ;
 
 decl: IDENTIFIER IDENTIFIER { $$ = make_shared<Decl>($1, $2, nullptr); set_lines($$, @1, @2); }

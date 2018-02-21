@@ -1112,6 +1112,11 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
 
                     decl->value = buf;
                 }
+                if(decl->datatype->name == "texture2D") {
+                    if(decl->value == nullptr) {
+                        decl->value = make_shared<Texture>();
+                    }
+                }
 
                 scope->declare(decl, decl->name, decl->datatype->name, eval_expr(decl->value));
                 return nullptr;
@@ -1309,6 +1314,13 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                     default:
                                         break;
                                 }
+                            }
+                        } else
+                        if(owner->type == NODE_TEXTURE) {
+                            Texture_ptr texture = static_pointer_cast<Texture>(owner);
+                            if(dot->name == "width" || dot->name == "height" || dot->name == "channels") {
+                                logger->log(dot->owner, "ERROR", "Field \"" + dot->name + "\" of texture is read-only");
+                                return nullptr;
                             }
                         }
                     } else if (lhs->type == NODE_INDEX) {
