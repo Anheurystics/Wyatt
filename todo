@@ -1,23 +1,16 @@
 TODO LIST
 
 MAIN FEATURES
-- Subset which transpiles to GLSL
 
 BUG FIXES
 - Formalize passed by value vs passed by reference behavior (for assignment, binary, evals, etc.)
-- Make matrix generate columns properly when doing something like m[i][j] = val
 - Pass down line data when making new nodes using make_shared<>()
 
 QOL CHANGES
 
 TODO
-- Remove use 
-- textures
-    - binding
-    - multi-textures :(
 - Transpiler type guessing
 - better GLSL syntax (typedef)
-- framebuffers :(
 - uniform arrays
 - Remove segfaults
 - Binary operations in 2d array of functions
