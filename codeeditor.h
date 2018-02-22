@@ -25,6 +25,7 @@ public:
     int lineNumberAreaWidth();
 
     QFileInfo fileInfo;
+    QFont monoFont;
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -36,7 +37,6 @@ private slots:
 
 private:
     LineNumberArea* lineNumberArea;
-    QFont monoFont;
 };
 
 class LineNumberArea : public QWidget
