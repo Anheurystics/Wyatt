@@ -45,7 +45,7 @@ private:
 
 private slots:
     void closeTab(int tab) {
-        CodeEditor* editor = (CodeEditor*)tabs->widget(tab)->findChild<QPlainTextEdit*>();
+        CodeEditor* editor = qobject_cast<CodeEditor*>(tabs->widget(tab)->findChild<QPlainTextEdit*>());
         QString file = editor->fileInfo.fileName();
         openFiles.erase(file);
 
@@ -68,7 +68,7 @@ private slots:
             disconnect(currentEditor, SIGNAL(textChanged()), 0, 0);
         }
         tabs->setCurrentIndex(newTab);
-        currentEditor = (CodeEditor*)tabs->currentWidget()->findChild<QPlainTextEdit*>();
+        currentEditor = qobject_cast<CodeEditor*>(tabs->currentWidget()->findChild<QPlainTextEdit*>());
         highlighter->setDocument(currentEditor->document());
         connect(currentEditor, SIGNAL(textChanged()), glWidget, SLOT(updateCode()));
 

@@ -5,14 +5,17 @@
 #include <iostream>
 #include "nodes.h"
 
+#include "logwindow.h"
+
 using namespace std;
 
 class GLSLTranspiler
 {
     public:
-        GLSLTranspiler();
+        GLSLTranspiler(LogWindow*);
         string transpile(Shader_ptr);
         
+        LogWindow* logger;
         Shader_ptr shader;
 
         string eval_expr(Expr_ptr);

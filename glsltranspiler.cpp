@@ -1,6 +1,6 @@
 #include "glsltranspiler.h"
 
-GLSLTranspiler::GLSLTranspiler()
+GLSLTranspiler::GLSLTranspiler(LogWindow* logger): logger(logger)
 {
 
 }
@@ -321,6 +321,32 @@ string GLSLTranspiler::eval_stmt(Stmt_ptr stmt) {
             {
                 Assign_ptr a = static_pointer_cast<Assign>(stmt);
                 return eval_expr(a->lhs) + " = " + eval_expr(a->value) + ";";
+            }
+        case NODE_IF:
+            {
+                If_ptr ifStmt = static_pointer_cast<If>(stmt);
+                string output = "if(";
+                output += eval_expr(ifStmt->condition) + ") {\n";
+                for(auto it = ifStmt->block->list.begin(); it != ifStmt->block->list.end(); ++it) {
+                    output += eval_stmt(*it);
+                } 
+                output += "}";
+                for(auto it = ifStmt->elseIfBlocks->begin(); it != ifStmt->elseIfBlocks->end(); ++it) {
+                    output += " else " + eval_stmt(*it);
+                }
+                if(ifStmt->elseBlock != nullptr) {
+                    output += " else {\n";
+                    for(auto it = ifStmt->elseBlock->list.begin(); it != ifStmt->elseBlock->list.end(); ++it) {
+                        output += eval_stmt(*it);
+                    }
+                    output += "}\n";
+                }
+                return output;
+            }
+        case NODE_PRINT:
+            {
+                logger->log(stmt, "ERROR", "Printing not allowed from inside shaders");
+                return "";
             }
         default:
             return "";

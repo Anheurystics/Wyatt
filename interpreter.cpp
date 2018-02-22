@@ -37,7 +37,7 @@ float resolve_scalar(Expr_ptr expr) {
 
 Prototype::Interpreter::Interpreter(LogWindow* logger): scanner(&line, &column), parser(scanner, logger, &line, &column, &imports, &globals, &functions, &shaders), logger(logger) {
     globalScope = make_shared<Scope>("global", logger);
-    transpiler = new GLSLTranspiler();
+    transpiler = new GLSLTranspiler(logger);
 
     init_invoke = make_shared<Invoke>(make_shared<Ident>("init"), make_shared<ArgList>(nullptr));
     loop_invoke = make_shared<Invoke>(make_shared<Ident>("loop"), make_shared<ArgList>(nullptr));
