@@ -1,7 +1,5 @@
 prototype.pro.user
 Makefile
-Makefile.Release
-Makefile.Debug
 moc_*
 ui_mainwindow.h
 *.o
@@ -14,5 +12,3 @@ position.hh
 location.hh
 stack.hh
 .vscode/
-debug/
-release/
