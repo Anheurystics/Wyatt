@@ -11,7 +11,7 @@ MainWindow::MainWindow(QWidget *parent, std::string startupFile) :
     tabs = ui->tabWidget;
     tabs->setTabsClosable(true);
     currentEditor = (CodeEditor*)tabs->currentWidget()->findChild<QPlainTextEdit*>();
-    currentEditor->setFont(QFont("Monospace"));
+    currentEditor->setFont(currentEditor->monoFont);
 
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(switchTab(int)));
     connect(ui->tabWidget, SIGNAL(tabCloseRequested(int)), this, SLOT(closeTab(int)));

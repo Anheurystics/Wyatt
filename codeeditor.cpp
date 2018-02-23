@@ -3,6 +3,7 @@
 CodeEditor::CodeEditor(QWidget *parent = 0): QPlainTextEdit(parent)
 {
     monoFont.setFamily("Monospace");
+    monoFont.insertSubstitution("Monospace", "Courier New");
     monoFont.setStyleHint(QFont::Monospace);
     monoFont.setFixedPitch(true);
     monoFont.setPointSize(11);
