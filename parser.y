@@ -345,5 +345,5 @@ vec4: OPEN_BRACKET expr COMMA expr COMMA expr COMMA expr CLOSE_BRACKET { $$ = ma
 %%
 
 void Prototype::Parser::error(const Prototype::location &loc, const string &message) {
-    logger->log("ERROR: " + message + " at line " + to_string(loc.begin.line) + "\n");
+    logger->log("ERROR: " + message + " at line " + to_string(loc.begin.line));
 }

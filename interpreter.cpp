@@ -1957,6 +1957,7 @@ void Prototype::Interpreter::load_import(string file) {
 }
 
 void Prototype::Interpreter::parse(string code) {
+    logger->clear();
     istringstream ss(code);
     *(scanner.line) = 1;
     *(scanner.column) = 1;
@@ -1966,7 +1967,6 @@ void Prototype::Interpreter::parse(string code) {
 
 void Prototype::Interpreter::prepare() {
     globalScope->clear();
-    logger->clear();
 
     init = functions["init"];
     if(init == nullptr) {
