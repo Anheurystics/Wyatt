@@ -156,14 +156,6 @@ string Prototype::Interpreter::print_expr(Expr_ptr expr) {
     }
 }
 
-#define init_line() Expr_ptr source, result;
-#define set_line_source(src) source = src;
-#define set_line_and_return(value) \
-    result = value; \
-    result->first_line = source->first_line; \
-    result->last_line = source->last_line; \
-    return result; \
-
 Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
     Expr_ptr lhs = eval_expr(bin->lhs);
     if(lhs == nullptr) return nullptr;
@@ -176,16 +168,13 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
     NodeType ltype = lhs->type;
     NodeType rtype = rhs->type;
     
-    init_line();
-    set_line_source(bin);
-
     if(ltype == NODE_BOOL && rtype == NODE_BOOL) {
         bool a = static_pointer_cast<Bool>(lhs)->value;
         bool b = static_pointer_cast<Bool>(rhs)->value;
 
         switch(op) {
-            case OP_AND: set_line_and_return(make_shared<Bool>(a && b));
-            case OP_OR: set_line_and_return(make_shared<Bool>(a || b));
+            case OP_AND: return make_shared<Bool>(a && b);
+            case OP_OR: return make_shared<Bool>(a || b);
             default: break;
         }
     }
@@ -611,7 +600,7 @@ Expr_ptr Prototype::Interpreter::resolve_vector(vector<Expr_ptr> list) {
             }
             n += vec->size();
         } else {
-            logger->log(expr, "ERROR", "Invalid vector/matrix element of type " + to_string(expr->type));
+            logger->log(expr, "ERROR", "Invalid vector/matrix element of type " + type_to_name(expr->type));
             return nullptr;
         }
     }
