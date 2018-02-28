@@ -1126,6 +1126,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 }
 
                 scope->declare(decl, decl->name, decl->datatype->name, eval_expr(decl->value));
+
                 return nullptr;
             }
         case NODE_ASSIGN:
@@ -1450,6 +1451,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 get_variable(expr, upload->ident->name);
                 if(expr == nullptr || expr->type != NODE_BUFFER) {
                     logger->log(upload, "ERROR", "Cannot upload to non-buffer object");
+                    return nullptr;
                 }
 
                 Buffer_ptr buffer = static_pointer_cast<Buffer>(expr);
@@ -1603,7 +1605,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 }
 
                 Texture_ptr target = static_pointer_cast<Texture>(eval_expr(draw->target));
-                if(draw->target != nullptr) {
+                if(target != nullptr) {
                     if(target->framebuffer == 0) {
                         gl->glGenFramebuffers(1, &(target->framebuffer));
                         gl->glBindFramebuffer(GL_FRAMEBUFFER, target->framebuffer);

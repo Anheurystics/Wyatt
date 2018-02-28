@@ -49,6 +49,7 @@ namespace Prototype {
                 return true;
             } else
             if(value_type == NODE_TEXTURE) {
+                variables[name] = value;
                 return true;
             } else
             if(value_type == NODE_NULL) {
