@@ -14,6 +14,8 @@ TODO
 - uniform arrays
 - Remove segfaults
 - Binary operations in 2d array of functions
+- Texture parameters
+- Blending
 
 PAPER
 - grammar in appendix (EBNF), annotated
