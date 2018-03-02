@@ -638,6 +638,10 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
     }
 
     switch(node->type) {
+        case NODE_NULL:
+            {
+                return node;
+            }
         case NODE_IDENT: 
             {
                 Ident_ptr ident = static_pointer_cast<Ident>(node);
@@ -1772,6 +1776,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 if(condition->type == NODE_BOOL) {
                     time_t start = time(nullptr);
                     functionScopeStack.top()->attach("while");
+                    breakable = true;
                     while(true) {
                         condition = eval_expr(whilestmt->condition);
                         bool b = (static_pointer_cast<Bool>(condition)->value);
@@ -1779,6 +1784,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
 
                         Expr_ptr returnValue = execute_stmts(whilestmt->block);
                         if(returnValue != nullptr) {
+                            breakable = false; 
                             return returnValue;
                         }
 
@@ -1787,6 +1793,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                         int diff = difftime(now, start);
                         if(diff > LOOP_TIMEOUT) { break; }
                     }
+                    breakable = false;
                     functionScopeStack.top()->detach();
                 } else {
                     logger->log(whilestmt, "ERROR", "Condition in while statement not a boolean");
@@ -1804,8 +1811,9 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     if(start->type == NODE_INT || end->type == NODE_INT || increment->type == NODE_INT) {
                         functionScopeStack.top()->attach("for");
                         eval_stmt(make_shared<Decl>(make_shared<Ident>("int"), iterator, start));
-
                         time_t start = time(nullptr);
+
+                        breakable = true;
                         while(true) {
                             Bool_ptr terminate = static_pointer_cast<Bool>(eval_binary(make_shared<Binary>(iterator, OP_EQUAL, end)));
                             if(terminate == nullptr || terminate->value) {
@@ -1814,6 +1822,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
 
                             Expr_ptr returnValue = execute_stmts(forstmt->block);
                             if(returnValue != nullptr) {
+                                breakable = false;
                                 return returnValue;
                             }
 
@@ -1823,6 +1832,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                             int diff = difftime(now, start);
                             if(diff > LOOP_TIMEOUT) { break; }
                         }
+                        breakable = false;
                         functionScopeStack.top()->detach();
                     }
                 } else if(list->type == NODE_LIST) {
@@ -1832,6 +1842,8 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     unsigned int i = 0; 
 
                     time_t start = time(nullptr);
+
+                    breakable = true;
                     while(i < lst->list.size()) {
                         eval_stmt(make_shared<Assign>(iterator, lst->list[i]));
 
@@ -1846,6 +1858,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                         int diff = difftime(now, start);
                         if(diff > LOOP_TIMEOUT) { break; }
                     }
+                    breakable = false;
                     functionScopeStack.top()->detach();
                 }
 
@@ -1870,6 +1883,12 @@ Expr_ptr Prototype::Interpreter::execute_stmts(Stmts_ptr stmts) {
     Expr_ptr returnValue = nullptr;
     for(unsigned int it = 0; it < stmts->list.size(); it++) { 
         Stmt_ptr stmt = stmts->list.at(it);
+        if(stmt->type == NODE_BREAK && breakable) {
+            //return null_expr to break
+            returnValue = null_expr;
+            break;
+        }
+
         if(stmt->type == NODE_RETURN) {
             Return_ptr ret = static_pointer_cast<Return>(stmt);
             returnValue = ret->value;

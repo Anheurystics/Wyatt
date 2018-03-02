@@ -90,6 +90,7 @@
 %token ELSE "else";
 %token WHILE "while";
 %token FOR "for";
+%token BREAK "break";
 %token IN "in";
 %token IMPORT "import";
 %token ALLOCATE "allocate"; 
@@ -269,6 +270,7 @@ stmt: IDENTIFIER EQUALS expr { $$ = make_shared<Assign>($1, $3); set_lines($$, @
     | DRAW IDENTIFIER TO IDENTIFIER USING IDENTIFIER { $$ = make_shared<Draw>($2, $4, $6); set_lines($$, @1, @6); }
     | PRINT expr { $$ = make_shared<Print>($2); set_lines($$, @1, @2); }
     | RETURN expr { $$ = make_shared<Return>($2); set_lines($$, @1, @2); }
+    | BREAK { $$ = make_shared<Break>(); set_lines($$, @1, @1); }
     | invoke { $$ = make_shared<FuncStmt>($1); set_lines($$, @1, @1); }
     | IDENTIFIER COMP_PLUS upload_list { $$ = make_shared<CompBinary>($1, OP_PLUS, $3); set_lines($$, @1, @3); }
     | IDENTIFIER COMP_MINUS expr { $$ = make_shared<CompBinary>($1, OP_MINUS, $3); set_lines($$, @1, @3); }

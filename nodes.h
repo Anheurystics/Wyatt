@@ -14,7 +14,7 @@ enum NodeType {
     NODE_INVOKE,
     NODE_EXPR, NODE_NULL, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_STRING, NODE_VECTOR2, NODE_VECTOR3, NODE_VECTOR4, NODE_MATRIX2, NODE_MATRIX3, NODE_MATRIX4, NODE_IDENT, NODE_DOT, NODE_BUFFER, NODE_TEXTURE, NODE_PROGRAM,
     NODE_UPLOADLIST, NODE_FUNCEXPR, NODE_LIST, NODE_ARGLIST, NODE_PARAMLIST, NODE_INDEX,
-    NODE_STMT, NODE_ASSIGN, NODE_DECL, NODE_ALLOC, NODE_COMPBINARY, NODE_UPLOAD, NODE_APPEND, NODE_DRAW, NODE_CLEAR, NODE_FUNCSTMT, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_FOR, NODE_SHADER, NODE_PRINT, NODE_FUNCDEF, NODE_RETURN
+    NODE_STMT, NODE_ASSIGN, NODE_DECL, NODE_ALLOC, NODE_COMPBINARY, NODE_UPLOAD, NODE_APPEND, NODE_DRAW, NODE_CLEAR, NODE_FUNCSTMT, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_FOR, NODE_BREAK, NODE_SHADER, NODE_PRINT, NODE_FUNCDEF, NODE_RETURN
 };
 
 inline string type_to_name(NodeType type) {
@@ -72,6 +72,7 @@ class FuncDef;
 class If;
 class While;
 class For;
+class Break;
 class Assign;
 class Decl;
 class Alloc;
@@ -117,6 +118,7 @@ typedef shared_ptr<Return> Return_ptr;
 typedef shared_ptr<FuncDef> FuncDef_ptr;
 typedef shared_ptr<If> If_ptr;
 typedef shared_ptr<While> While_ptr;
+typedef shared_ptr<Break> Break_ptr;
 typedef shared_ptr<For> For_ptr;
 typedef shared_ptr<Assign> Assign_ptr;
 typedef shared_ptr<Decl> Decl_ptr;
@@ -528,6 +530,11 @@ class For: public Stmt {
             this->list = list;
             this->block = block;
         }
+};
+
+class Break: public Stmt {
+    public:
+        Break(): Stmt(NODE_BREAK) {}
 };
 
 class Assign: public Stmt {

@@ -65,6 +65,8 @@ class Interpreter {
 
         int activeTextureSlot = 0;
 
+        bool breakable = false;
+
         string current_program_name;
         Program_ptr current_program = nullptr;
 
