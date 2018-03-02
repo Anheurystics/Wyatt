@@ -239,10 +239,26 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
 
     if(ltype == NODE_STRING || rtype == NODE_STRING) {
         bool left = (ltype == NODE_STRING);
-        String_ptr str = String_ptr(left? static_pointer_cast<String>(lhs) : static_pointer_cast<String>(rhs));
+        String_ptr str = (left? static_pointer_cast<String>(lhs) : static_pointer_cast<String>(rhs));
         Expr_ptr other = eval_expr(left? rhs : lhs);
 
-        return make_shared<String>(left? (str->value + print_expr(other)) : (print_expr(other) + str->value));
+        if(op == OP_PLUS) {
+            return make_shared<String>(left? (str->value + print_expr(other)) : (print_expr(other) + str->value));
+        }
+    }
+
+    if(ltype == NODE_STRING && rtype == NODE_STRING) {
+        string a = static_pointer_cast<String>(lhs)->value;
+        string b = static_pointer_cast<String>(rhs)->value;
+        int compare = a.compare(b);
+        switch(op) {
+            case OP_EQUAL: return make_shared<Bool>(compare == 0);
+            case OP_LESSTHAN: return make_shared<Bool>(compare < 0);
+            case OP_GREATERTHAN: return make_shared<Bool>(compare > 0);
+            case OP_LEQUAL: return make_shared<Bool>(compare <= 0);
+            case OP_GEQUAL: return make_shared<Bool>(compare >= 0);
+            default: break;
+        }
     }
 
     if(ltype == NODE_VECTOR2 && rtype == NODE_VECTOR2) {
