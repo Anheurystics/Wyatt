@@ -752,13 +752,19 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
         case NODE_LIST:
             {
                 List_ptr list = static_pointer_cast<List>(node);
-                if(list->list.size() == 0) {
+                if(list->list.size() == 0 && list->literal) {
                     List_ptr newlist = make_shared<List>(nullptr);
+                    newlist->literal = false;
                     newlist->first_line = list->first_line;
                     newlist->last_line = list->last_line;
                     return newlist;
+                } else {
+                    //FIXME: This severly impacts performance
+                    for(unsigned int i = 0; i < list->list.size(); i++) {
+                        list->list[i] = eval_expr(list->list[i]);
+                    }
+                    return list;
                 }
-                return node;
             }
 
         case NODE_BUFFER:

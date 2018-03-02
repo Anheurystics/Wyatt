@@ -29,8 +29,7 @@ func generate_quad(float size, vec3 normal, vec3 right, int resolution) {
 func generate_cube(float size, int resolution) {
 	list vertices = {};
 	list vnormals = {};
-
-	list result = {};
+	list result = {vertices, vnormals};
 
 	var normals = {[0,0,1],[0,0,-1],[1,0,0],[-1,0,0],[0,1,0],[0,-1,0]};
 	var rights =  {[1,0,0],[-1,0,0],[0,0,-1],[0,0,1],[1,0,0],[1,0,0]};
@@ -44,8 +43,6 @@ func generate_cube(float size, int resolution) {
 		}
 	}
 
-	result += vertices, vnormals;
-
 	return result;
 }
 
@@ -53,17 +50,12 @@ func generate_sphere(float radius, int resolution) {
 	var cube = generate_cube(1.0, resolution);
 	var cube_v = cube[0];
 	var cube_n = cube[1];
-	var vertices = {};
-	var normals = {};
 
-	var result = {};
+	var result = {{}, {}};
 	for(i in 0,|cube_v|,1) {
-		vertices += normalize(cube_v[i]) * radius;
-		normals += normalize(cube_v[i]);
+		result[0] += normalize(cube_v[i]) * radius;
+		result[1] += normalize(cube_v[i]);
 	}
-
-	result += vertices;
-	result += normals;
 
 	return result;
 }

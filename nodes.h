@@ -433,9 +433,13 @@ class Stmts: public Node {
 class List: public Expr {
     public:
         vector<Expr_ptr> list;
+        bool literal = true;
 
         List(Expr_ptr init): Expr(NODE_LIST) {
-            if(init != nullptr) list.insert(list.begin(), init);
+            if(init != nullptr) {
+                list.insert(list.begin(), init);
+                literal = false;
+            } 
         }
 };
 
