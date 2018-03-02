@@ -758,11 +758,12 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                     newlist->first_line = list->first_line;
                     newlist->last_line = list->last_line;
                     return newlist;
-                } else {
+                } else if (list->literal) {
                     //FIXME: This severly impacts performance
                     for(unsigned int i = 0; i < list->list.size(); i++) {
                         list->list[i] = eval_expr(list->list[i]);
                     }
+                    list->literal = false;
                     return list;
                 }
             }

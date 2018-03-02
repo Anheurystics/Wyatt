@@ -438,7 +438,6 @@ class List: public Expr {
         List(Expr_ptr init): Expr(NODE_LIST) {
             if(init != nullptr) {
                 list.insert(list.begin(), init);
-                literal = false;
             } 
         }
 };
