@@ -553,9 +553,9 @@ Expr_ptr Prototype::Interpreter::invoke(Invoke_ptr invoke) {
         }
     }
 
-    if(name == "pi") {
-        if(invoke->args->list.size() == 0) {
-            return make_shared<Float>(3.14159f);
+    if(name == "type") {
+        if(invoke->args->list.size() == 1) {
+            return make_shared<String>(type_to_name(eval_expr(invoke->args->list[0])->type));
         }
     }
 

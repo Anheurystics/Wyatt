@@ -19,6 +19,11 @@ namespace Prototype {
     bool Scope::assign(Stmt_ptr assign, Ident_ptr ident, Expr_ptr value) {
         string name = ident->name;
 
+        if(name == "PI") {
+            logger->log(assign, "ERROR", "Cannot replace const value PI");
+            return true;
+        }
+
         if(types.find(name) == types.end()) {
             return false;
         }
@@ -66,6 +71,9 @@ namespace Prototype {
     }
 
     Expr_ptr Scope::get(string name) {
+        if(name == "PI") {
+            return make_shared<Float>(M_PI);
+        }
         if(variables.find(name) != variables.end()) {
             return variables[name];
         }

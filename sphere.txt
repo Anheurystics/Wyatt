@@ -61,7 +61,7 @@ func init(){
     basic.model = mat4_identity();
     basic.normal_model = mat4_transpose(mat4_inverse(basic.model));
     basic.view = mat4_lookat([0, 0, 4], [0, 0, 0], [0, 1, 0]);
-    basic.proj = mat4_perspective(pi() / 4, 1, 0.1, 1000);
+    basic.proj = mat4_perspective(PI / 4, 1, 0.1, 1000);
 
     float screen_size = 2;
     var quad = generate_quad(screen_size, [0.0, 0.0, 1.0], [1.0, 0.0, 0.0], 1);

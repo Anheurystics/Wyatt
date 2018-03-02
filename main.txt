@@ -107,11 +107,11 @@ func init() {
     vec3 up = [0, 1, 0];
 
     basic.view = mat4_lookat(eye, at, up);
-    basic.proj = mat4_perspective(pi() * 0.25, 1.0, 0.1, 100.0);
+    basic.proj = mat4_perspective(PI * 0.25, 1.0, 0.1, 100.0);
 }
 
 func loop() {
-    angle += 0.01 * pi();
+    angle += 0.01 * PI;
 
     basic.model = mat4_rotation_x(angle) * mat4_rotation_y(angle);
     basic.norm_model = mat4_transpose(mat4_inverse(basic.model));
@@ -120,7 +120,7 @@ func loop() {
     draw cube;
 
     basic.tex = grass;
-    basic.model = mat4_scale(10) * mat4_rotation_x(pi() * 0.5) * mat4_translation(0, -2, 0);
+    basic.model = mat4_scale(10) * mat4_rotation_x(PI * 0.5) * mat4_translation(0, -2, 0);
     basic.norm_model = mat4_transpose(mat4_inverse(basic.model));
     draw floor;
 }
