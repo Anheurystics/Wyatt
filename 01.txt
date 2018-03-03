@@ -1,0 +1,22 @@
+vert basic(vec3 pos) {
+	func main() {
+		FinalPosition = [pos, 1.0];
+	}
+}(vec4 FinalPosition)
+
+frag basic() {
+	func main() {
+		FinalColor = [1.0, 1.0, 1.0, 1.0];	
+	}
+}(vec4 FinalColor)
+
+buffer tri;
+
+func init(){
+	//Counter-clockwise faces forward
+	tri.pos += [1.0, -1.0, 0.0], [0.0, 1.0, 0.0], [-1.0, -1.0, 0.0];
+}
+
+func loop(){
+	draw tri using basic;
+}

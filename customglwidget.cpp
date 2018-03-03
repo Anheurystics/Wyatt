@@ -42,7 +42,7 @@ void CustomGLWidget::paintGL() {
         interpreter->reset();
         interpreter->parse(code);
         interpreter->load_imports();
-        interpreter->setFunctions(context()->functions());
+        interpreter->setFunctions(this);
         interpreter->prepare();
         interpreter->compile_program();
         interpreter->execute_init();
