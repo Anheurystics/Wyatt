@@ -32,7 +32,7 @@ void CodeEditor::keyPressEvent(QKeyEvent* event) {
         cursor.select(QTextCursor::LineUnderCursor);
         QString prevLine = cursor.selectedText();
         QRegExp preTab("^(\\s*)");
-        int pos = preTab.indexIn(prevLine);
+        preTab.indexIn(prevLine); // Needed for some reason
         toInsert = preTab.capturedTexts().at(0);
         cursor.setPosition(oldPos);
         if(prevLine.endsWith("{") && cursor.positionInBlock() != 0) {
@@ -43,7 +43,13 @@ void CodeEditor::keyPressEvent(QKeyEvent* event) {
     if(event->key() == Qt::Key_Return) {
         QTextCursor cursor = textCursor();
         cursor.insertText(toInsert);
-        cursor.movePosition((QTextCursor::EndOfLine));
+        cursor.movePosition(QTextCursor::EndOfLine);
+    }
+    if(event->key() == Qt::Key_BraceLeft) {
+        QTextCursor cursor = textCursor();
+        cursor.insertText("}");
+        cursor.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor, 1);
+        setTextCursor(cursor);
     }
 }   
 
