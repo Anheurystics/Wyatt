@@ -29,23 +29,23 @@ void CodeEditor::keyPressEvent(QKeyEvent* event) {
         QTextCursor cursor = textCursor();
         //TODO: Better/faster way to do this?
         int oldPos = cursor.position();
-        cursor.movePosition(QTextCursor::StartOfLine);
         cursor.select(QTextCursor::LineUnderCursor);
         QString prevLine = cursor.selectedText();
         QRegExp preTab("^(\\s*)");
         int pos = preTab.indexIn(prevLine);
         toInsert = preTab.capturedTexts().at(0);
-        if(prevLine.endsWith("{")) {
+        cursor.setPosition(oldPos);
+        if(prevLine.endsWith("{") && cursor.positionInBlock() != 0) {
             toInsert += "\t";
         }
-        cursor.setPosition(oldPos);
     }
     QPlainTextEdit::keyPressEvent(event);
     if(event->key() == Qt::Key_Return) {
-        textCursor().insertText(toInsert);
-        textCursor().movePosition((QTextCursor::EndOfLine));
+        QTextCursor cursor = textCursor();
+        cursor.insertText(toInsert);
+        cursor.movePosition((QTextCursor::EndOfLine));
     }
-}
+}   
 
 int CodeEditor::lineNumberAreaWidth() {
     int digits = 1;
