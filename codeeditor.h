@@ -37,6 +37,8 @@ private slots:
 
 private:
     LineNumberArea* lineNumberArea;
+
+    void keyPressEvent(QKeyEvent*);
 };
 
 class LineNumberArea : public QWidget

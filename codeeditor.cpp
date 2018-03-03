@@ -23,6 +23,30 @@ CodeEditor::CodeEditor(QWidget *parent = 0): QPlainTextEdit(parent)
     highlightCurrentLine();
 }
 
+void CodeEditor::keyPressEvent(QKeyEvent* event) {
+    QString toInsert = "";
+    if(event->key() == Qt::Key_Return) {
+        QTextCursor cursor = textCursor();
+        //TODO: Better/faster way to do this?
+        int oldPos = cursor.position();
+        cursor.movePosition(QTextCursor::StartOfLine);
+        cursor.select(QTextCursor::LineUnderCursor);
+        QString prevLine = cursor.selectedText();
+        QRegExp preTab("^(\\s*)");
+        int pos = preTab.indexIn(prevLine);
+        toInsert = preTab.capturedTexts().at(0);
+        if(prevLine.endsWith("{")) {
+            toInsert += "\t";
+        }
+        cursor.setPosition(oldPos);
+    }
+    QPlainTextEdit::keyPressEvent(event);
+    if(event->key() == Qt::Key_Return) {
+        textCursor().insertText(toInsert);
+        textCursor().movePosition((QTextCursor::EndOfLine));
+    }
+}
+
 int CodeEditor::lineNumberAreaWidth() {
     int digits = 1;
     int max = qMax(1, blockCount());
