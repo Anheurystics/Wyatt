@@ -138,7 +138,7 @@
 
 %%
 
-program: imports globals funcshaders;
+program: imports body;
 
 imports:
     |
@@ -147,21 +147,18 @@ imports:
     }
     ;
 
-globals:
+body:
     |
-    decl SEMICOLON globals {
+    decl SEMICOLON body {
         globals->push_back($1);
     }
     |
-    decl EQUALS expr SEMICOLON globals {
+    decl EQUALS expr SEMICOLON body {
         $1->value = $3;
         globals->push_back($1);
     }
-    ;
-
-funcshaders:
     |
-    function funcshaders{
+    function body{
         if(functions->find($1->ident->name) == functions->end()) {
             functions->insert(pair<string, shared_ptr<FuncDef>>($1->ident->name, $1));
         } else {
@@ -169,7 +166,7 @@ funcshaders:
         }
     }
     |
-    vert_shader funcshaders{
+    vert_shader body{
         if(shaders->find($1->name) == shaders->end()) {
             shared_ptr<ShaderPair> shaderPair = make_shared<ShaderPair>();
             shaderPair->name = $1->name;
@@ -181,7 +178,7 @@ funcshaders:
         }
     }
     |
-    frag_shader funcshaders {
+    frag_shader body {
         if(shaders->find($1->name) == shaders->end()) {
             shared_ptr<ShaderPair> shaderPair = make_shared<ShaderPair>();
             shaderPair->name = $1->name;
