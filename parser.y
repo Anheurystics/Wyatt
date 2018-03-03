@@ -195,7 +195,7 @@ funcshaders:
     ;
     
 shader_uniforms: { $$ = make_shared<vector<pair<string, string>>>(); }
-    | shader_uniforms decl SEMICOLON { $$ = $1; $1->push_back(pair<string, string>($2->name->name, $2->datatype->name)); }
+    | shader_uniforms decl SEMICOLON { $$ = $1; $1->push_back(pair<string, string>($2->ident->name, $2->datatype->name)); }
     ;
 
 shader_functions: FUNC MAIN OPEN_PAREN CLOSE_PAREN block { $$ = make_shared<map<string, FuncDef_ptr>>(); $$->insert(pair<string, FuncDef_ptr>("main", make_shared<FuncDef>(make_shared<Ident>("main"), make_shared<ParamList>(nullptr), $5)));}

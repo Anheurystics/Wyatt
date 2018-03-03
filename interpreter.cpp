@@ -581,7 +581,7 @@ Expr_ptr Prototype::Interpreter::invoke(Invoke_ptr invoke) {
                 }
 
                 Decl_ptr param = def->params->list[i];
-                localScope->current()->declare(param, param->name, param->datatype->name, arg);
+                localScope->current()->declare(param, param->ident, param->datatype->name, arg);
             }
         }
 
@@ -1152,7 +1152,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     }
                 }
 
-                scope->declare(decl, decl->name, decl->datatype->name, eval_expr(decl->value));
+                scope->declare(decl, decl->ident, decl->datatype->name, eval_expr(decl->value));
 
                 return nullptr;
             }

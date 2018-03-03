@@ -157,17 +157,14 @@ class Ident: public Expr {
     public:
         string name;
 
-        Ident(string name): Expr(NODE_IDENT) {
-            this->name = name;
-        }
+        Ident(string name): Expr(NODE_IDENT), name(name) {}
 };
 
 class Dot: public Ident {
     public:
         Ident_ptr owner;
 
-        Dot(Ident_ptr shader, Ident_ptr name): Ident(name->name) {
-            this->owner = shader;
+        Dot(Ident_ptr shader, Ident_ptr ident): Ident(ident->name), owner(shader) {
             type = NODE_DOT;
         }
 };
@@ -177,11 +174,7 @@ class Binary: public Expr {
         OpType op;
         Expr_ptr lhs, rhs;
 
-        Binary(Expr_ptr lhs, OpType op, Expr_ptr rhs): Expr(NODE_BINARY) {
-            this->op = op;
-            this->lhs = lhs;
-            this->rhs = rhs;
-        }
+        Binary(Expr_ptr lhs, OpType op, Expr_ptr rhs): Expr(NODE_BINARY), op(op), lhs(lhs), rhs(rhs) {}
 };
 
 class Unary: public Expr {
@@ -189,46 +182,35 @@ class Unary: public Expr {
         OpType op;
         Expr_ptr rhs;
 
-        Unary(OpType op, Expr_ptr rhs): Expr(NODE_UNARY) {
-            this->op = op;
-            this->rhs = rhs;
-        }
+        Unary(OpType op, Expr_ptr rhs): Expr(NODE_UNARY), op(op), rhs(rhs) {}
 };
 
 class Bool: public Expr {
     public:
         bool value;
 
-        Bool(bool value): Expr(NODE_BOOL) {
-            this->value = value;
-        }
+        Bool(bool value): Expr(NODE_BOOL), value(value) {}
 };
 
 class Int: public Expr {
     public:
         int value;
 
-        Int(int value): Expr(NODE_INT) {
-            this->value = value;
-        }
+        Int(int value): Expr(NODE_INT), value(value) {}
 };
 
 class Float: public Expr {
     public:
         float value;
 
-        Float(float value): Expr(NODE_FLOAT) {
-            this->value = value;
-        }
+        Float(float value): Expr(NODE_FLOAT), value(value) {}
 };
 
 class String: public Expr {
     public:
         string value;
 
-        String(string value): Expr(NODE_STRING) {
-            this->value = value;
-        }
+        String(string value): Expr(NODE_STRING), value(value) {}
 };
 
 class Vector: public Expr {
@@ -244,10 +226,7 @@ class Vector2: public Vector {
     public:
         Expr_ptr x, y;
 
-        Vector2(Expr_ptr x, Expr_ptr y): Vector(NODE_VECTOR2) {
-            this->x = x;
-            this->y = y;
-        }
+        Vector2(Expr_ptr x, Expr_ptr y): Vector(NODE_VECTOR2), x(x), y(y) {}
 
         Expr_ptr get(unsigned int i) {
             if(i == 0) return x;
@@ -269,11 +248,7 @@ class Vector3: public Vector {
     public:
         Expr_ptr x, y, z;
 
-        Vector3(Expr_ptr x, Expr_ptr y, Expr_ptr z): Vector(NODE_VECTOR3) {
-            this->x = x;
-            this->y = y;
-            this->z = z;
-        }
+        Vector3(Expr_ptr x, Expr_ptr y, Expr_ptr z): Vector(NODE_VECTOR3), x(x), y(y), z(z) {}
 
         Expr_ptr get(unsigned int i) {
             if(i == 0) return x;
@@ -291,19 +266,13 @@ class Vector3: public Vector {
         unsigned int size() {
             return 3;
         }
-
 };
 
 class Vector4: public Vector {
     public:
         Expr_ptr x, y, z, w;
 
-        Vector4(Expr_ptr x, Expr_ptr y, Expr_ptr z, Expr_ptr w): Vector(NODE_VECTOR4) {
-            this->x = x;
-            this->y = y;
-            this->z = z;
-            this->w = w;
-        }
+        Vector4(Expr_ptr x, Expr_ptr y, Expr_ptr z, Expr_ptr w): Vector(NODE_VECTOR4), x(x), y(y), z(z), w(w) {}
 
         Expr_ptr get(unsigned int i) {
             if(i == 0) return x;
@@ -380,10 +349,7 @@ class Index: public Expr {
         Expr_ptr source;
         Expr_ptr index;
 
-        Index(Expr_ptr source, Expr_ptr index): Expr(NODE_INDEX) {
-            this->source = source;
-            this->index = index;
-        }
+        Index(Expr_ptr source, Expr_ptr index): Expr(NODE_INDEX), source(source), index(index) {}
 };
 
 struct Layout {
@@ -466,9 +432,7 @@ class Return: public Stmt {
     public:
         Expr_ptr value;
 
-        Return(Expr_ptr value): Stmt(NODE_RETURN) {
-            this->value = value;
-        }
+        Return(Expr_ptr value): Stmt(NODE_RETURN), value(value) {}
 };
 
 class FuncDef: public Stmt {
@@ -477,11 +441,7 @@ class FuncDef: public Stmt {
         ParamList_ptr params;
         Stmts_ptr stmts;
 
-        FuncDef(Ident_ptr ident, ParamList_ptr params, Stmts_ptr stmts): Stmt(NODE_FUNCDEF) {
-            this->ident = ident;
-            this->params = params;
-            this->stmts = stmts;
-        }
+        FuncDef(Ident_ptr ident, ParamList_ptr params, Stmts_ptr stmts): Stmt(NODE_FUNCDEF), ident(ident), params(params), stmts(stmts) {}
 };
 
 class If: public Stmt {
@@ -492,10 +452,7 @@ class If: public Stmt {
 
         shared_ptr<vector<If_ptr>> elseIfBlocks;
 
-        If(Expr_ptr condition, Stmts_ptr block): Stmt(NODE_IF) {
-            this->condition = condition;
-            this->block = block;
-        }
+        If(Expr_ptr condition, Stmts_ptr block): Stmt(NODE_IF), condition(condition), block(block) {}
 };
 
 class While: public Stmt {
@@ -503,33 +460,18 @@ class While: public Stmt {
         Expr_ptr condition;
         Stmts_ptr block;
 
-        While(Expr_ptr condition, Stmts_ptr block): Stmt(NODE_WHILE) {
-            this->condition = condition;
-            this->block = block;
-        }
+        While(Expr_ptr condition, Stmts_ptr block): Stmt(NODE_WHILE), condition(condition), block(block) {}
 }; 
 
 class For: public Stmt {
     public:
         Ident_ptr iterator;
         Expr_ptr start, end, increment;
+        Expr_ptr list;
         Stmts_ptr block;
 
-        Expr_ptr list;
-
-        For(Ident_ptr iterator, Expr_ptr start, Expr_ptr end, Expr_ptr increment, Stmts_ptr block): Stmt(NODE_FOR) {
-            this->iterator = iterator;
-            this->start = start;
-            this->end = end;
-            this->increment = increment;
-            this->block = block;
-        }
-
-        For(Ident_ptr iterator, Expr_ptr list, Stmts_ptr block): Stmt(NODE_FOR) {
-            this->iterator = iterator;
-            this->list = list;
-            this->block = block;
-        }
+        For(Ident_ptr iterator, Expr_ptr start, Expr_ptr end, Expr_ptr increment, Stmts_ptr block): Stmt(NODE_FOR), iterator(iterator), start(start), end(end), increment(increment), block(block) {}
+        For(Ident_ptr iterator, Expr_ptr list, Stmts_ptr block): Stmt(NODE_FOR), iterator(iterator), list(list), block(block) {}
 };
 
 class Break: public Stmt {
@@ -542,22 +484,15 @@ class Assign: public Stmt {
         Expr_ptr lhs;
         Expr_ptr value;
 
-        Assign(Expr_ptr ident, Expr_ptr value): Stmt(NODE_ASSIGN) {
-            this->lhs = ident;
-            this->value = value;
-        }
+        Assign(Expr_ptr lhs, Expr_ptr value): Stmt(NODE_ASSIGN), lhs(lhs), value(value) {}
 };
 
 class Decl: public Stmt {
     public:
-        Ident_ptr datatype, name;
+        Ident_ptr datatype, ident;
         Expr_ptr value;
 
-        Decl(Ident_ptr datatype, Ident_ptr name, Expr_ptr value): Stmt(NODE_DECL) {
-            this->datatype= datatype;
-            this->name = name;
-            this->value = value;
-        }
+        Decl(Ident_ptr datatype, Ident_ptr ident, Expr_ptr value): Stmt(NODE_DECL), datatype(datatype), ident(ident), value(value) {}
 };
 
 class Alloc: public Stmt {
@@ -584,11 +519,7 @@ class Upload: public Stmt {
         Ident_ptr attrib;
         UploadList_ptr list;
 
-        Upload(Ident_ptr ident, Ident_ptr attrib, UploadList_ptr list): Stmt(NODE_UPLOAD) {
-            this->ident = ident;
-            this->attrib = attrib;
-            this->list = list;
-        }
+        Upload(Ident_ptr ident, Ident_ptr attrib, UploadList_ptr list): Stmt(NODE_UPLOAD), ident(ident), attrib(attrib), list(list) {}
 };
 
 class CompBinary: public Stmt {
@@ -605,29 +536,21 @@ class Draw: public Stmt {
         Ident_ptr target;
         Ident_ptr program;
 
-        Draw(Ident_ptr ident, Ident_ptr target = nullptr, Ident_ptr program = nullptr): Stmt(NODE_DRAW) {
-            this->ident = ident;
-            this->target = target;
-            this->program = program;
-        }
+        Draw(Ident_ptr ident, Ident_ptr target = nullptr, Ident_ptr program = nullptr): Stmt(NODE_DRAW), ident(ident), target(target), program(program) {}
 };
 
 class Clear: public Stmt {
     public:
         Expr_ptr color;
 
-        Clear(Expr_ptr color): Stmt(NODE_CLEAR) {
-            this->color = color;
-        }
+        Clear(Expr_ptr color): Stmt(NODE_CLEAR), color(color) {}
 };
 
 class Print: public Stmt {
     public:
         Expr_ptr expr;
 
-        Print(Expr_ptr expr): Stmt(NODE_PRINT) {
-            this->expr = expr;
-        }
+        Print(Expr_ptr expr): Stmt(NODE_PRINT), expr(expr) {}
 };
 
 class Invoke: public Node {
@@ -635,28 +558,21 @@ class Invoke: public Node {
         Ident_ptr ident;
         ArgList_ptr args;
 
-        Invoke(Ident_ptr ident, ArgList_ptr args): Node(NODE_INVOKE) {
-            this->ident = ident;
-            this->args = args;
-        }
+        Invoke(Ident_ptr ident, ArgList_ptr args): Node(NODE_INVOKE), ident(ident), args(args) {}
 };
 
 class FuncExpr: public Expr {
     public:
         Invoke_ptr invoke;
 
-        FuncExpr(Invoke_ptr invoke): Expr(NODE_FUNCEXPR) {
-            this->invoke = invoke;
-        }
+        FuncExpr(Invoke_ptr invoke): Expr(NODE_FUNCEXPR), invoke(invoke) {}
 };
 
 class FuncStmt: public Stmt {
     public:
         Invoke_ptr invoke;
 
-        FuncStmt(Invoke_ptr invoke): Stmt(NODE_FUNCSTMT) {
-            this->invoke = invoke;
-        }
+        FuncStmt(Invoke_ptr invoke): Stmt(NODE_FUNCSTMT), invoke(invoke) {}
 };
 
 class Shader: public Node {
@@ -668,8 +584,7 @@ class Shader: public Node {
         ParamList_ptr inputs;
         ParamList_ptr outputs;
 
-        Shader(string name, shared_ptr<vector<pair<string, string>>> uniforms, shared_ptr<map<string, FuncDef_ptr>> functions, ParamList_ptr inputs, ParamList_ptr outputs): Node(NODE_SHADER) {
-            this->name = name;
+        Shader(string name, shared_ptr<vector<pair<string, string>>> uniforms, shared_ptr<map<string, FuncDef_ptr>> functions, ParamList_ptr inputs, ParamList_ptr outputs): Node(NODE_SHADER), name(name) {
             this->uniforms = make_shared<map<string, string>>();
             this->textureSlots = make_shared<vector<string>>();
             for(auto it = uniforms->begin(); it != uniforms->end(); ++it) {
@@ -690,7 +605,7 @@ class Program: public Expr {
         GLuint vert, frag;
         Shader_ptr vertSource, fragSource;
 
-        Program(): Expr(NODE_PROGRAM) { }
+        Program(): Expr(NODE_PROGRAM) {}
 };
 
 struct ShaderPair {

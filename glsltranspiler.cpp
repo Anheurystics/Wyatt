@@ -13,7 +13,7 @@ string GLSLTranspiler::transpile(Shader_ptr shader) {
 
     for(auto it = shader->inputs->list.begin(); it != shader->inputs->list.end(); ++it) {
         Decl_ptr decl = *it;
-        source += "in " + decl->datatype->name + " " + decl->name->name + ";\n";
+        source += "in " + decl->datatype->name + " " + decl->ident->name + ";\n";
     }
 
     source += "\n";
@@ -30,10 +30,10 @@ string GLSLTranspiler::transpile(Shader_ptr shader) {
 
     for(auto it = shader->outputs->list.begin(); it != shader->outputs->list.end(); ++it) {
         Decl_ptr decl = *it;
-        if(decl->name->name == "FinalPosition") {
+        if(decl->ident->name == "FinalPosition") {
             continue;
         }
-        source += "out " + decl->datatype->name + " " + decl->name->name + ";\n";
+        source += "out " + decl->datatype->name + " " + decl->ident->name + ";\n";
     }
 
     source += "\n";
@@ -58,7 +58,7 @@ string GLSLTranspiler::transpile(Shader_ptr shader) {
     return source;
 }
 
-int type_to_n(string type) {
+int type_to_size(string type) {
     if(type == "int" || type == "float") {
         return 1;
     }
@@ -84,7 +84,7 @@ string GLSLTranspiler::resolve_ident(Ident_ptr ident) {
     } else {
         for(auto jt = shader->inputs->list.begin(); jt != shader->inputs->list.end(); ++jt) {
             Decl_ptr decl = *jt;
-            if(decl->name->name == name) {
+            if(decl->ident->name == name) {
                 return decl->datatype->name;
             }
         }
@@ -161,19 +161,19 @@ string GLSLTranspiler::resolve_vector(vector<Expr_ptr> list) {
     for(auto it = list.begin(); it != list.end(); ++it) {
         Expr_ptr expr = *it;
         string type = type_to_name(expr->type);
-        int type_len = type_to_n(type);
+        int type_len = type_to_size(type);
         if(type_len != 0) {
             n += type_len;
         } else
         if(expr->type == NODE_IDENT) {
             Ident_ptr ident = static_pointer_cast<Ident>(expr);
             string type = resolve_ident(ident);
-            n += type_to_n(type);
+            n += type_to_size(type);
         } else
         if(expr->type == NODE_BINARY) {
             Binary_ptr bin = static_pointer_cast<Binary>(expr);
             string type = resolve_binary(bin);
-            n += type_to_n(type);
+            n += type_to_size(type);
         }
     }
 
@@ -186,7 +186,7 @@ string GLSLTranspiler::eval_vector(vector<Expr_ptr> list) {
     for(auto it = list.begin(); it != list.end(); ++it) {
         Expr_ptr expr = *it;
         string type = type_to_name(expr->type);
-        int type_len = type_to_n(type);
+        int type_len = type_to_size(type);
         if(type_len != 0) {
             output += (n != 0? ",":"") + eval_expr(expr);
             n += type_len;
@@ -197,7 +197,7 @@ string GLSLTranspiler::eval_vector(vector<Expr_ptr> list) {
             if(type != "") {
                 output += (n != 0? "," : "") + ident->name;
             }
-            n += type_to_n(type);
+            n += type_to_size(type);
         } else
         if(expr->type == NODE_BINARY) {
             Binary_ptr bin = static_pointer_cast<Binary>(expr);
@@ -205,7 +205,7 @@ string GLSLTranspiler::eval_vector(vector<Expr_ptr> list) {
             if(type != "") {
                 output += (n != 0? "," : "") + eval_binary(bin);
             }
-            n += type_to_n(type);
+            n += type_to_size(type);
         }
     }
 
@@ -309,11 +309,11 @@ string GLSLTranspiler::eval_stmt(Stmt_ptr stmt) {
         case NODE_DECL:
             {
                 Decl_ptr decl = static_pointer_cast<Decl>(stmt);
-                string output = decl->datatype->name + " " + decl->name->name;
+                string output = decl->datatype->name + " " + decl->ident->name;
                 if(decl->value != nullptr) {
                     output += " = " + eval_expr(decl->value);
                 }
-                localtypes[decl->name->name] = decl->datatype->name;
+                localtypes[decl->ident->name] = decl->datatype->name;
                 output += ";";  
                 return output;
             }
