@@ -7,6 +7,9 @@
 #include <QTextBlock>
 #include <QFileInfo>
 #include <iostream>
+#include <map>
+
+#include "nodes.h"
 
 class QPaintEvent;
 class QResizeEvent;
@@ -14,6 +17,7 @@ class QSize;
 class QWidget;
 
 class LineNumberArea;
+class FunctionHintBox;
 
 class CodeEditor: public QPlainTextEdit
 {
@@ -22,13 +26,17 @@ public:
     explicit CodeEditor(QWidget *parent);
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
+    void functionHintBoxPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
 
     QFileInfo fileInfo;
     QFont monoFont;
 
+   static std::map<string, FuncDef_ptr> autocomplete_functions;
+
 protected:
     void resizeEvent(QResizeEvent *event) override;
+    //void paintEvent(QPaintEvent *event) override;
 
 private slots:
     void updateLineNumberAreaWidth(int);
@@ -37,8 +45,12 @@ private slots:
 
 private:
     LineNumberArea* lineNumberArea;
+    FunctionHintBox* functionHintBox;
 
     void keyPressEvent(QKeyEvent*);
+
+    QString autocompleteText;
+    QString currentParam;
 };
 
 class LineNumberArea : public QWidget
@@ -61,6 +73,21 @@ class LineNumberArea : public QWidget
         CodeEditor* codeEditor;
 };
 
+class FunctionHintBox : public QWidget
+{
+    public:
+        FunctionHintBox(CodeEditor* codeEditor): QWidget(codeEditor) {
+            this->codeEditor = codeEditor;
+            setAttribute(Qt::WA_TransparentForMouseEvents);
+        }
 
+    protected:
+        void paintEvent(QPaintEvent *event) {
+            codeEditor->functionHintBoxPaintEvent(event);
+        }
+
+    private:
+        CodeEditor* codeEditor;
+};
 
 #endif // CODEEDITOR_H

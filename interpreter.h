@@ -22,6 +22,7 @@
 #include "glsltranspiler.h"
 #include "scope.h"
 #include "scopelist.h"
+#include "codeeditor.h"
 
 namespace Prototype {
 
@@ -59,7 +60,6 @@ class Interpreter {
         map<string, shared_ptr<ShaderPair>> shaders;
         map<string, FuncDef_ptr> functions;
         map<string, ProgramLayout_ptr> layouts;
-        map<string, FuncDef_ptr> builtins;
 
         vector<string> imports;
         vector<Decl_ptr> globals;

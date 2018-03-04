@@ -2037,6 +2037,10 @@ void Prototype::Interpreter::parse(string code) {
 void Prototype::Interpreter::prepare() {
     globalScope->clear();
 
+    if(status == 0) {
+        CodeEditor::autocomplete_functions = functions;
+    }
+
     init = functions["init"];
     if(init == nullptr) {
         logger->log("WARNING: No init function detected");

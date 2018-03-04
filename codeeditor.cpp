@@ -1,4 +1,6 @@
-#include "codeeditor.h"
+﻿#include "codeeditor.h"
+
+std::map<string, FuncDef_ptr> CodeEditor::autocomplete_functions;
 
 CodeEditor::CodeEditor(QWidget *parent = 0): QPlainTextEdit(parent)
 {
@@ -14,6 +16,7 @@ CodeEditor::CodeEditor(QWidget *parent = 0): QPlainTextEdit(parent)
     setTabStopWidth(4 * metrics.width(' '));
 
     lineNumberArea = new LineNumberArea(this);
+    functionHintBox = new FunctionHintBox(this);
 
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
     connect(this, SIGNAL(updateRequest(QRect, int)), this, SLOT(updateLineNumberArea(QRect,int)));
@@ -51,7 +54,34 @@ void CodeEditor::keyPressEvent(QKeyEvent* event) {
         cursor.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor, 1);
         setTextCursor(cursor);
     }
-}   
+
+    QString before = toPlainText().left(textCursor().position());
+    before = before.right(before.size() - before.lastIndexOf(" ", before.lastIndexOf("(")) - 1);
+    autocompleteText = "";
+    if(before.indexOf("(") != -1 && before.indexOf(")") == -1) {
+        int typed_args = before.count(",");
+        string function_name = before.left(before.indexOf("(")).toStdString();
+        auto functions = CodeEditor::autocomplete_functions;
+        if(functions.find(function_name) != functions.end()) {
+            FuncDef_ptr func =  functions[function_name];
+            if(func != nullptr) {
+                autocompleteText = QString::fromStdString(func->ident->name + "(");
+                for(unsigned int i = 0; i < func->params->list.size(); ++i) {
+                    Decl_ptr decl = func->params->list[i];
+                    autocompleteText += QString::fromStdString(decl->datatype->name + " " + decl->ident->name);
+                    if(i == typed_args) {
+                        currentParam = QString::fromStdString(decl->datatype->name + " " + decl->ident->name);
+                    }
+                    if(i + 1 != func->params->list.size()) {
+                        autocompleteText += ", ";
+                    }
+                }
+                autocompleteText += ")";
+            }
+        }
+    }
+    functionHintBox->update();
+}
 
 int CodeEditor::lineNumberAreaWidth() {
     int digits = 1;
@@ -124,9 +154,33 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event) {
     }
 }
 
+void CodeEditor::functionHintBoxPaintEvent(QPaintEvent *e) {
+    QPainter painter(functionHintBox);
+
+    if(autocompleteText != "") {
+        QRect eventRect = cursorRect();
+        painter.setPen(Qt::black);
+        painter.setFont(monoFont);
+        eventRect.translate(30, -fontMetrics().height());
+        eventRect.setWidth(fontMetrics().width(autocompleteText));
+        eventRect.setHeight(fontMetrics().height());
+        painter.fillRect(eventRect, QColor(Qt::lightGray).lighter(120));
+        painter.drawText(eventRect, autocompleteText);
+        monoFont.setBold(true);
+        painter.setFont(monoFont);
+        int offset = autocompleteText.indexOf(currentParam);
+        if(offset != -1) {
+            eventRect.setX(eventRect.x() + (offset * fontMetrics().width(" ")));
+            painter.drawText(eventRect, currentParam);
+        }
+        monoFont.setBold(false);
+    }
+}
+
 void CodeEditor::resizeEvent(QResizeEvent *e) {
     QPlainTextEdit::resizeEvent(e);
 
     QRect cr = contentsRect();
     lineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
+    functionHintBox->setGeometry(cr);
 }
