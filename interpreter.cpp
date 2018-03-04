@@ -754,6 +754,29 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
                         return make_shared<Int>(texture->channels);
                     }
                     return nullptr;
+                } else
+                if(owner->type == NODE_BUFFER) {
+                    Buffer_ptr buffer = static_pointer_cast<Buffer>(owner);
+                    if(buffer->data.find(dot->name) != buffer->data.end()) {
+                        vector<float> attrib_data = buffer->data[dot->name];
+                        List_ptr list = make_shared<List>(nullptr);
+                        int size = buffer->sizes[dot->name];
+                        for(unsigned int i = 0 ; i < attrib_data.size(); i += size) {
+                            if(size == 1) {
+                                list->list.push_back(make_shared<Float>(attrib_data[i]));
+                            }
+                            if(size == 2) {
+                                list->list.push_back(make_shared<Vector2>(make_shared<Float>(attrib_data[i]), make_shared<Float>(attrib_data[i + 1])));
+                            }
+                            if(size == 3) {
+                                list->list.push_back(make_shared<Vector3>(make_shared<Float>(attrib_data[i]), make_shared<Float>(attrib_data[i + 1]), make_shared<Float>(attrib_data[i + 2])));
+                            }
+                            if(size == 4) {
+                                list->list.push_back(make_shared<Vector4>(make_shared<Float>(attrib_data[i]), make_shared<Float>(attrib_data[i + 1]), make_shared<Float>(attrib_data[i + 2]), make_shared<Float>(attrib_data[i + 3])));
+                            }
+                        }
+                        return list;
+                    }
                 }
             }
 
