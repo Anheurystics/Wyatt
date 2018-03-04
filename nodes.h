@@ -87,6 +87,7 @@ class FuncExpr;
 class FuncStmt;
 class Shader;
 class Program;
+class ProgramLayout;
 struct ShaderPair;
 
 typedef shared_ptr<Node> Node_ptr;
@@ -134,6 +135,7 @@ typedef shared_ptr<FuncExpr> FuncExpr_ptr;
 typedef shared_ptr<FuncStmt> FuncStmt_ptr;
 typedef shared_ptr<Shader> Shader_ptr;
 typedef shared_ptr<Program> Program_ptr;
+typedef shared_ptr<ProgramLayout> ProgramLayout_ptr;
 typedef shared_ptr<ShaderPair> ShaderPair_ptr;
 
 #define null_expr make_shared<Expr>(NODE_NULL)
@@ -606,6 +608,12 @@ class Program: public Expr {
         Shader_ptr vertSource, fragSource;
 
         Program(): Expr(NODE_PROGRAM) {}
+};
+
+class ProgramLayout: public Stmt {
+    public:
+        Ident_ptr ident;
+        shared_ptr<vector<Decl_ptr>> attribs;
 };
 
 struct ShaderPair {

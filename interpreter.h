@@ -58,6 +58,7 @@ class Interpreter {
         std::stack<ScopeList_ptr> functionScopeStack;
         map<string, shared_ptr<ShaderPair>> shaders;
         map<string, FuncDef_ptr> functions;
+        vector<ProgramLayout_ptr> layouts;
         map<string, FuncDef_ptr> builtins;
 
         vector<string> imports;

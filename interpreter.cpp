@@ -35,7 +35,7 @@ float resolve_scalar(Expr_ptr expr) {
 
 #define LOOP_TIMEOUT 5
 
-Prototype::Interpreter::Interpreter(LogWindow* logger): scanner(&line, &column), parser(scanner, logger, &line, &column, &imports, &globals, &functions, &shaders), logger(logger) {
+Prototype::Interpreter::Interpreter(LogWindow* logger): scanner(&line, &column), parser(scanner, logger, &line, &column, &imports, &globals, &functions, &layouts, &shaders), logger(logger) {
     globalScope = make_shared<Scope>("global", logger);
     transpiler = new GLSLTranspiler(logger);
 

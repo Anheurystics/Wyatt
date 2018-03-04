@@ -22,6 +22,7 @@ using namespace std;
 %%
 vert           { return Parser::make_VERTEX(curr_location); }
 frag           { return Parser::make_FRAGMENT(curr_location); }
+layout         { return Parser::make_LAYOUT(curr_location); }
 `(\\.|[^`])*`  { 
                  std::string str = strdup(yytext);
                  str = str.substr(1, str.length() - 2);

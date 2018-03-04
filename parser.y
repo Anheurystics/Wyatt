@@ -49,6 +49,7 @@
 %parse-param { vector<string>* imports }
 %parse-param { vector<Decl_ptr>* globals }
 %parse-param { map<string, FuncDef_ptr>* functions }
+%parse-param { vector<ProgramLayout_ptr>* layouts }
 %parse-param { map<string, shared_ptr<ShaderPair>>* shaders }
 %locations
 %define parse.trace
@@ -99,6 +100,7 @@
 %token TO "to";
 %token USING "using";
 %token CLEAR "clear";
+%token LAYOUT "layout";
 %token VERTEX "vert";
 %token FRAGMENT "frag";
 %token MAIN "main";
@@ -123,6 +125,8 @@
 %type<shared_ptr<Decl>> decl;
 %type<shared_ptr<vector<pair<string, string>>>> shader_uniforms;
 %type<shared_ptr<map<string, FuncDef_ptr>>> shader_functions;
+%type<shared_ptr<vector<shared_ptr<Decl>>>> layout_attribs;    
+%type<ProgramLayout_ptr> layout;
 
 %type<shared_ptr<Stmt>> stmt stmt_block
 %type<shared_ptr<If>> if_stmt else_if_stmt
@@ -166,6 +170,10 @@ body:
         }
     }
     |
+    layout body {
+        layouts->push_back($1);
+    }
+    |
     vert_shader body{
         if(shaders->find($1->name) == shaders->end()) {
             shared_ptr<ShaderPair> shaderPair = make_shared<ShaderPair>();
@@ -197,6 +205,20 @@ shader_uniforms: { $$ = make_shared<vector<pair<string, string>>>(); }
 
 shader_functions: FUNC MAIN OPEN_PAREN CLOSE_PAREN block { $$ = make_shared<map<string, FuncDef_ptr>>(); $$->insert(pair<string, FuncDef_ptr>("main", make_shared<FuncDef>(make_shared<Ident>("main"), make_shared<ParamList>(nullptr), $5)));}
     | function shader_functions { $2->insert(pair<string, FuncDef_ptr>($1->ident->name, $1)); }
+    ;
+
+layout: LAYOUT IDENTIFIER OPEN_BRACE layout_attribs CLOSE_BRACE {
+        $$ = make_shared<ProgramLayout>();
+        $$->ident = $2;
+        $$->attribs = $4;
+    }
+    ;
+
+layout_attribs: { $$ = make_shared<vector<shared_ptr<Decl> > >(); }
+    | layout_attribs decl SEMICOLON  {
+        $1->push_back($2);
+        $$ = $1;
+    }
     ;
 
 vert_shader: VERTEX IDENTIFIER OPEN_PAREN param_list CLOSE_PAREN OPEN_BRACE shader_uniforms shader_functions CLOSE_BRACE OPEN_PAREN param_list CLOSE_PAREN {
