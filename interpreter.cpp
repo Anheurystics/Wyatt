@@ -43,14 +43,15 @@ Prototype::Interpreter::Interpreter(LogWindow* logger): scanner(&line, &column),
     loop_invoke = make_shared<Invoke>(make_shared<Ident>("loop"), make_shared<ArgList>(nullptr));
 }
 
-#define clear_map(type, name) \
+#define clear_map(name) \
     for(auto it = name.begin(); it != name.end(); ++it) { \
         name.erase(it); \
     } \
 
 void Prototype::Interpreter::reset() {
-    clear_map(ShaderPair_ptr, shaders);
-    clear_map(FuncDef_ptr, functions);
+    clear_map(shaders);
+    clear_map(functions);
+    clear_map(layouts);
 
     globals.clear();
     imports.clear();
@@ -1933,6 +1934,7 @@ Expr_ptr Prototype::Interpreter::execute_stmts(Stmts_ptr stmts) {
 }
 
 void Prototype::Interpreter::compile_shader(GLuint* handle, Shader_ptr shader) {
+    transpiler->layouts = &layouts;
     string code = transpiler->transpile(shader);
     cout << code << endl;
     const char* src = code.c_str();

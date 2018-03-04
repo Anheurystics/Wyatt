@@ -17,6 +17,7 @@ class GLSLTranspiler
         
         LogWindow* logger;
         Shader_ptr shader;
+        map<string, ProgramLayout_ptr>* layouts;
 
         string eval_expr(Expr_ptr);
         string eval_invoke(Invoke_ptr);

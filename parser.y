@@ -49,7 +49,7 @@
 %parse-param { vector<string>* imports }
 %parse-param { vector<Decl_ptr>* globals }
 %parse-param { map<string, FuncDef_ptr>* functions }
-%parse-param { vector<ProgramLayout_ptr>* layouts }
+%parse-param { map<string, ProgramLayout_ptr>* layouts }
 %parse-param { map<string, shared_ptr<ShaderPair>>* shaders }
 %locations
 %define parse.trace
@@ -171,7 +171,7 @@ body:
     }
     |
     layout body {
-        layouts->push_back($1);
+        layouts->insert(pair<string, ProgramLayout_ptr>($1->ident->name, $1));
     }
     |
     vert_shader body{

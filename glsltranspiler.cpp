@@ -11,10 +11,25 @@ string GLSLTranspiler::transpile(Shader_ptr shader) {
 
     string source = "#version 130\n";
 
+    vector<Decl_ptr> new_inputs;
     for(auto it = shader->inputs->list.begin(); it != shader->inputs->list.end(); ++it) {
         Decl_ptr decl = *it;
-        source += "in " + decl->datatype->name + " " + decl->ident->name + ";\n";
+        if(decl->datatype->name == "input") {
+            if(layouts->find(decl->ident->name) != layouts->end()) {
+                ProgramLayout_ptr layout = layouts->at(decl->ident->name);
+                for(auto jt = layout->attribs->begin(); jt != layout->attribs->end(); ++jt) {
+                    Decl_ptr attrib = *jt;
+                    source += "in " + attrib->datatype->name + " " + attrib->ident->name + ";\n";
+                    new_inputs.push_back(attrib);
+                }
+            } else {
+                logger->log(decl, "ERROR", "Layout of name " + decl->ident->name + " does not exist");
+            }
+        } else {
+            source += "in " + decl->datatype->name + " " + decl->ident->name + ";\n";
+        }
     }
+    shader->inputs->list.insert(shader->inputs->list.end(), new_inputs.begin(), new_inputs.end());
 
     source += "\n";
 
@@ -28,13 +43,28 @@ string GLSLTranspiler::transpile(Shader_ptr shader) {
 
     source += "\n";
 
+    vector<Decl_ptr> new_outputs;
     for(auto it = shader->outputs->list.begin(); it != shader->outputs->list.end(); ++it) {
         Decl_ptr decl = *it;
         if(decl->ident->name == "FinalPosition") {
             continue;
         }
-        source += "out " + decl->datatype->name + " " + decl->ident->name + ";\n";
+        if(decl->datatype->name == "output") {
+            if(layouts->find(decl->ident->name) != layouts->end()) {
+                ProgramLayout_ptr layout = layouts->at(decl->ident->name);
+                for(auto jt = layout->attribs->begin(); jt != layout->attribs->end(); ++jt) {
+                    Decl_ptr attrib = *jt;
+                    source += "out " + attrib->datatype->name + " " + attrib->ident->name + ";\n";
+                    new_outputs.push_back(attrib);
+                }
+            } else {
+                logger->log(decl, "ERROR", "Layout of name " + decl->ident->name + " does not exist");
+            }
+        } else {
+            source += "out " + decl->datatype->name + " " + decl->ident->name + ";\n";
+        }
     }
+    shader->outputs->list.insert(shader->outputs->list.end(), new_outputs.begin(), new_outputs.end());
 
     source += "\n";
 
