@@ -36,7 +36,7 @@ public:
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
-    //void paintEvent(QPaintEvent *event) override;
+    void keyPressEvent(QKeyEvent*) override;
 
 private slots:
     void updateLineNumberAreaWidth(int);
@@ -46,8 +46,6 @@ private slots:
 private:
     LineNumberArea* lineNumberArea;
     FunctionHintBox* functionHintBox;
-
-    void keyPressEvent(QKeyEvent*);
 
     QString autocompleteText;
     QString currentParam;
