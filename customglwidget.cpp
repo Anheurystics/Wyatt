@@ -40,7 +40,7 @@ void CustomGLWidget::paintGL() {
         logger->clear();
 
         interpreter->reset();
-        interpreter->parse(code);
+        interpreter->parse(code, &(interpreter->status));
         interpreter->load_imports();
         interpreter->setFunctions(this);
         interpreter->prepare();

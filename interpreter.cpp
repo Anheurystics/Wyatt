@@ -2017,21 +2017,20 @@ void Prototype::Interpreter::load_imports() {
 
 void Prototype::Interpreter::load_import(string file) {
     string src = str_from_file(file);
-    parse(src);
-    if(status != 0) {
+    int import_status = 0;
+    parse(src, &import_status);
+    if(import_status != 0) {
         logger->log("Error importing " + file);
     }
-
-    status = 0;
 }
 
-void Prototype::Interpreter::parse(string code) {
+void Prototype::Interpreter::parse(string code, int* status) {
     logger->clear();
     istringstream ss(code);
     *(scanner.line) = 1;
     *(scanner.column) = 1;
     scanner.switch_streams(&ss, nullptr);
-    status = parser.parse();
+    *status = parser.parse();
 }
 
 void Prototype::Interpreter::prepare() {

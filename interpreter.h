@@ -34,7 +34,7 @@ class Interpreter {
 
         unsigned int width, height;
 
-        void parse(string);
+        void parse(string, int*);
         Expr_ptr execute_stmts(Stmts_ptr);
         void prepare();
         void load_imports();
