@@ -166,7 +166,7 @@ body:
         if(functions->find($1->ident->name) == functions->end()) {
             functions->insert(pair<string, shared_ptr<FuncDef>>($1->ident->name, $1));
         } else {
-            cout << "ERROR: Redefinition of function " << $1->ident->name << endl;
+            logger->log($1, "ERROR", "Redefinition of function " + $1->ident->name);
         }
     }
     |
