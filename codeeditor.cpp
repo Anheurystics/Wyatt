@@ -57,30 +57,38 @@ void CodeEditor::keyPressEvent(QKeyEvent* event) {
 
     //Only update function hint if user typed a character
     if(event->text().size() > 0) {
-        QString before = toPlainText().left(textCursor().position());
-        before = before.right(before.size() - before.lastIndexOf(QRegExp("(\\s)+"), before.lastIndexOf("(")) - 1);
+        string bef = toPlainText().left(textCursor().position()).toStdString();
+        reverse(bef.begin(), bef.end());
+        QString before = QString::fromStdString(bef);
+        QString filtered = before.remove(QRegExp("\\)[\\w\\d\\s,_]*\\("));
+        QRegExp re("([\\w\\d\\s,_]*)\\(([\\w\\d_]+)");
+        re.indexIn(filtered); 
         autocompleteText = "";
-        if(before.indexOf("(") != -1 && before.indexOf(")") == -1) {
-            int typed_args = before.count(",");
-            string function_name = before.left(before.indexOf("(")).toStdString();
-            auto functions = CodeEditor::autocomplete_functions;
-            if(functions.find(function_name) != functions.end()) {
-                FuncDef_ptr func =  functions[function_name];
-                if(func != nullptr) {
-                    autocompleteText = QString::fromStdString(func->ident->name + "(");
-                    for(unsigned int i = 0; i < func->params->list.size(); ++i) {
-                        Decl_ptr decl = func->params->list[i];
-                        autocompleteText += QString::fromStdString(decl->datatype->name + " " + decl->ident->name);
-                        if(i == typed_args) {
-                            currentParam = QString::fromStdString(decl->datatype->name + " " + decl->ident->name);
-                        }
-                        if(i + 1 != func->params->list.size()) {
-                            autocompleteText += ", ";
-                        }
-                    }
-                    autocompleteText += ")";
+
+        int typed_args = re.cap(1).count(",");
+
+        string function_name = re.cap(2).toStdString();
+        reverse(function_name.begin(), function_name.end());
+
+        auto functions = CodeEditor::autocomplete_functions;
+        FuncDef_ptr func = nullptr;
+        if(functions.find(function_name) != functions.end()) {
+            func = functions[function_name];
+        }
+
+        if(before.count("(") > before.count(")") && func != nullptr && typed_args < func->params->list.size()) {
+            autocompleteText = QString::fromStdString(func->ident->name + "(");
+            for(unsigned int i = 0; i < func->params->list.size(); ++i) {
+                Decl_ptr decl = func->params->list[i];
+                autocompleteText += QString::fromStdString(decl->datatype->name + " " + decl->ident->name);
+                if(i == typed_args) {
+                    currentParam = QString::fromStdString(decl->datatype->name + " " + decl->ident->name);
+                }
+                if(i + 1 != func->params->list.size()) {
+                    autocompleteText += ", ";
                 }
             }
+            autocompleteText += ")";
         }
     }
     functionHintBox->update();

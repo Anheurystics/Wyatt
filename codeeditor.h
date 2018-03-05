@@ -8,6 +8,7 @@
 #include <QFileInfo>
 #include <iostream>
 #include <map>
+#include <algorithm>
 
 #include "nodes.h"
 
