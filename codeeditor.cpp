@@ -35,7 +35,7 @@ void CodeEditor::updateFunctionHint() {
     re.indexIn(filtered); 
     autocompleteText = "";
 
-    int typed_args = re.cap(1).count(",");
+    unsigned int typed_args = re.cap(1).count(",");
 
     string function_name = re.cap(2).toStdString();
     reverse(function_name.begin(), function_name.end());
@@ -118,8 +118,7 @@ int CodeEditor::lineNumberAreaWidth() {
     return space;
 }
 
-void CodeEditor::updateLineNumberAreaWidth(int newBlockCount) {
-    (void)newBlockCount;
+void CodeEditor::updateLineNumberAreaWidth(int) {
     setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);
 }
 
@@ -177,7 +176,7 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event) {
     }
 }
 
-void CodeEditor::functionHintBoxPaintEvent(QPaintEvent *e) {
+void CodeEditor::functionHintBoxPaintEvent(QPaintEvent*) {
     QPainter painter(functionHintBox);
 
     if(autocompleteText != "") {
