@@ -173,9 +173,11 @@ void CodeEditor::functionHintBoxPaintEvent(QPaintEvent *e) {
         painter.setPen(Qt::black);
         painter.setFont(monoFont);
         eventRect.translate(30, -fontMetrics().height());
-        eventRect.setWidth(fontMetrics().width(autocompleteText));
-        eventRect.setHeight(fontMetrics().height());
-        painter.fillRect(eventRect, QColor(Qt::lightGray).lighter(120));
+        eventRect.setWidth(fontMetrics().width(autocompleteText) + 10);
+        eventRect.setHeight(fontMetrics().height() + 5);
+        painter.fillRect(eventRect, QColor(Qt::gray).lighter(150));
+        painter.drawRect(eventRect);
+        eventRect.translate(5, 4);
         painter.drawText(eventRect, autocompleteText);
         monoFont.setBold(true);
         painter.setFont(monoFont);
