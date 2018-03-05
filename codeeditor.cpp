@@ -26,6 +26,42 @@ CodeEditor::CodeEditor(QWidget *parent = 0): QPlainTextEdit(parent)
     highlightCurrentLine();
 }
 
+void CodeEditor::updateFunctionHint() {
+    string bef = toPlainText().left(textCursor().position()).toStdString();
+    reverse(bef.begin(), bef.end());
+    QString before = QString::fromStdString(bef);
+    QString filtered = before.remove(QRegExp("\\)[\\w\\d\\s,_]*\\([\\w\\d_]*\\s+cnuf"));
+    QRegExp re("([\\w\\d\\s,_]*)\\(([\\w\\d_]+)");
+    re.indexIn(filtered); 
+    autocompleteText = "";
+
+    int typed_args = re.cap(1).count(",");
+
+    string function_name = re.cap(2).toStdString();
+    reverse(function_name.begin(), function_name.end());
+
+    auto functions = CodeEditor::autocomplete_functions;
+    FuncDef_ptr func = nullptr;
+    if(functions.find(function_name) != functions.end()) {
+        func = functions[function_name];
+    }
+
+    if(before.count("(") > before.count(")") && !filtered.contains("cnuf") && func != nullptr && typed_args < func->params->list.size()) {
+        autocompleteText = QString::fromStdString(func->ident->name + "(");
+        for(unsigned int i = 0; i < func->params->list.size(); ++i) {
+            Decl_ptr decl = func->params->list[i];
+            autocompleteText += QString::fromStdString(decl->datatype->name + " " + decl->ident->name);
+            if(i == typed_args) {
+                currentParam = QString::fromStdString(decl->datatype->name + " " + decl->ident->name);
+            }
+            if(i + 1 != func->params->list.size()) {
+                autocompleteText += ", ";
+            }
+        }
+        autocompleteText += ")";
+    }
+}
+
 void CodeEditor::keyPressEvent(QKeyEvent* event) {
     QString toInsert = "";
     if(event->key() == Qt::Key_Return) {
@@ -57,39 +93,15 @@ void CodeEditor::keyPressEvent(QKeyEvent* event) {
 
     //Only update function hint if user typed a character
     if(event->text().size() > 0) {
-        string bef = toPlainText().left(textCursor().position()).toStdString();
-        reverse(bef.begin(), bef.end());
-        QString before = QString::fromStdString(bef);
-        QString filtered = before.remove(QRegExp("\\)[\\w\\d\\s,_]*\\("));
-        QRegExp re("([\\w\\d\\s,_]*)\\(([\\w\\d_]+)");
-        re.indexIn(filtered); 
-        autocompleteText = "";
+        updateFunctionHint();
+    }
+    functionHintBox->update();
+}
 
-        int typed_args = re.cap(1).count(",");
-
-        string function_name = re.cap(2).toStdString();
-        reverse(function_name.begin(), function_name.end());
-
-        auto functions = CodeEditor::autocomplete_functions;
-        FuncDef_ptr func = nullptr;
-        if(functions.find(function_name) != functions.end()) {
-            func = functions[function_name];
-        }
-
-        if(before.count("(") > before.count(")") && func != nullptr && typed_args < func->params->list.size()) {
-            autocompleteText = QString::fromStdString(func->ident->name + "(");
-            for(unsigned int i = 0; i < func->params->list.size(); ++i) {
-                Decl_ptr decl = func->params->list[i];
-                autocompleteText += QString::fromStdString(decl->datatype->name + " " + decl->ident->name);
-                if(i == typed_args) {
-                    currentParam = QString::fromStdString(decl->datatype->name + " " + decl->ident->name);
-                }
-                if(i + 1 != func->params->list.size()) {
-                    autocompleteText += ", ";
-                }
-            }
-            autocompleteText += ")";
-        }
+void CodeEditor::mousePressEvent(QMouseEvent* e) {
+    QPlainTextEdit::mousePressEvent(e);
+    if(e->button() == Qt::LeftButton) {
+        updateFunctionHint();
     }
     functionHintBox->update();
 }

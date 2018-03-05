@@ -38,6 +38,7 @@ public:
 protected:
     void resizeEvent(QResizeEvent *event) override;
     void keyPressEvent(QKeyEvent*) override;
+    void mousePressEvent(QMouseEvent*) override;
 
 private slots:
     void updateLineNumberAreaWidth(int);
@@ -50,6 +51,8 @@ private:
 
     QString autocompleteText;
     QString currentParam;
+
+    void updateFunctionHint();
 };
 
 class LineNumberArea : public QWidget
