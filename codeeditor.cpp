@@ -30,8 +30,8 @@ void CodeEditor::updateFunctionHint() {
     string bef = toPlainText().left(textCursor().position()).toStdString();
     reverse(bef.begin(), bef.end());
     QString before = QString::fromStdString(bef);
-    QString filtered = before.remove(QRegExp("\\)[\\w\\d\\s,_]*\\([\\w\\d_]*\\s+cnuf"));
-    QRegExp re("([\\w\\d\\s,_]*)\\(([\\w\\d_]+)");
+    QString filtered = before.remove(QRegExp(R"(\)[\w\d\s,_]*\([\w\d_]*\s+cnuf)")).remove(QRegExp(R"("[\(\)\w\d\s._,]*")")).remove(QRegExp(R"([\(\)\w\d\s\._,]*")"));
+    QRegExp re(R"(([\w\d\s\.,_]*)\(([\w\d_]+))");
     re.indexIn(filtered); 
     autocompleteText = "";
 
@@ -70,8 +70,8 @@ void CodeEditor::keyPressEvent(QKeyEvent* event) {
         int oldPos = cursor.position();
         cursor.select(QTextCursor::LineUnderCursor);
         QString prevLine = cursor.selectedText();
-        QRegExp preTab("^(\\s*)");
-        preTab.indexIn(prevLine); // Needed for some reason
+        QRegExp preTab(R"(^(\s*))");
+        preTab.indexIn(prevLine);
         toInsert = preTab.capturedTexts().at(0);
         cursor.setPosition(oldPos);
         if(prevLine.endsWith("{") && cursor.positionInBlock() != 0) {
@@ -91,10 +91,9 @@ void CodeEditor::keyPressEvent(QKeyEvent* event) {
         setTextCursor(cursor);
     }
 
-    //Only update function hint if user typed a character
-    if(event->text().size() > 0) {
+    //if(event->text().size() > 0) {
         updateFunctionHint();
-    }
+    //}
     functionHintBox->update();
 }
 
