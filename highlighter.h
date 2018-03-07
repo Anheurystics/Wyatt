@@ -22,11 +22,6 @@ private:
     };
 
     QVector<HighlightingRule> highlightingRules;
-
-    QTextCharFormat keywordFormat;
-	QTextCharFormat singleLineCommentFormat;
-	QTextCharFormat quotationFormat;
-	QTextCharFormat functionFormat;
 };
 
 #endif // HIGHLIGHTER_H

@@ -4,14 +4,28 @@ Highlighter::Highlighter(QTextDocument *parent): QSyntaxHighlighter(parent)
 {
     HighlightingRule rule;
 
-    keywordFormat.setForeground(Qt::darkBlue);
-    keywordFormat.setFontWeight(QFont::Bold);
+    QTextCharFormat keywordFormat;
+    QTextCharFormat literalFormat;
+    QTextCharFormat singleLineCommentFormat;
+
+    keywordFormat.setForeground(QColor(0, 153, 153));
+    keywordFormat.setFontWeight(70);
     QStringList keywordPatterns;
-    keywordPatterns << "\\buse\\b" << "\\ballocate\\b" << "\\bdraw\\b" << "\\bto\\b" << "\\busing\\b" << "\\btrue\\b" << "\\bfalse\\b" << "\\band\\b" << "\\bor\\b";
+    keywordPatterns << "\\buse\\b" << "\\ballocate\\b" << "\\bdraw\\b" << "\\bto\\b" << "\\busing\\b" << "\\btrue\\b" << "\\bfalse\\b" << "\\band\\b" << "\\bor\\b" << "\\bfunc\\b" << "\\bprint\\b";
 
     foreach(const QString &pattern, keywordPatterns) {
         rule.pattern = QRegularExpression(pattern);
         rule.format = keywordFormat;
+        highlightingRules.append(rule);
+    }
+
+    literalFormat.setForeground(QColor(230, 96, 0));
+
+    QStringList literalPatterns;
+    literalPatterns << "\\b\\d+\\b" << "\\b\\d+\\.\\d+\\b" << R"(\"(\\.|[^\\"])*\")";
+    foreach(const QString &pattern, literalPatterns) {
+        rule.pattern = QRegularExpression(pattern);
+        rule.format = literalFormat;
         highlightingRules.append(rule);
     }
 
