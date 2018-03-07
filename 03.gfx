@@ -3,10 +3,10 @@ import "utils.txt";
 vert basic(vec3 pos, vec3 color) {
 	mat4 model;
 	mat4 view;
-	mat4 projection;
+	mat4 proj;
 	
 	func main() {
-		FinalPosition = projection * view * model * [pos, 1.0];
+		FinalPosition = proj * view * model * [pos, 1.0];
 		Color = color;
 	}
 }(vec4 FinalPosition, vec3 Color)
@@ -27,7 +27,7 @@ func init(){
 	
 	basic.model = model;
 	basic.view = mat4_lookat([0.0, 0.0, 4.0], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0]);
-	basic.projection = mat4_perspective(PI/4, 1, 0.1, 1000.0);
+	basic.proj = mat4_perspective(PI/4, 1, 0.1, 1000.0);
 }
 
 func loop(){

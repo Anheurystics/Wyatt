@@ -47,7 +47,7 @@ MainWindow::MainWindow(QWidget *parent, std::string startupFile) :
 
     glWidget->interpreter = new Prototype::Interpreter(ui->logWindow);
 
-    txtFilter = tr("Text files (*.txt)");
+    txtFilter = tr("GFX files (*.gfx)");
 }
 
 int MainWindow::createNewTab(QString code) {
