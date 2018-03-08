@@ -44,6 +44,7 @@ MainWindow::MainWindow(QWidget *parent, std::string startupFile) :
     connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::openFile);
     connect(ui->actionSave, &QAction::triggered, this, &MainWindow::saveFile);
     connect(ui->actionSave_As, &QAction::triggered, this, &MainWindow::saveAsFile);
+    connect(ui->actionClose_Tab, &QAction::triggered, this, &MainWindow::closeFile);
 
     glWidget->interpreter = new Prototype::Interpreter(ui->logWindow);
 

@@ -115,6 +115,10 @@ private slots:
         openFiles.insert(pair<QString, int>(selectedFileName, tabs->currentIndex()));
     }
 
+    void closeFile() {
+        closeTab(tabs->currentIndex());
+    }
+
     void saveFile() {
         QString fileName = currentEditor->fileInfo.fileName();
         if(fileName.size() == 0) {
