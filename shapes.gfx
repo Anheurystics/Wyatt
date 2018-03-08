@@ -1,4 +1,4 @@
-import "utils.txt";
+import "utils.gfx";
 
 func generate_quad(float size, vec3 normal, vec3 right, int resolution) {
 	vec3 up = normal % right;
@@ -40,6 +40,7 @@ func generate_cube(float size, int resolution) {
 		var quad = generate_quad(size, normals[i], rights[i], resolution);
 		for(j in 0,|quad|,1) {
 			quad[j] += normals[i] * 0.5;
+			//fix this
 			vertices += quad[j];
 			vnormals += normals[i];
 		}

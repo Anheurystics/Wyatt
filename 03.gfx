@@ -1,4 +1,4 @@
-import "utils.txt";	
+import "utils.gfx";	
 
 vert basic(vec3 pos, vec3 color) {
 	mat4 model;

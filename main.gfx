@@ -1,4 +1,4 @@
-import "utils.txt";
+import "utils.gfx";
 
 buffer cube;
 buffer floor;

@@ -1,5 +1,5 @@
-import "utils.txt";
-import "shapes.txt";
+import "utils.gfx";
+import "shapes.gfx";
 
 buffer buf;
 buffer scrn;
