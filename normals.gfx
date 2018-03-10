@@ -1,0 +1,69 @@
+import "utils.gfx";
+
+texture2D brick = "bricks2.jpg";
+texture2D brick_norm = "bricks2_normal.jpg";
+
+vert shader(vec3 pos, vec3 norm, vec2 uv, vec3 tan) {
+	mat4 model;
+	mat4 view;
+	mat4 proj;
+	
+	mat4 norm_model;	
+	
+	func main() {
+		FinalPosition = proj * view * model * [pos, 1.0];
+		Norm = mat3(norm_model) * norm;
+		Pos = mat3(model) * pos;
+		UV = uv;
+		Tan = tan;
+	}
+} (vec4 FinalPosition, vec3 Pos, vec3 Norm, vec2 UV, vec3 Tan)
+
+frag shader(vec3 Pos, vec3 Norm, vec2 UV, vec3 Tan) {
+	
+	texture2D diffuse;
+	texture2D normal;
+	
+	vec3 LightPos;	
+	
+	func main() {
+		mat3 TBN = mat3(Tan, cross(Norm, Tan), Norm);
+		
+		float dc = max(0.0, dot(transpose(TBN) * normalize(LightPos - Pos), vec3(texture(normal, UV))));
+		vec4 col = dc * texture(diffuse, UV);
+		col.a = 1.0;
+		FinalColor = col;	
+	}
+}(vec4 FinalColor)
+`
+buffer quad;
+
+mat4 model = mat4_identity();
+mat4 view = mat4_lookat([0.0, 0.0, 4.0], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0]);
+mat4 proj = mat4_perspective(PI / 4, 1.0, 0.1, 1000.0);
+
+float theta = 0;
+
+func init(){
+	quad.pos += [-1.0, -1.0, 0.0], [1.0, 1.0, 0.0], [-1.0, 1.0, 0.0], [1.0, -1.0, 0.0];
+	quad.uv += [0, 0], [1, 1], [0, 1], [1, 0];
+	quad.norm += [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0];
+	quad.tan += [1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.0, 0.0];
+	quad.indices += 0, 1, 2, 0, 3, 1;
+
+	shader.model = model;
+	shader.norm_model = mat4_inverse(mat4_transpose(model));
+	shader.view = view;
+	shader.proj = proj;
+	
+	shader.LightPos = [0.0, 3, 1];
+}
+
+func loop(){
+	theta += PI / 100;
+	shader.LightPos = [cos(theta), sin(theta), 1.0];	
+	
+	shader.diffuse = brick;
+	shader.normal = brick_norm;
+	draw quad using shader;
+}
