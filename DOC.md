@@ -170,13 +170,25 @@ draw <buffer> using <program>
 ```
 
 If the buffer's `indices` field is not empty, it will use the indices accordingly.
-
-
 ### Textures
 Textures can be loaded by assigning the filename to a `texture2D` object, and are assigned to shaders as uniforms
 ```js
 texxture2D diffuse = "test.jpg";
 program.diffuseTex = diffuse;
 ```
+The texture object has its own members, some of which are editable
+```js
+// Read-only memebrs
+print tex.width
+print tex.height
+print tex.channels
+```
 
 ### Rendering to texture
+In Wyatt, the declaration of a framebuffer is implied when creating an empty `texture2D` object and rendering to it during the draw call using the `to` keyword. The texture can then be subsequently used for the usual texture mapping operations.
+```js
+texture2D target;
+draw <buffer> to target using <rtt-shader>;
+shader.texture = target;
+draw <buffer2> using shader;
+```
