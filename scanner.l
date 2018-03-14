@@ -19,7 +19,13 @@ using namespace std;
 %option yyclass="Scanner"
 %option prefix="Prototype_"
 
+%x BLOCK_COMMENT
+
 %%
+"/*"           { BEGIN(BLOCK_COMMENT); }
+<BLOCK_COMMENT>"*/" { BEGIN(INITIAL); }
+<BLOCK_COMMENT>. {}
+<BLOCK_COMMENT>\n { (*line)++; (*column) = 0; }
 vert           { return Parser::make_VERTEX(curr_location); }
 frag           { return Parser::make_FRAGMENT(curr_location); }
 layout         { return Parser::make_LAYOUT(curr_location); }
