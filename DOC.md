@@ -45,8 +45,15 @@ int a = 0;
 float b = 0.25;
 string c = "hello world";
 bool a = true;
-a = "hello"; // not valid
-var d = b; // d is implicitly defined a float
+a = "hello";    // not valid
+var d = b;      // d is implicitly defined a float
+```
+A `list` is a resizable array type that can contain any combinations of types. Element accessed is done using `[]`, and length can be acquired by using the `||` operator.
+```js
+list a = {1, 2, 3, 4, 5};
+print a[1];     // 2
+a[2] = 6;
+print a;        //{1, 2, 6, 4, 5};
 ```
 
 ## Looping constructs
@@ -61,6 +68,18 @@ for(i in a) {
     print i;
 }
 ```
+
+## Comments
+As seen in previous code examples, single comments can be done using `//`. Multi-line comments are surrounded by `/*` and `*/`
+```js
+// This is a single line comment
+/*
+This is a
+multiline 
+comment
+*/
+```
+
 ## Linear Algebra Types
 Wyatt has the vector and matrix types built-in. Usual operations between them, such as the dot product, cross product, and matrix multiplication is supported.
 ### Vector
