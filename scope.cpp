@@ -3,7 +3,7 @@
 #include <stb_image.h>
 
 namespace Prototype {
-    Scope::Scope(string name, LogWindow* logger): name(name), logger(logger) { }
+    Scope::Scope(string name, LogWindow* logger, string* working_dir): name(name), logger(logger), working_dir(working_dir) {}
 
     void Scope::clear() {
         for(map<string, Expr_ptr>::iterator it = variables.begin(); it != variables.end(); ++it) {
@@ -43,7 +43,13 @@ namespace Prototype {
             if(value_type == NODE_STRING) {
                 Texture_ptr tex = make_shared<Texture>();
                 string filename = static_pointer_cast<String>(value)->value;
-                tex->image = stbi_load(filename.c_str(), &(tex->width), &(tex->height), &(tex->channels), 4);
+                string realfilename = "";
+                if(file_exists(*working_dir + "/" + filename)) {
+                    realfilename = *working_dir + "/" + filename;
+                } else {
+                    realfilename = filename;
+                }
+                tex->image = stbi_load(realfilename.c_str(), &(tex->width), &(tex->height), &(tex->channels), 4);
                 if(tex->image == 0) {
                     string message = "Cannot load " + filename + ": ";
                     message += stbi_failure_reason();

@@ -5,6 +5,7 @@
 #include <map>
 #include "logwindow.h"
 #include "nodes.h"
+#include "helper.h"
 
 namespace Prototype {
 
@@ -12,8 +13,9 @@ class Scope {
     public:
         string name;
         LogWindow* logger;
+        string* working_dir;
 
-        Scope(string name, LogWindow* logger);
+        Scope(string name, LogWindow* logger, string* working_dir);
 
         void clear();
         void declare(Stmt_ptr decl, Ident_ptr ident, string type, Expr_ptr value);

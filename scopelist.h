@@ -12,8 +12,9 @@ namespace Prototype {
 class ScopeList {
     public:
         string name;
+        string* working_dir;
 
-        ScopeList(string name, LogWindow* logger);
+        ScopeList(string name, LogWindow* logger, string* working_dir);
 
         Scope_ptr current();
         Scope_ptr attach(string name);

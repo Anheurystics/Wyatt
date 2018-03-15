@@ -72,6 +72,8 @@ private slots:
         highlighter->setDocument(currentEditor->document());
         connect(currentEditor, SIGNAL(textChanged()), glWidget, SLOT(updateCode()));
 
+        glWidget->interpreter->working_dir = currentEditor->fileInfo.absolutePath().toStdString();
+
         //interpreter->reparse = false;
         emit currentEditor->textChanged();
         //interpreter->reparse = true;
@@ -89,7 +91,8 @@ private slots:
             return;
         }
 
-        QString selectedFileName = QFileInfo(selected).fileName();
+        QFileInfo selectedFile = QFileInfo(selected);
+        QString selectedFileName = selectedFile.fileName();
         if(openFiles.find(selectedFileName) != openFiles.end()) {
             switchTab(openFiles[selectedFileName]);
             return;
@@ -111,6 +114,8 @@ private slots:
         } else {
             switchTab(createOpenTab(QString::fromStdString(contents), selected));
         }
+        
+        glWidget->interpreter->working_dir = selectedFile.absolutePath().toStdString();
 
         openFiles.insert(pair<QString, int>(selectedFileName, tabs->currentIndex()));
     }
@@ -120,18 +125,18 @@ private slots:
     }
 
     void saveFile() {
-        QString fileName = currentEditor->fileInfo.fileName();
-        if(fileName.size() == 0) {
+        QString filePath = currentEditor->fileInfo.absoluteFilePath();
+        if(filePath.size() == 0) {
             saveAsFile();
             return;
         }
 
         ofstream file;
-        file.open(fileName.toStdString());
+        file.open(filePath.toStdString());
         file << currentEditor->document()->toPlainText().toStdString();
         file.close();
 
-        tabs->setTabText(tabs->currentIndex(), fileName);
+        tabs->setTabText(tabs->currentIndex(), currentEditor->fileInfo.fileName());
     }
 
     void saveAsFile() {
