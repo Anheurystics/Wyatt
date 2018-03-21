@@ -12,3 +12,9 @@ position.hh
 location.hh
 stack.hh
 .vscode/
+appimage/
+*.aux
+*.log
+*.tex
+*.out
+*.pdf
