@@ -1541,8 +1541,12 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     }
 
                     unsigned int size = attrib_size(expr->type);
+                    if(expr->type == NODE_LIST) {
+                        List_ptr list = static_pointer_cast<List>(expr);
+                        size = attrib_size(eval_expr(list->list[i])->type);
+                    }
                     if(size == 0) {
-                        logger->log(upload, "ERROR", "Attribute type must be float or vector");
+                        logger->log(upload, "ERROR", "Attribute type must be float, vector, or list");
                         return nullptr;
                     }
 
@@ -1580,6 +1584,43 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                         target->push_back(resolve_scalar(vec4->y));
                         target->push_back(resolve_scalar(vec4->z));
                         target->push_back(resolve_scalar(vec4->w));
+                    }
+
+                    if(expr->type == NODE_LIST) {
+                        List_ptr list = static_pointer_cast<List>(expr);
+                        for(auto it = list->list.begin(); it != list->list.end(); ++it) {
+                            Expr_ptr item = eval_expr(*it);
+                            if(size != attrib_size(item->type)) {
+                                logger->log(upload, "ERROR", "Attribute size must be consistent");
+                                return nullptr;
+                            }
+
+                            if(item->type == NODE_FLOAT) {
+                                Float_ptr f = static_pointer_cast<Float>(item);
+                                target->push_back(resolve_scalar(f));
+                            }
+                            
+                            if(item->type == NODE_VECTOR2) {
+                                Vector2_ptr vec2 = static_pointer_cast<Vector2>(item);
+                                target->push_back(resolve_scalar(vec2->x));
+                                target->push_back(resolve_scalar(vec2->y));
+                            }
+
+                            if(item->type == NODE_VECTOR3) {
+                                Vector3_ptr vec3 = static_pointer_cast<Vector3>(item);
+                                target->push_back(resolve_scalar(vec3->x));
+                                target->push_back(resolve_scalar(vec3->y));
+                                target->push_back(resolve_scalar(vec3->z));
+                            }
+
+                            if(item->type == NODE_VECTOR4) {
+                                Vector4_ptr vec4 = static_pointer_cast<Vector4>(item);
+                                target->push_back(resolve_scalar(vec4->x));
+                                target->push_back(resolve_scalar(vec4->y));
+                                target->push_back(resolve_scalar(vec4->z));
+                                target->push_back(resolve_scalar(vec4->w));
+                            }
+                        }
                     }
                 }
 

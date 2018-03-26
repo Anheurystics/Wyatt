@@ -49,11 +49,9 @@ frag screen(vec2 UV) {
 
 func init(){
     var sphere = generate_sphere(1.0, 8);
-    var sphere_v = sphere[0];
-    var sphere_n = sphere[1];
-    for(i in 0,|sphere_v|,1) {
-        buf.pos += sphere_v[i];
-        buf.normal += sphere_n[i];
+    buf.pos += sphere[0];
+    buf.normal += sphere[1];
+    for(i in 0,|sphere[0]|,1) {
         buf.color += [1, 0.3, 0.3];
     }
 
@@ -65,10 +63,7 @@ func init(){
 
     float screen_size = 2;
     var quad = generate_quad(screen_size, [0.0, 0.0, 1.0], [1.0, 0.0, 0.0], 1);
-    for(i in 0,|quad|,1) {
-        vec3 v = quad[i];
-        scrn.pos += v;
-    }
+	scrn.pos += quad;
 }
 
 func loop(){
