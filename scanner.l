@@ -63,6 +63,7 @@ draw           { return Parser::make_DRAW(curr_location); }
 to             { return Parser::make_TO(curr_location); }
 using          { return Parser::make_USING(curr_location); }
 clear          { return Parser::make_CLEAR(curr_location); }
+viewport       { return Parser::make_VIEWPORT(curr_location); }
 if             { return Parser::make_IF(curr_location); }
 else           { return Parser::make_ELSE(curr_location); }
 while          { return Parser::make_WHILE(curr_location); }

@@ -1802,6 +1802,32 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 gl->glClear(GL_COLOR_BUFFER_BIT);
                 return nullptr;
             }
+        case NODE_VIEWPORT:
+            {
+                Viewport_ptr viewport = static_pointer_cast<Viewport>(stmt);
+                if(viewport->bounds != nullptr) {
+                    Expr_ptr bounds = eval_expr(viewport->bounds);
+                    if(bounds != nullptr && bounds->type == NODE_VECTOR4) {
+                        Vector4_ptr v = static_pointer_cast<Vector4>(bounds);
+                        int bounds_int[4];
+
+                        for(unsigned int i = 0; i < 4; i++) {
+                            if(v->get(i) == nullptr || (v->get(i)->type != NODE_INT && v->get(i)->type != NODE_FLOAT)) {
+                                logger->log(v, "ERROR", "Viewport bounds elements needs to a scalar");
+                                return nullptr;
+                            }
+                            bounds_int[i] = (int)resolve_scalar(v->get(i));
+                        }
+
+                        gl->glViewport(bounds_int[0], bounds_int[1], bounds_int[2], bounds_int[3]);
+                    } else {
+                        logger->log(viewport, "ERROR", "Viewport bounds needs to be of type vec4");
+                    }
+                } else {
+                    logger->log(viewport, "ERROR", "Unspecified bounds for viewport statement");
+                }
+                return nullptr;
+            }
         case NODE_IF:
             {
                 If_ptr ifstmt = static_pointer_cast<If>(stmt);

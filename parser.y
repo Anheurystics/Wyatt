@@ -100,6 +100,7 @@
 %token TO "to";
 %token USING "using";
 %token CLEAR "clear";
+%token VIEWPORT "viewport";
 %token CONST "const";
 %token LAYOUT "layout";
 %token VERTEX "vert";
@@ -290,6 +291,7 @@ stmt: IDENTIFIER EQUALS expr { $$ = make_shared<Assign>($1, $3); set_lines($$, @
     | IDENTIFIER PERIOD IDENTIFIER COMP_PLUS upload_list { $$ = make_shared<Upload>($1, $3, $5); set_lines($$, @1, @5); }
     | CLEAR { $$ = make_shared<Clear>(nullptr); set_lines($$, @1, @1); }
     | CLEAR expr { $$ = make_shared<Clear>($2); set_lines($$, @1, @2); }
+    | VIEWPORT expr { $$ = make_shared<Viewport>($2); set_lines($$, @1, @2); }
     | DRAW IDENTIFIER { $$ = make_shared<Draw>($2); set_lines($$, @1, @2); }
     | DRAW IDENTIFIER TO IDENTIFIER { $$ = make_shared<Draw>($2, $4); set_lines($$, @1, @4); }
     | DRAW IDENTIFIER USING IDENTIFIER { $$ = make_shared<Draw>($2, nullptr, $4); set_lines($$, @1, @4); }

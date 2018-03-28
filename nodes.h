@@ -14,7 +14,7 @@ enum NodeType {
     NODE_INVOKE,
     NODE_EXPR, NODE_NULL, NODE_BINARY, NODE_UNARY, NODE_BOOL, NODE_INT, NODE_FLOAT, NODE_STRING, NODE_VECTOR2, NODE_VECTOR3, NODE_VECTOR4, NODE_MATRIX2, NODE_MATRIX3, NODE_MATRIX4, NODE_IDENT, NODE_DOT, NODE_BUFFER, NODE_TEXTURE, NODE_PROGRAM,
     NODE_UPLOADLIST, NODE_FUNCEXPR, NODE_LIST, NODE_ARGLIST, NODE_PARAMLIST, NODE_INDEX,
-    NODE_STMT, NODE_ASSIGN, NODE_DECL, NODE_ALLOC, NODE_COMPBINARY, NODE_UPLOAD, NODE_APPEND, NODE_DRAW, NODE_CLEAR, NODE_FUNCSTMT, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_FOR, NODE_BREAK, NODE_SHADER, NODE_PRINT, NODE_FUNCDEF, NODE_RETURN
+    NODE_STMT, NODE_ASSIGN, NODE_DECL, NODE_ALLOC, NODE_COMPBINARY, NODE_UPLOAD, NODE_APPEND, NODE_DRAW, NODE_CLEAR, NODE_VIEWPORT, NODE_FUNCSTMT, NODE_STMTS, NODE_IF, NODE_WHILE, NODE_FOR, NODE_BREAK, NODE_SHADER, NODE_PRINT, NODE_FUNCDEF, NODE_RETURN
 };
 
 inline string type_to_name(NodeType type) {
@@ -81,6 +81,7 @@ class Upload;
 class CompBinary;
 class Draw;
 class Clear;
+class Viewport;
 class Print;
 class Invoke;
 class FuncExpr;
@@ -129,6 +130,7 @@ typedef shared_ptr<Upload> Upload_ptr;
 typedef shared_ptr<CompBinary> CompBinary_ptr;
 typedef shared_ptr<Draw> Draw_ptr;
 typedef shared_ptr<Clear> Clear_ptr;
+typedef shared_ptr<Viewport> Viewport_ptr;
 typedef shared_ptr<Print> Print_ptr;
 typedef shared_ptr<Invoke> Invoke_ptr;
 typedef shared_ptr<FuncExpr> FuncExpr_ptr;
@@ -547,6 +549,13 @@ class Clear: public Stmt {
         Expr_ptr color;
 
         Clear(Expr_ptr color): Stmt(NODE_CLEAR), color(color) {}
+};
+
+class Viewport: public Stmt {
+    public:
+        Expr_ptr bounds;
+
+        Viewport(Expr_ptr bounds): Stmt(NODE_VIEWPORT), bounds(bounds) {}
 };
 
 class Print: public Stmt {
