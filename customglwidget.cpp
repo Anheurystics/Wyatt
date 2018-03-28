@@ -17,6 +17,7 @@ void CustomGLWidget::updateCode()
 
     code = editor->document()->toPlainText().toStdString() + '\n';
     codeChanged = true;
+    hasResized = false;
 
     update();
 }
@@ -27,6 +28,12 @@ void CustomGLWidget::initializeGL()
 }
 
 void CustomGLWidget::paintGL() {
+    // Don't render if paintGL is due to resizing
+    if(hasResized) {
+        hasResized = false;
+        return;
+    }
+
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
 
@@ -61,6 +68,8 @@ void CustomGLWidget::resizeGL(int width, int height)
     if(reparseOnResize->isChecked()) {
         codeChanged = true;
     }
+
+    hasResized = true;
 }
 
 CustomGLWidget::~CustomGLWidget()

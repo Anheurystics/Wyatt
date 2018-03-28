@@ -29,6 +29,7 @@ class CustomGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
         Prototype::Interpreter* interpreter;
 
         bool codeChanged;
+        bool hasResized;
 
         float aspectRatio = 1.0f;
         QAction* reparseOnResize;
