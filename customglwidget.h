@@ -29,6 +29,8 @@ class CustomGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 
         bool codeChanged, reparse;
 
+        float aspectRatio = 1.0f;
+
     private:
         std::string code;
 

@@ -6,6 +6,7 @@
 #include <QFont>
 #include <QVBoxLayout>
 #include <QOpenGLWidget>
+#include <QActionGroup>
 #include <fstream>
 #include <map>
 
@@ -43,7 +44,26 @@ private:
     int createNewTab(QString);
     int createOpenTab(QString, QString);
 
+    QActionGroup* aspectRatioGroup;
+
 private slots:
+    void switchAspectRatio() {
+        string selected = aspectRatioGroup->checkedAction()->text().toStdString();
+        if(selected == "1:1") {
+            glWidget->aspectRatio = 1.0f;
+        }
+        if(selected == "3:2") {
+            glWidget->aspectRatio = 1.5f;
+        }
+        if(selected == "4:3") {
+            glWidget->aspectRatio = 4.0f/3.0f;
+        }
+        if(selected == "16:9") {
+            glWidget->aspectRatio = 16.0/9.0f;
+        }
+        glWidget->resizeGL(glWidget->width(), 0);
+    }
+
     void closeTab(int tab) {
         CodeEditor* editor = qobject_cast<CodeEditor*>(tabs->widget(tab)->findChild<QPlainTextEdit*>());
         QString file = editor->fileInfo.fileName();

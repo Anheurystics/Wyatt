@@ -46,6 +46,18 @@ MainWindow::MainWindow(QWidget *parent, std::string startupFile) :
     connect(ui->actionSave_As, &QAction::triggered, this, &MainWindow::saveAsFile);
     connect(ui->actionClose_Tab, &QAction::triggered, this, &MainWindow::closeFile);
 
+    aspectRatioGroup = new QActionGroup(this);
+    ui->action1_1->setChecked(true);
+    aspectRatioGroup->addAction(ui->action1_1);
+    aspectRatioGroup->addAction(ui->action3_2);
+    aspectRatioGroup->addAction(ui->action4_3);
+    aspectRatioGroup->addAction(ui->action16_9);
+    connect(ui->action1_1, &QAction::triggered, this, &MainWindow::switchAspectRatio);
+    connect(ui->action3_2, &QAction::triggered, this, &MainWindow::switchAspectRatio);
+    connect(ui->action4_3, &QAction::triggered, this, &MainWindow::switchAspectRatio);
+    connect(ui->action16_9, &QAction::triggered, this, &MainWindow::switchAspectRatio);
+    aspectRatioGroup->setExclusive(true);
+
     glWidget->interpreter = new Prototype::Interpreter(ui->logWindow);
 
     txtFilter = tr("GFX files (*.gfx)");
