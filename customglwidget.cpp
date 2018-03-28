@@ -8,7 +8,6 @@ CustomGLWidget::CustomGLWidget(QWidget *parent = 0): QOpenGLWidget(parent)
     timer->start();
 
     codeChanged = false;
-    reparse = false;
 }
 
 void CustomGLWidget::updateCode()
@@ -59,6 +58,9 @@ void CustomGLWidget::resizeGL(int width, int height)
     resize(width, height);
     interpreter->width = width;
     interpreter->height = height;
+    if(reparseOnResize->isChecked()) {
+        codeChanged = true;
+    }
 }
 
 CustomGLWidget::~CustomGLWidget()

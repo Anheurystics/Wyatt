@@ -39,6 +39,7 @@ MainWindow::MainWindow(QWidget *parent, std::string startupFile) :
 
     glWidget = ui->openGLWidget;
     glWidget->logger = ui->logWindow;
+    glWidget->reparseOnResize = ui->actionRestart_on_Resize;
 
     connect(ui->actionNew, &QAction::triggered, this, &MainWindow::newFile);
     connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::openFile);

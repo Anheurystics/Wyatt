@@ -3,6 +3,7 @@
 
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
+#include <QAction>
 #include <QTimer>
 
 #include "codeeditor.h"
@@ -27,9 +28,10 @@ class CustomGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
         LogWindow* logger;
         Prototype::Interpreter* interpreter;
 
-        bool codeChanged, reparse;
+        bool codeChanged;
 
         float aspectRatio = 1.0f;
+        QAction* reparseOnResize;
 
     private:
         std::string code;

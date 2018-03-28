@@ -153,7 +153,7 @@
      <x>0</x>
      <y>0</y>
      <width>973</width>
-     <height>20</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -180,6 +180,7 @@
      <addaction name="action16_9"/>
     </widget>
     <addaction name="menuAspect_Ratio"/>
+    <addaction name="actionRestart_on_Resize"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuOptions"/>
@@ -254,6 +255,14 @@
    </property>
    <property name="text">
     <string>16:9</string>
+   </property>
+  </action>
+  <action name="actionRestart_on_Resize">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Restart on Resize</string>
    </property>
   </action>
  </widget>
