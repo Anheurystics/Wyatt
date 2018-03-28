@@ -8,6 +8,8 @@ MainWindow::MainWindow(QWidget *parent, std::string startupFile) :
     ui->setupUi(this);
     startupCode = "func init(){\n\n}\n\nfunc loop(){\n\n}\n";
 
+    ui->hSplit->setSizes(QList<int>() << 300 << 100);
+
     tabs = ui->editors;
     tabs->setTabsClosable(true);
     currentEditor = (CodeEditor*)tabs->currentWidget()->findChild<QPlainTextEdit*>();
