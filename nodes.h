@@ -493,6 +493,7 @@ class Decl: public Stmt {
     public:
         Ident_ptr datatype, ident;
         Expr_ptr value;
+        bool constant = false;
 
         Decl(Ident_ptr datatype, Ident_ptr ident, Expr_ptr value): Stmt(NODE_DECL), datatype(datatype), ident(ident), value(value) {}
 };

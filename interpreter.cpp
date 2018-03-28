@@ -67,6 +67,7 @@ void Prototype::Interpreter::reset() {
 
     line = 1;
     column = 1;
+
 }
 
 string Prototype::Interpreter::print_expr(Expr_ptr expr) {
@@ -2040,6 +2041,19 @@ void Prototype::Interpreter::compile_program() {
 
 void Prototype::Interpreter::execute_init() {
     if(!init || status) return;
+
+    Decl_ptr piDecl = make_shared<Decl>(make_shared<Ident>("float"), make_shared<Ident>("PI"), make_shared<Float>(3.14159f));
+    piDecl->constant = true;
+
+    Decl_ptr widthDecl = make_shared<Decl>(make_shared<Ident>("int"), make_shared<Ident>("WIDTH"), make_shared<Int>(width));
+    widthDecl->constant = true;
+
+    Decl_ptr heightDecl = make_shared<Decl>(make_shared<Ident>("int"), make_shared<Ident>("HEIGHT"), make_shared<Int>(height));
+    heightDecl->constant = true;
+
+    globals.push_back(piDecl);
+    globals.push_back(widthDecl);
+    globals.push_back(heightDecl);
 
     for(auto it = globals.begin(); it != globals.end(); ++it) {
         Decl_ptr decl = *it;

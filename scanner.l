@@ -73,6 +73,7 @@ and            { return Parser::make_AND(curr_location); }
 or             { return Parser::make_OR(curr_location); }
 true           { return Parser::make_BOOL(make_shared<Bool>(true), curr_location); }
 false          { return Parser::make_BOOL(make_shared<Bool>(false), curr_location); }
+const          { return Parser::make_CONST(curr_location); }
 [a-zA-Z]+[a-zA-Z0-9_]* {
                  Ident_ptr id = make_shared<Ident>(strdup(yytext));
                  id->first_line = id->last_line = *line;

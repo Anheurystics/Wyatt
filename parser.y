@@ -94,12 +94,13 @@
 %token BREAK "break";
 %token IN "in";
 %token IMPORT "import";
-%token ALLOCATE "allocate"; 
+%token ALLOCATE "allocate";
 %token UPLOAD "<-";
 %token DRAW "draw";
 %token TO "to";
 %token USING "using";
 %token CLEAR "clear";
+%token CONST "const";
 %token LAYOUT "layout";
 %token VERTEX "vert";
 %token FRAGMENT "frag";
@@ -160,6 +161,12 @@ body:
     decl EQUALS expr SEMICOLON body {
         $1->value = $3;
         globals->push_back($1);
+    }
+    |
+    CONST decl EQUALS expr SEMICOLON body {
+        $2->value = $4;
+        $2->constant = true;
+        globals->push_back($2);
     }
     |
     function body{
