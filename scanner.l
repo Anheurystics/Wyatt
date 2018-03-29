@@ -19,7 +19,13 @@ using namespace std;
 %option yyclass="Scanner"
 %option prefix="Prototype_"
 
+%x BLOCK_COMMENT
+
 %%
+"/*"           { BEGIN(BLOCK_COMMENT); }
+<BLOCK_COMMENT>"*/" { BEGIN(INITIAL); }
+<BLOCK_COMMENT>. {}
+<BLOCK_COMMENT>\n { (*line)++; (*column) = 0; }
 vert           { return Parser::make_VERTEX(curr_location); }
 frag           { return Parser::make_FRAGMENT(curr_location); }
 layout         { return Parser::make_LAYOUT(curr_location); }
@@ -57,6 +63,7 @@ draw           { return Parser::make_DRAW(curr_location); }
 to             { return Parser::make_TO(curr_location); }
 using          { return Parser::make_USING(curr_location); }
 clear          { return Parser::make_CLEAR(curr_location); }
+viewport       { return Parser::make_VIEWPORT(curr_location); }
 if             { return Parser::make_IF(curr_location); }
 else           { return Parser::make_ELSE(curr_location); }
 while          { return Parser::make_WHILE(curr_location); }
@@ -67,6 +74,7 @@ and            { return Parser::make_AND(curr_location); }
 or             { return Parser::make_OR(curr_location); }
 true           { return Parser::make_BOOL(make_shared<Bool>(true), curr_location); }
 false          { return Parser::make_BOOL(make_shared<Bool>(false), curr_location); }
+const          { return Parser::make_CONST(curr_location); }
 [a-zA-Z]+[a-zA-Z0-9_]* {
                  Ident_ptr id = make_shared<Ident>(strdup(yytext));
                  id->first_line = id->last_line = *line;

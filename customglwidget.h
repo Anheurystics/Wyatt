@@ -3,6 +3,8 @@
 
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
+#include <QAction>
+#include <QPushButton>
 #include <QTimer>
 
 #include "codeeditor.h"
@@ -27,13 +29,21 @@ class CustomGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
         LogWindow* logger;
         Prototype::Interpreter* interpreter;
 
-        bool codeChanged, reparse;
+        bool codeChanged;
+        bool hasResized;
+        bool autoExecute;
+
+        float aspectRatio = 1.0f;
+        QAction* reparseOnResize;
 
     private:
         std::string code;
+        QTimer* updateTimer;
 
-        public slots:
-            void updateCode();
+    public slots:
+        void updateCode();
+        void toggleAutoExecute(bool);
+        void toggleExecute();
 };
 
 #endif // CUSTOMGLWIDGET_H

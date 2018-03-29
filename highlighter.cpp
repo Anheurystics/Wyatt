@@ -6,7 +6,6 @@ Highlighter::Highlighter(QTextDocument *parent): QSyntaxHighlighter(parent)
 
     QTextCharFormat keywordFormat;
     QTextCharFormat literalFormat;
-    QTextCharFormat singleLineCommentFormat;
 
     keywordFormat.setForeground(QColor(0, 153, 153));
     keywordFormat.setFontWeight(70);
@@ -34,6 +33,9 @@ Highlighter::Highlighter(QTextDocument *parent): QSyntaxHighlighter(parent)
     rule.pattern = QRegularExpression("//.*");
     rule.format = singleLineCommentFormat;
     highlightingRules.append(rule);
+
+    commentStartExpression = QRegularExpression("/\\*");
+    commentEndExpression = QRegularExpression("\\*/");
 }
 
 void Highlighter::highlightBlock(const QString &text) {
@@ -43,5 +45,25 @@ void Highlighter::highlightBlock(const QString &text) {
             QRegularExpressionMatch match = matchIterator.next();
             setFormat(match.capturedStart(), match.capturedLength(), rule.format);
         }
+    }
+    setCurrentBlockState(0);
+
+    int startIndex = 0;
+    if(previousBlockState() != 1) {
+        startIndex = text.indexOf(commentStartExpression);
+    }
+
+    while(startIndex >= 0) {
+        QRegularExpressionMatch match = commentEndExpression.match(text, startIndex);
+        int endIndex = match.capturedStart();
+        int commentLength = 0;
+        if(endIndex == -1) {
+            setCurrentBlockState(1);
+            commentLength = text.length() - startIndex;
+        } else {
+            commentLength = endIndex - startIndex + match.capturedLength();
+        }
+        setFormat(startIndex, commentLength, singleLineCommentFormat);
+        startIndex = text.indexOf(commentStartExpression, startIndex + commentLength);
     }
 }

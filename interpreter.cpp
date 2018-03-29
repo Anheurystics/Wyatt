@@ -36,7 +36,7 @@ float resolve_scalar(Expr_ptr expr) {
 #define LOOP_TIMEOUT 5
 
 Prototype::Interpreter::Interpreter(LogWindow* logger): scanner(&line, &column), parser(scanner, logger, &line, &column, &imports, &globals, &functions, &layouts, &shaders), logger(logger) {
-    globalScope = make_shared<Scope>("global", logger);
+    globalScope = make_shared<Scope>("global", logger, &workingDir);
     transpiler = new GLSLTranspiler(logger);
 
     init_invoke = make_shared<Invoke>(make_shared<Ident>("init"), make_shared<ArgList>(nullptr));
@@ -67,6 +67,7 @@ void Prototype::Interpreter::reset() {
 
     line = 1;
     column = 1;
+
 }
 
 string Prototype::Interpreter::print_expr(Expr_ptr expr) {
@@ -565,7 +566,7 @@ Expr_ptr Prototype::Interpreter::invoke(Invoke_ptr invoke) {
     }
 
     if(def != nullptr) {
-        ScopeList_ptr localScope = make_shared<ScopeList>(name, logger);
+        ScopeList_ptr localScope = make_shared<ScopeList>(name, logger, &workingDir);
         unsigned int nParams = def->params->list.size();
         unsigned int nArgs = invoke->args->list.size();
 
@@ -1349,7 +1350,13 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                                 gl->glActiveTexture(0);
                                             } else {
                                                 int width, height, n;
-                                                unsigned char* data = stbi_load(filename.c_str(), &width, &height, &n, 4);
+                                                string realfilename = "";
+                                                if(file_exists(workingDir + "/" + filename)) {
+                                                    realfilename = workingDir + "/" + filename; 
+                                                } else {
+                                                    realfilename = filename;
+                                                }
+                                                unsigned char* data = stbi_load(realfilename.c_str(), &width, &height, &n, 4);
                                                 GLuint handle = 0;
                                                 glGenTextures(1, &handle);
                                                 glBindTexture(GL_TEXTURE_2D, handle);
@@ -1535,8 +1542,12 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     }
 
                     unsigned int size = attrib_size(expr->type);
+                    if(expr->type == NODE_LIST) {
+                        List_ptr list = static_pointer_cast<List>(expr);
+                        size = attrib_size(eval_expr(list->list[i])->type);
+                    }
                     if(size == 0) {
-                        logger->log(upload, "ERROR", "Attribute type must be float or vector");
+                        logger->log(upload, "ERROR", "Attribute type must be float, vector, or list");
                         return nullptr;
                     }
 
@@ -1574,6 +1585,43 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                         target->push_back(resolve_scalar(vec4->y));
                         target->push_back(resolve_scalar(vec4->z));
                         target->push_back(resolve_scalar(vec4->w));
+                    }
+
+                    if(expr->type == NODE_LIST) {
+                        List_ptr list = static_pointer_cast<List>(expr);
+                        for(auto it = list->list.begin(); it != list->list.end(); ++it) {
+                            Expr_ptr item = eval_expr(*it);
+                            if(size != attrib_size(item->type)) {
+                                logger->log(upload, "ERROR", "Attribute size must be consistent");
+                                return nullptr;
+                            }
+
+                            if(item->type == NODE_FLOAT) {
+                                Float_ptr f = static_pointer_cast<Float>(item);
+                                target->push_back(resolve_scalar(f));
+                            }
+                            
+                            if(item->type == NODE_VECTOR2) {
+                                Vector2_ptr vec2 = static_pointer_cast<Vector2>(item);
+                                target->push_back(resolve_scalar(vec2->x));
+                                target->push_back(resolve_scalar(vec2->y));
+                            }
+
+                            if(item->type == NODE_VECTOR3) {
+                                Vector3_ptr vec3 = static_pointer_cast<Vector3>(item);
+                                target->push_back(resolve_scalar(vec3->x));
+                                target->push_back(resolve_scalar(vec3->y));
+                                target->push_back(resolve_scalar(vec3->z));
+                            }
+
+                            if(item->type == NODE_VECTOR4) {
+                                Vector4_ptr vec4 = static_pointer_cast<Vector4>(item);
+                                target->push_back(resolve_scalar(vec4->x));
+                                target->push_back(resolve_scalar(vec4->y));
+                                target->push_back(resolve_scalar(vec4->z));
+                                target->push_back(resolve_scalar(vec4->w));
+                            }
+                        }
                     }
                 }
 
@@ -1752,6 +1800,32 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     }
                 }
                 gl->glClear(GL_COLOR_BUFFER_BIT);
+                return nullptr;
+            }
+        case NODE_VIEWPORT:
+            {
+                Viewport_ptr viewport = static_pointer_cast<Viewport>(stmt);
+                if(viewport->bounds != nullptr) {
+                    Expr_ptr bounds = eval_expr(viewport->bounds);
+                    if(bounds != nullptr && bounds->type == NODE_VECTOR4) {
+                        Vector4_ptr v = static_pointer_cast<Vector4>(bounds);
+                        int bounds_int[4];
+
+                        for(unsigned int i = 0; i < 4; i++) {
+                            if(v->get(i) == nullptr || (v->get(i)->type != NODE_INT && v->get(i)->type != NODE_FLOAT)) {
+                                logger->log(v, "ERROR", "Viewport bounds elements needs to a scalar");
+                                return nullptr;
+                            }
+                            bounds_int[i] = (int)resolve_scalar(v->get(i));
+                        }
+
+                        gl->glViewport(bounds_int[0], bounds_int[1], bounds_int[2], bounds_int[3]);
+                    } else {
+                        logger->log(viewport, "ERROR", "Viewport bounds needs to be of type vec4");
+                    }
+                } else {
+                    logger->log(viewport, "ERROR", "Unspecified bounds for viewport statement");
+                }
                 return nullptr;
             }
         case NODE_IF:
@@ -1994,6 +2068,19 @@ void Prototype::Interpreter::compile_program() {
 void Prototype::Interpreter::execute_init() {
     if(!init || status) return;
 
+    Decl_ptr piDecl = make_shared<Decl>(make_shared<Ident>("float"), make_shared<Ident>("PI"), make_shared<Float>(3.14159f));
+    piDecl->constant = true;
+
+    Decl_ptr widthDecl = make_shared<Decl>(make_shared<Ident>("int"), make_shared<Ident>("WIDTH"), make_shared<Int>(width));
+    widthDecl->constant = true;
+
+    Decl_ptr heightDecl = make_shared<Decl>(make_shared<Ident>("int"), make_shared<Ident>("HEIGHT"), make_shared<Int>(height));
+    heightDecl->constant = true;
+
+    globals.push_back(piDecl);
+    globals.push_back(widthDecl);
+    globals.push_back(heightDecl);
+
     for(auto it = globals.begin(); it != globals.end(); ++it) {
         Decl_ptr decl = *it;
         eval_stmt(decl);
@@ -2016,7 +2103,12 @@ void Prototype::Interpreter::load_imports() {
 }
 
 void Prototype::Interpreter::load_import(string file) {
-    string src = str_from_file(file);
+    string src = "";
+    if(file_exists(workingDir + "/" + file)) {
+        src = str_from_file(workingDir + "/" + file);
+    } else {
+        src = str_from_file(file);
+    }
     int import_status = 0;
     parse(src, &import_status);
     if(import_status != 0) {

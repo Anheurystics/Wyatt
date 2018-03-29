@@ -2,13 +2,38 @@
 
 CustomGLWidget::CustomGLWidget(QWidget *parent = 0): QOpenGLWidget(parent)
 {
-    QTimer* timer = new QTimer(this); 
-    timer->setInterval(17);
-    connect(timer, SIGNAL(timeout()), this, SLOT(update()));
-    timer->start();
+    updateTimer = new QTimer(this);
+    updateTimer ->setInterval(17);
+    connect(updateTimer, SIGNAL(timeout()), this, SLOT(update()));
+    updateTimer->start();
 
     codeChanged = false;
-    reparse = false;
+    hasResized = false;
+    autoExecute = true;
+}
+
+void CustomGLWidget::toggleAutoExecute(bool autoExecute) {
+    this->autoExecute = autoExecute;
+    if(autoExecute) {
+        updateTimer->start();
+    } else {
+        updateTimer->stop();
+    }
+}
+
+void CustomGLWidget::toggleExecute() {
+    if(!autoExecute) {
+        QObject* source = QObject::sender();
+        QPushButton* button = qobject_cast<QPushButton*>(source);
+        if(button->text() == "Play") {
+            codeChanged = true;
+            updateTimer->start();
+            button->setText("Stop");
+        } else {
+            updateTimer->stop();
+            button->setText("Play");
+        }
+    }
 }
 
 void CustomGLWidget::updateCode()
@@ -17,9 +42,10 @@ void CustomGLWidget::updateCode()
     CodeEditor *editor = qobject_cast<CodeEditor*>(source);
 
     code = editor->document()->toPlainText().toStdString() + '\n';
-    codeChanged = true;
-
-    update();
+    if(autoExecute) {
+        codeChanged = true;
+        hasResized = false;
+    }
 }
 
 void CustomGLWidget::initializeGL()
@@ -28,6 +54,12 @@ void CustomGLWidget::initializeGL()
 }
 
 void CustomGLWidget::paintGL() {
+    // Don't render if paintGL is due to resizing
+    if(hasResized) {
+        hasResized = false;
+        return;
+    }
+
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
 
@@ -55,9 +87,15 @@ void CustomGLWidget::paintGL() {
 
 void CustomGLWidget::resizeGL(int width, int height)
 {
-    resize(width, width);
+    height = width / aspectRatio;
+    resize(width, height);
     interpreter->width = width;
-    interpreter->height = width;
+    interpreter->height = height;
+    if(reparseOnResize->isChecked()) {
+        codeChanged = true;
+    }
+
+    hasResized = true;
 }
 
 CustomGLWidget::~CustomGLWidget()

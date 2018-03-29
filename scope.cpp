@@ -3,24 +3,35 @@
 #include <stb_image.h>
 
 namespace Prototype {
-    Scope::Scope(string name, LogWindow* logger): name(name), logger(logger) { }
+    Scope::Scope(string name, LogWindow* logger, string* working_dir): name(name), logger(logger), working_dir(working_dir) {}
 
     void Scope::clear() {
-        for(map<string, Expr_ptr>::iterator it = variables.begin(); it != variables.end(); ++it) {
+        for(auto it = variables.begin(); it != variables.end(); ++it) {
             variables.erase(it);
+        }
+        for(auto it = types.begin(); it != types.end(); ++it) {
+            types.erase(it);
+        }
+        for(auto it = constants.begin(); it != constants.end(); ++it) {
+            constants.erase(it);
         }
     }
 
     void Scope::declare(Stmt_ptr decl, Ident_ptr ident, string type, Expr_ptr value) {
         types[ident->name] = type;
         assign(decl, ident, value == nullptr? null_expr : value);
+        if(decl != nullptr && decl->type == NODE_DECL) {
+            if(static_pointer_cast<Decl>(decl)->constant) {
+                constants.insert(ident->name);
+            }
+        }
     }
 
     bool Scope::assign(Stmt_ptr assign, Ident_ptr ident, Expr_ptr value) {
         string name = ident->name;
 
-        if(name == "PI") {
-            logger->log(assign, "ERROR", "Cannot replace const value PI");
+        if(constants.find(name) != constants.end()) {
+            logger->log(assign, "ERROR", "Cannot modify const value " + name);
             return true;
         }
 
@@ -43,7 +54,13 @@ namespace Prototype {
             if(value_type == NODE_STRING) {
                 Texture_ptr tex = make_shared<Texture>();
                 string filename = static_pointer_cast<String>(value)->value;
-                tex->image = stbi_load(filename.c_str(), &(tex->width), &(tex->height), &(tex->channels), 4);
+                string realfilename = "";
+                if(file_exists(*working_dir + "/" + filename)) {
+                    realfilename = *working_dir + "/" + filename;
+                } else {
+                    realfilename = filename;
+                }
+                tex->image = stbi_load(realfilename.c_str(), &(tex->width), &(tex->height), &(tex->channels), 4);
                 if(tex->image == 0) {
                     string message = "Cannot load " + filename + ": ";
                     message += stbi_failure_reason();
@@ -70,10 +87,12 @@ namespace Prototype {
         return true;
     }
 
+    // to be used internally
+    void Scope::fast_assign(string name, Expr_ptr value) {
+        variables[name] = value;
+    }
+
     Expr_ptr Scope::get(string name) {
-        if(name == "PI") {
-            return make_shared<Float>(M_PI);
-        }
         if(variables.find(name) != variables.end()) {
             return variables[name];
         }

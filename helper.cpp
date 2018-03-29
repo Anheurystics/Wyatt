@@ -17,3 +17,12 @@ string str_from_file(string filename) {
     return text;
 }
 
+bool file_exists(string filename) {
+    cout << "checking if " << filename << " exists\n";
+    ifstream file;
+    file.open(filename, ios::in);
+    bool exists = file.is_open();
+    file.close();
+    return exists;
+}
+

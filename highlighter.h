@@ -21,7 +21,11 @@ private:
         QTextCharFormat format;
     };
 
+    QTextCharFormat singleLineCommentFormat;
+
     QVector<HighlightingRule> highlightingRules;
+    QRegularExpression commentStartExpression;
+    QRegularExpression commentEndExpression;
 };
 
 #endif // HIGHLIGHTER_H

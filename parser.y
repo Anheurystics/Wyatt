@@ -94,12 +94,14 @@
 %token BREAK "break";
 %token IN "in";
 %token IMPORT "import";
-%token ALLOCATE "allocate"; 
+%token ALLOCATE "allocate";
 %token UPLOAD "<-";
 %token DRAW "draw";
 %token TO "to";
 %token USING "using";
 %token CLEAR "clear";
+%token VIEWPORT "viewport";
+%token CONST "const";
 %token LAYOUT "layout";
 %token VERTEX "vert";
 %token FRAGMENT "frag";
@@ -160,6 +162,12 @@ body:
     decl EQUALS expr SEMICOLON body {
         $1->value = $3;
         globals->push_back($1);
+    }
+    |
+    CONST decl EQUALS expr SEMICOLON body {
+        $2->value = $4;
+        $2->constant = true;
+        globals->push_back($2);
     }
     |
     function body{
@@ -283,6 +291,7 @@ stmt: IDENTIFIER EQUALS expr { $$ = make_shared<Assign>($1, $3); set_lines($$, @
     | IDENTIFIER PERIOD IDENTIFIER COMP_PLUS upload_list { $$ = make_shared<Upload>($1, $3, $5); set_lines($$, @1, @5); }
     | CLEAR { $$ = make_shared<Clear>(nullptr); set_lines($$, @1, @1); }
     | CLEAR expr { $$ = make_shared<Clear>($2); set_lines($$, @1, @2); }
+    | VIEWPORT expr { $$ = make_shared<Viewport>($2); set_lines($$, @1, @2); }
     | DRAW IDENTIFIER { $$ = make_shared<Draw>($2); set_lines($$, @1, @2); }
     | DRAW IDENTIFIER TO IDENTIFIER { $$ = make_shared<Draw>($2, $4); set_lines($$, @1, @4); }
     | DRAW IDENTIFIER USING IDENTIFIER { $$ = make_shared<Draw>($2, nullptr, $4); set_lines($$, @1, @4); }
