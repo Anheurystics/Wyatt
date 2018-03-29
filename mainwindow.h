@@ -16,6 +16,7 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QOpenGLWidget>
+#include <QPushButton>
 #include <QSplitter>
 #include <QTabWidget>
 #include <QVariant>
@@ -60,6 +61,7 @@ private:
     QWidget *hSplitWidget;
     QVBoxLayout *hSplitLayout;
     CustomGLWidget *openGLWidget;
+    QPushButton *playButton;
     QMenuBar *menuBar;
     QMenu *menuFile;
     QMenu *menuOptions;

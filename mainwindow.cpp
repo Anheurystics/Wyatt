@@ -1,5 +1,4 @@
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent, std::string startupFile) : QMainWindow(parent)
 {
@@ -23,6 +22,10 @@ MainWindow::MainWindow(QWidget *parent, std::string startupFile) : QMainWindow(p
     action16_9->setCheckable(true);
     actionRestart_on_Resize = new QAction(this);
     actionRestart_on_Resize->setCheckable(true);
+
+    QAction* actionAuto_Execute = new QAction(this);
+    actionAuto_Execute->setCheckable(true);
+    actionAuto_Execute->setChecked(true);
 
     connect(actionNew, &QAction::triggered, this, &MainWindow::newFile);
     connect(actionOpen, &QAction::triggered, this, &MainWindow::openFile);
@@ -82,12 +85,17 @@ MainWindow::MainWindow(QWidget *parent, std::string startupFile) : QMainWindow(p
 
     hSplitWidget = new QWidget(hSplit);
     hSplitLayout = new QVBoxLayout(hSplitWidget);
-    hSplitLayout->setSpacing(6);
     hSplitLayout->setMargin(0);
 
     openGLWidget = new CustomGLWidget(hSplitWidget);
 
+    playButton = new QPushButton(hSplitWidget);
+    playButton->setText("Play");
+    playButton->setEnabled(false);
+    connect(playButton, SIGNAL(clicked(bool)), openGLWidget, SLOT(toggleExecute()));
+
     hSplitLayout->addWidget(openGLWidget);
+    hSplitLayout->addWidget(playButton);
 
     hSplit->addWidget(vSplit);
     hSplit->addWidget(hSplitWidget);
@@ -112,6 +120,7 @@ MainWindow::MainWindow(QWidget *parent, std::string startupFile) : QMainWindow(p
     menuFile->addAction(actionClose_Tab);
     menuOptions->addAction(menuAspect_Ratio->menuAction());
     menuOptions->addAction(actionRestart_on_Resize);
+    menuOptions->addAction(actionAuto_Execute);
     menuAspect_Ratio->addAction(action1_1);
     menuAspect_Ratio->addAction(action3_2);
     menuAspect_Ratio->addAction(action4_3);
@@ -134,6 +143,7 @@ MainWindow::MainWindow(QWidget *parent, std::string startupFile) : QMainWindow(p
     action4_3->setText(QApplication::translate("MainWindow", "4:3", Q_NULLPTR));
     action16_9->setText(QApplication::translate("MainWindow", "16:9", Q_NULLPTR));
     actionRestart_on_Resize->setText(QApplication::translate("MainWindow", "Restart on Resize", Q_NULLPTR));
+    actionAuto_Execute->setText(QApplication::translate("MainWindow", "Auto-execute", Q_NULLPTR));
     editors->setTabText(editors->indexOf(tab), QApplication::translate("MainWindow", "untitled", Q_NULLPTR));
     menuFile->setTitle(QApplication::translate("MainWindow", "File", Q_NULLPTR));
     menuOptions->setTitle(QApplication::translate("MainWindow", "Options", Q_NULLPTR));
@@ -174,6 +184,9 @@ MainWindow::MainWindow(QWidget *parent, std::string startupFile) : QMainWindow(p
 
     openGLWidget->logger = logWindow;
     openGLWidget->reparseOnResize = actionRestart_on_Resize;
+
+    connect(actionAuto_Execute, SIGNAL(triggered(bool)), openGLWidget, SLOT(toggleAutoExecute(bool)));
+    connect(actionAuto_Execute, SIGNAL(triggered(bool)), playButton, SLOT(setDisabled(bool)));
 
     openGLWidget->interpreter = new Prototype::Interpreter(logWindow);
 

@@ -2,12 +2,38 @@
 
 CustomGLWidget::CustomGLWidget(QWidget *parent = 0): QOpenGLWidget(parent)
 {
-    QTimer* timer = new QTimer(this); 
-    timer->setInterval(17);
-    connect(timer, SIGNAL(timeout()), this, SLOT(update()));
-    timer->start();
+    updateTimer = new QTimer(this);
+    updateTimer ->setInterval(17);
+    connect(updateTimer, SIGNAL(timeout()), this, SLOT(update()));
+    updateTimer->start();
 
     codeChanged = false;
+    hasResized = false;
+    autoExecute = true;
+}
+
+void CustomGLWidget::toggleAutoExecute(bool autoExecute) {
+    this->autoExecute = autoExecute;
+    if(autoExecute) {
+        updateTimer->start();
+    } else {
+        updateTimer->stop();
+    }
+}
+
+void CustomGLWidget::toggleExecute() {
+    if(!autoExecute) {
+        QObject* source = QObject::sender();
+        QPushButton* button = qobject_cast<QPushButton*>(source);
+        if(button->text() == "Play") {
+            codeChanged = true;
+            updateTimer->start();
+            button->setText("Stop");
+        } else {
+            updateTimer->stop();
+            button->setText("Play");
+        }
+    }
 }
 
 void CustomGLWidget::updateCode()
@@ -16,10 +42,10 @@ void CustomGLWidget::updateCode()
     CodeEditor *editor = qobject_cast<CodeEditor*>(source);
 
     code = editor->document()->toPlainText().toStdString() + '\n';
-    codeChanged = true;
-    hasResized = false;
-
-    update();
+    if(autoExecute) {
+        codeChanged = true;
+        hasResized = false;
+    }
 }
 
 void CustomGLWidget::initializeGL()
