@@ -1,23 +1,31 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-#include <QFileDialog>
-#include <QFont>
-#include <QVBoxLayout>
-#include <QOpenGLWidget>
-#include <QActionGroup>
 #include <fstream>
 #include <map>
+
+#include <QActionGroup>
+#include <QAction>
+#include <QApplication>
+#include <QButtonGroup>
+#include <QFileDialog>
+#include <QFont>
+#include <QGridLayout>
+#include <QHeaderView>
+#include <QMainWindow>
+#include <QMenu>
+#include <QMenuBar>
+#include <QOpenGLWidget>
+#include <QSplitter>
+#include <QTabWidget>
+#include <QVariant>
+#include <QVBoxLayout>
+#include <QWidget>
 
 #include "customglwidget.h"
 #include "codeeditor.h"
 #include "highlighter.h"
 #include "helper.h"
-
-namespace Ui {
-class MainWindow;
-}
 
 class MainWindow : public QMainWindow
 {
@@ -30,11 +38,35 @@ public:
     void updateCode();
 
 private:
-    Ui::MainWindow *ui;
-    CustomGLWidget* glWidget;
+    QAction *actionNew;
+    QAction *actionOpen;
+    QAction *actionSave;
+    QAction *actionSave_As;
+    QAction *actionClose_Tab;
+    QAction *action1_1;
+    QAction *action3_2;
+    QAction *action4_3;
+    QAction *action16_9;
+    QAction *actionRestart_on_Resize;
+    QWidget *centralWidget;
+    QGridLayout *centralLayout;
+    QSplitter *hSplit;
+    QSplitter *vSplit;
+    QTabWidget *editors;
+    QWidget *tab;
+    QVBoxLayout *tabLayout;
+    CodeEditor *codeEditor;
+    LogWindow *logWindow;
+    QWidget *hSplitWidget;
+    QVBoxLayout *hSplitLayout;
+    CustomGLWidget *openGLWidget;
+    QMenuBar *menuBar;
+    QMenu *menuFile;
+    QMenu *menuOptions;
+    QMenu *menuAspect_Ratio;
+
     CodeEditor* currentEditor;
     Highlighter* highlighter;
-    QTabWidget* tabs;
 
     map<QString, int> openFiles;
 
@@ -50,49 +82,49 @@ private slots:
     void switchAspectRatio() {
         string selected = aspectRatioGroup->checkedAction()->text().toStdString();
         if(selected == "1:1") {
-            glWidget->aspectRatio = 1.0f;
+            openGLWidget->aspectRatio = 1.0f;
         }
         if(selected == "3:2") {
-            glWidget->aspectRatio = 1.5f;
+            openGLWidget->aspectRatio = 1.5f;
         }
         if(selected == "4:3") {
-            glWidget->aspectRatio = 4.0f/3.0f;
+            openGLWidget->aspectRatio = 4.0f/3.0f;
         }
         if(selected == "16:9") {
-            glWidget->aspectRatio = 16.0/9.0f;
+            openGLWidget->aspectRatio = 16.0/9.0f;
         }
-        glWidget->resizeGL(glWidget->width(), 0);
+        openGLWidget->resizeGL(openGLWidget->width(), 0);
     }
 
     void closeTab(int tab) {
-        CodeEditor* editor = qobject_cast<CodeEditor*>(tabs->widget(tab)->findChild<QPlainTextEdit*>());
+        CodeEditor* editor = qobject_cast<CodeEditor*>(editors->widget(tab)->findChild<QPlainTextEdit*>());
         QString file = editor->fileInfo.fileName();
         openFiles.erase(file);
 
-        if(tabs->count() == 1) {
+        if(editors->count() == 1) {
             switchTab(createNewTab(startupCode));
         } else 
-        if(tabs->currentIndex() == tab) {
-            if(tab + 1 < tabs->count()) {
+        if(editors->currentIndex() == tab) {
+            if(tab + 1 < editors->count()) {
                 switchTab(tab + 1);
             } else {
                 switchTab(tab - 1);
             }
         }
 
-        tabs->removeTab(tab);
+        editors->removeTab(tab);
     }
 
     void switchTab(int newTab) {
         if(currentEditor != nullptr) {
             disconnect(currentEditor, SIGNAL(textChanged()), 0, 0);
         }
-        tabs->setCurrentIndex(newTab);
-        currentEditor = qobject_cast<CodeEditor*>(tabs->currentWidget()->findChild<QPlainTextEdit*>());
+        editors->setCurrentIndex(newTab);
+        currentEditor = qobject_cast<CodeEditor*>(editors->currentWidget()->findChild<QPlainTextEdit*>());
         highlighter->setDocument(currentEditor->document());
-        connect(currentEditor, SIGNAL(textChanged()), glWidget, SLOT(updateCode()));
+        connect(currentEditor, SIGNAL(textChanged()), openGLWidget, SLOT(updateCode()));
 
-        glWidget->interpreter->working_dir = currentEditor->fileInfo.absolutePath().toStdString();
+        openGLWidget->interpreter->workingDir = currentEditor->fileInfo.absolutePath().toStdString();
 
         //interpreter->reparse = false;
         emit currentEditor->textChanged();
@@ -104,9 +136,9 @@ private slots:
     }
 
     void openFile() {
-        glWidget->setUpdatesEnabled(false);
+        openGLWidget->setUpdatesEnabled(false);
         QString selected = QFileDialog::getOpenFileName(this, tr("Open File"), Q_NULLPTR, txtFilter);
-        glWidget->setUpdatesEnabled(true);
+        openGLWidget->setUpdatesEnabled(true);
         if(selected == Q_NULLPTR) {
             return;
         }
@@ -130,18 +162,18 @@ private slots:
         if(currentEditor->fileInfo.fileName().size() == 0) {
             currentEditor->fileInfo.setFile(selected);
             currentEditor->setPlainText(QString::fromStdString(contents));
-            tabs->setTabText(tabs->currentIndex(), currentEditor->fileInfo.fileName());
+            editors->setTabText(editors->currentIndex(), currentEditor->fileInfo.fileName());
         } else {
             switchTab(createOpenTab(QString::fromStdString(contents), selected));
         }
         
-        glWidget->interpreter->working_dir = selectedFile.absolutePath().toStdString();
+        openGLWidget->interpreter->workingDir = selectedFile.absolutePath().toStdString();
 
-        openFiles.insert(pair<QString, int>(selectedFileName, tabs->currentIndex()));
+        openFiles.insert(pair<QString, int>(selectedFileName, editors->currentIndex()));
     }
 
     void closeFile() {
-        closeTab(tabs->currentIndex());
+        closeTab(editors->currentIndex());
     }
 
     void saveFile() {
@@ -156,7 +188,7 @@ private slots:
         file << currentEditor->document()->toPlainText().toStdString();
         file.close();
 
-        tabs->setTabText(tabs->currentIndex(), currentEditor->fileInfo.fileName());
+        editors->setTabText(editors->currentIndex(), currentEditor->fileInfo.fileName());
     }
 
     void saveAsFile() {

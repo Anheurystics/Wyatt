@@ -36,7 +36,7 @@ float resolve_scalar(Expr_ptr expr) {
 #define LOOP_TIMEOUT 5
 
 Prototype::Interpreter::Interpreter(LogWindow* logger): scanner(&line, &column), parser(scanner, logger, &line, &column, &imports, &globals, &functions, &layouts, &shaders), logger(logger) {
-    globalScope = make_shared<Scope>("global", logger, &working_dir);
+    globalScope = make_shared<Scope>("global", logger, &workingDir);
     transpiler = new GLSLTranspiler(logger);
 
     init_invoke = make_shared<Invoke>(make_shared<Ident>("init"), make_shared<ArgList>(nullptr));
@@ -566,7 +566,7 @@ Expr_ptr Prototype::Interpreter::invoke(Invoke_ptr invoke) {
     }
 
     if(def != nullptr) {
-        ScopeList_ptr localScope = make_shared<ScopeList>(name, logger, &working_dir);
+        ScopeList_ptr localScope = make_shared<ScopeList>(name, logger, &workingDir);
         unsigned int nParams = def->params->list.size();
         unsigned int nArgs = invoke->args->list.size();
 
@@ -1351,8 +1351,8 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                             } else {
                                                 int width, height, n;
                                                 string realfilename = "";
-                                                if(file_exists(working_dir + "/" + filename)) {
-                                                    realfilename = working_dir + "/" + filename; 
+                                                if(file_exists(workingDir + "/" + filename)) {
+                                                    realfilename = workingDir + "/" + filename; 
                                                 } else {
                                                     realfilename = filename;
                                                 }
@@ -2104,8 +2104,8 @@ void Prototype::Interpreter::load_imports() {
 
 void Prototype::Interpreter::load_import(string file) {
     string src = "";
-    if(file_exists(working_dir + "/" + file)) {
-        src = str_from_file(working_dir + "/" + file);
+    if(file_exists(workingDir + "/" + file)) {
+        src = str_from_file(workingDir + "/" + file);
     } else {
         src = str_from_file(file);
     }

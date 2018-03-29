@@ -31,7 +31,7 @@ class Interpreter {
         Interpreter(LogWindow*);
 
         int status = -1;
-        string working_dir = "";
+        string workingDir = "";
 
         unsigned int width, height;
 

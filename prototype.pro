@@ -72,6 +72,7 @@ SOURCES += \
 HEADERS += \
     stb_image.h \
     mainwindow.h \
+    mainwindow_foo.h \
     customglwidget.h \
 	interpreter.h \
     scanner.h \
@@ -83,9 +84,6 @@ HEADERS += \
     glsltranspiler.h \
     scope.h \
     scopelist.h
-
-FORMS += \
-    mainwindow.ui
 
 DISTFILES += \
     parser.y \
