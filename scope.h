@@ -14,9 +14,9 @@ class Scope {
     public:
         string name;
         LogWindow* logger;
-        string* working_dir;
+        string* workingDir;
 
-        Scope(string name, LogWindow* logger, string* working_dir);
+        Scope(string name, LogWindow* logger, string* workingDir);
 
         void clear();
         void declare(Stmt_ptr decl, Ident_ptr ident, string type, Expr_ptr value);

@@ -2,7 +2,7 @@
 
 namespace Prototype {
 
-ScopeList::ScopeList(string name, LogWindow* logger, string* working_dir): name(name), logger(logger), working_dir(working_dir)
+ScopeList::ScopeList(string name, LogWindow* logger, string* workingDir): name(name), logger(logger), workingDir(workingDir)
 {
     attach("base");
 }
@@ -12,7 +12,7 @@ Scope_ptr ScopeList::current() {
 }
 
 Scope_ptr ScopeList::attach(string name) {
-    Scope_ptr newScope = make_shared<Scope>(name, logger, working_dir);
+    Scope_ptr newScope = make_shared<Scope>(name, logger, workingDir);
     chain.push_back(newScope);
     return newScope;
 }

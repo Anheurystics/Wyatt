@@ -12,9 +12,10 @@ namespace Prototype {
 class ScopeList {
     public:
         string name;
-        string* working_dir;
+        LogWindow* logger;
+        string* workingDir;
 
-        ScopeList(string name, LogWindow* logger, string* working_dir);
+        ScopeList(string name, LogWindow* logger, string* workingDir);
 
         Scope_ptr current();
         Scope_ptr attach(string name);
@@ -24,7 +25,6 @@ class ScopeList {
 
     private:
         vector<Scope_ptr> chain;
-        LogWindow* logger;
 };
 
 typedef shared_ptr<ScopeList> ScopeList_ptr;

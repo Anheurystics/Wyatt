@@ -3,7 +3,7 @@
 #include <stb_image.h>
 
 namespace Prototype {
-    Scope::Scope(string name, LogWindow* logger, string* working_dir): name(name), logger(logger), working_dir(working_dir) {}
+    Scope::Scope(string name, LogWindow* logger, string* workingDir): name(name), logger(logger), workingDir(workingDir) {}
 
     void Scope::clear() {
         for(auto it = variables.begin(); it != variables.end(); ++it) {
@@ -55,8 +55,8 @@ namespace Prototype {
                 Texture_ptr tex = make_shared<Texture>();
                 string filename = static_pointer_cast<String>(value)->value;
                 string realfilename = "";
-                if(file_exists(*working_dir + "/" + filename)) {
-                    realfilename = *working_dir + "/" + filename;
+                if(file_exists(*workingDir + "/" + filename)) {
+                    realfilename = *workingDir + "/" + filename;
                 } else {
                     realfilename = filename;
                 }
