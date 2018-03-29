@@ -72,7 +72,6 @@ SOURCES += \
 HEADERS += \
     stb_image.h \
     mainwindow.h \
-    mainwindow_foo.h \
     customglwidget.h \
 	interpreter.h \
     scanner.h \
