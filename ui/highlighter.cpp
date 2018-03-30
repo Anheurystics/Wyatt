@@ -6,11 +6,12 @@ Highlighter::Highlighter(QTextDocument *parent): QSyntaxHighlighter(parent)
 
     QTextCharFormat keywordFormat;
     QTextCharFormat literalFormat;
+    QTextCharFormat typeFormat;
 
     keywordFormat.setForeground(QColor(0, 153, 153));
     keywordFormat.setFontWeight(70);
     QStringList keywordPatterns;
-    keywordPatterns << "\\buse\\b" << "\\ballocate\\b" << "\\bdraw\\b" << "\\bto\\b" << "\\busing\\b" << "\\btrue\\b" << "\\bfalse\\b" << "\\band\\b" << "\\bor\\b" << "\\bfunc\\b" << "\\bprint\\b";
+    keywordPatterns << "\\buse\\b" << "\\ballocate\\b" << "\\bdraw\\b" << "\\bto\\b" << "\\busing\\b" << "\\btrue\\b" << "\\bfalse\\b" << "\\band\\b" << "\\bor\\b" << "\\bfunc\\b" << "\\bprint\\b" << "\\bimport\\b";
 
     foreach(const QString &pattern, keywordPatterns) {
         rule.pattern = QRegularExpression(pattern);
@@ -19,12 +20,21 @@ Highlighter::Highlighter(QTextDocument *parent): QSyntaxHighlighter(parent)
     }
 
     literalFormat.setForeground(QColor(230, 96, 0));
-
     QStringList literalPatterns;
     literalPatterns << "\\b\\d+\\b" << "\\b\\d+\\.\\d+\\b" << R"(\"(\\.|[^\\"])*\")";
     foreach(const QString &pattern, literalPatterns) {
         rule.pattern = QRegularExpression(pattern);
         rule.format = literalFormat;
+        highlightingRules.append(rule);
+    }
+
+    typeFormat.setForeground(QColor(128, 0, 255));
+    typeFormat.setFontWeight(60);
+    QStringList typePatterns;
+    typePatterns << "\\bint\\b" << "\\bfloat\\b" << "\\bbool\\b" << "\\bbuffer\\b" << "\\btexture2D\\b" << "\\bvec2\\b" << "\\bvec3\\b" << "\\bvec4\\b" << "\\bmat2\\b" << "\\bmat3\\b" << "\\bmat4\\b";
+    foreach(const QString &pattern, typePatterns) {
+        rule.pattern = QRegularExpression(pattern);
+        rule.format = typeFormat;
         highlightingRules.append(rule);
     }
 
