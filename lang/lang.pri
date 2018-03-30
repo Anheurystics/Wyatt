@@ -1,0 +1,8 @@
+INCLUDEPATH += $$PWD
+DEPENDPATH += $$PWD
+
+HEADERS += $$PWD\*.h
+SOURCES += $$PWD\*.cpp
+
+FLEXSOURCES = $$PWD\scanner.l
+BISONSOURCES = $$PWD\parser.y

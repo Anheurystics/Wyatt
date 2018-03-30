@@ -14,12 +14,12 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = prototype
 TEMPLATE = app
 
+include( ui/ui.pri )
+include( lang/lang.pri )
+
 win32 {
     LIBS += -lopengl32
 }
-
-FLEXSOURCES = scanner.l
-BISONSOURCES = parser.y
 
 flexsource.commands = flex ${QMAKE_FILE_IN}
 flexsource.input = FLEXSOURCES
@@ -47,28 +47,3 @@ QMAKE_EXTRA_COMPILERS += bisonheader
 
 SOURCES += \
     main.cpp \
-    mainwindow.cpp \
-    customglwidget.cpp \
-    interpreter.cpp \
-    codeeditor.cpp \
-    highlighter.cpp \
-    logwindow.cpp \
-    helper.cpp \
-    glsltranspiler.cpp \
-    scope.cpp \
-    scopelist.cpp
-
-HEADERS += \
-    stb_image.h \
-    mainwindow.h \
-    customglwidget.h \
-	interpreter.h \
-    scanner.h \
-    nodes.h \
-    codeeditor.h \
-    highlighter.h \
-    logwindow.h \
-    helper.h \
-    glsltranspiler.h \
-    scope.h \
-    scopelist.h
