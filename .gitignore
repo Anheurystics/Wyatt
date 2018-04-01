@@ -13,6 +13,11 @@ location.hh
 stack.hh
 .vscode/
 appimage/
+debug/
+release/
+*.Debug
+*.Release
+object_script.prototype*
 *.aux
 *.log
 *.tex

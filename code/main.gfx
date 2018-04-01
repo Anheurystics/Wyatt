@@ -111,6 +111,7 @@ func init() {
 }
 
 func loop() {
+	clear [0.3, 0.3, 0.3];
     angle += 0.01 * PI;
 
     basic.model = mat4_rotation_x(angle) * mat4_rotation_y(angle);
