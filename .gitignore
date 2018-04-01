@@ -18,3 +18,4 @@ appimage/
 *.tex
 *.out
 *.pdf
+.qmake.stash
