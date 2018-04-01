@@ -25,13 +25,13 @@ void CustomGLWidget::toggleExecute() {
     if(!autoExecute) {
         QObject* source = QObject::sender();
         QPushButton* button = qobject_cast<QPushButton*>(source);
-        if(button->text() == "Play") {
+        if(button->text() == "Run") {
             codeChanged = true;
             updateTimer->start();
             button->setText("Stop");
         } else {
             updateTimer->stop();
-            button->setText("Play");
+            button->setText("Run");
         }
     }
 }
@@ -54,7 +54,6 @@ void CustomGLWidget::initializeGL()
 }
 
 void CustomGLWidget::paintGL() {
-    // Don't render if paintGL is due to resizing
     if(hasResized) {
         hasResized = false;
         return;
@@ -66,11 +65,10 @@ void CustomGLWidget::paintGL() {
     if(codeChanged) {
         codeChanged = false;
 
-        glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         logger->clear();
-
         interpreter->reset();
         interpreter->parse(code, &(interpreter->status));
         interpreter->load_imports();

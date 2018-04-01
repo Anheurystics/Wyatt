@@ -61,7 +61,7 @@ private:
     QWidget *hSplitWidget;
     QVBoxLayout *hSplitLayout;
     CustomGLWidget *openGLWidget;
-    QPushButton *playButton;
+    QPushButton *runButton;
     QMenuBar *menuBar;
     QMenu *menuFile;
     QMenu *menuOptions;

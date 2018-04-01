@@ -89,13 +89,13 @@ MainWindow::MainWindow(QWidget *parent, std::string startupFile) : QMainWindow(p
 
     openGLWidget = new CustomGLWidget(hSplitWidget);
 
-    playButton = new QPushButton(hSplitWidget);
-    playButton->setText("Play");
-    playButton->setEnabled(false);
-    connect(playButton, SIGNAL(clicked(bool)), openGLWidget, SLOT(toggleExecute()));
+    runButton = new QPushButton(hSplitWidget);
+    runButton->setText("Run");
+    runButton->setEnabled(false);
+    connect(runButton, SIGNAL(clicked(bool)), openGLWidget, SLOT(toggleExecute()));
 
+    hSplitLayout->addWidget(runButton);
     hSplitLayout->addWidget(openGLWidget);
-    hSplitLayout->addWidget(playButton);
 
     hSplit->addWidget(vSplit);
     hSplit->addWidget(hSplitWidget);
@@ -186,7 +186,7 @@ MainWindow::MainWindow(QWidget *parent, std::string startupFile) : QMainWindow(p
     openGLWidget->reparseOnResize = actionRestart_on_Resize;
 
     connect(actionAuto_Execute, SIGNAL(triggered(bool)), openGLWidget, SLOT(toggleAutoExecute(bool)));
-    connect(actionAuto_Execute, SIGNAL(triggered(bool)), playButton, SLOT(setDisabled(bool)));
+    connect(actionAuto_Execute, SIGNAL(triggered(bool)), runButton, SLOT(setDisabled(bool)));
 
     openGLWidget->interpreter = new Prototype::Interpreter(logWindow);
 
