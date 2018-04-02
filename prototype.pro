@@ -21,6 +21,10 @@ win32 {
     LIBS += -lopengl32
 }
 
+linux-g++ {
+    CONFIG += debug_and_release debug_and_release_target
+}
+
 flexsource.commands = flex ${QMAKE_FILE_IN}
 flexsource.input = FLEXSOURCES
 flexsource.output = scanner.cpp
