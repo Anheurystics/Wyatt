@@ -36,6 +36,8 @@ class CustomGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
         float aspectRatio = 1.0f;
         QAction* reparseOnResize;
 
+        QPushButton* runButton;
+
     private:
         std::string code;
         QTimer* updateTimer;

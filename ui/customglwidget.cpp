@@ -45,6 +45,9 @@ void CustomGLWidget::updateCode()
     if(autoExecute) {
         codeChanged = true;
         hasResized = false;
+    } else {
+        updateTimer->stop();
+        runButton->setText("Run");
     }
 }
 

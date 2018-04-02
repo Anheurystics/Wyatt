@@ -94,6 +94,8 @@ MainWindow::MainWindow(QWidget *parent, std::string startupFile) : QMainWindow(p
     runButton->setEnabled(false);
     connect(runButton, SIGNAL(clicked(bool)), openGLWidget, SLOT(toggleExecute()));
 
+    openGLWidget->runButton = runButton;
+
     hSplitLayout->addWidget(runButton);
     hSplitLayout->addWidget(openGLWidget);
 
