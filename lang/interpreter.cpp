@@ -2142,3 +2142,11 @@ void Prototype::Interpreter::prepare() {
         logger->log("WARNING: No loop function detected");
     }
 }
+
+void Prototype::Interpreter::resize(int width, int height) {
+    this->width = width;
+    this->height = height;
+
+    globalScope->fast_assign("WIDTH", make_shared<Int>(width));
+    globalScope->fast_assign("HEIGHT", make_shared<Int>(height));
+}

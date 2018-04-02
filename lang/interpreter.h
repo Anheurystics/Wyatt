@@ -48,6 +48,7 @@ class Interpreter {
             this->gl = gl;
         }
         void reset();
+        void resize(int, int);
 
     private:
         Prototype::Scanner scanner;

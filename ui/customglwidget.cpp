@@ -90,8 +90,7 @@ void CustomGLWidget::resizeGL(int width, int height)
 {
     height = width / aspectRatio;
     resize(width, height);
-    interpreter->width = width;
-    interpreter->height = height;
+    interpreter->resize(width, height);
     if(reparseOnResize->isChecked()) {
         codeChanged = true;
     }
