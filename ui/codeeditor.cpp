@@ -64,9 +64,11 @@ void CodeEditor::updateFunctionHint() {
 
 void CodeEditor::keyPressEvent(QKeyEvent* event) {
     QString toInsert = "";
+    QPlainTextEdit::keyPressEvent(event);
     if(event->key() == Qt::Key_Return) {
         QTextCursor cursor = textCursor();
-        //TODO: Better/faster way to do this?
+        cursor.movePosition(QTextCursor::Up, QTextCursor::KeepAnchor, 1);
+
         int oldPos = cursor.position();
         cursor.select(QTextCursor::LineUnderCursor);
         QString prevLine = cursor.selectedText();
@@ -74,15 +76,23 @@ void CodeEditor::keyPressEvent(QKeyEvent* event) {
         preTab.indexIn(prevLine);
         toInsert = preTab.capturedTexts().at(0);
         cursor.setPosition(oldPos);
-        if(prevLine.endsWith("{") && cursor.positionInBlock() != 0) {
+        cursor.movePosition(QTextCursor::Down, QTextCursor::KeepAnchor, 1);
+
+        cursor.select(QTextCursor::LineUnderCursor);
+        QString currLine = cursor.selectedText();
+
+        if(prevLine.endsWith("{") && !currLine.startsWith("}")) {
             toInsert += "\t";
         }
-    }
-    QPlainTextEdit::keyPressEvent(event);
-    if(event->key() == Qt::Key_Return) {
-        QTextCursor cursor = textCursor();
-        cursor.insertText(toInsert);
-        cursor.movePosition(QTextCursor::EndOfLine);
+
+        cursor.select(QTextCursor::LineUnderCursor);
+        QString selectedText = cursor.selectedText().trimmed();
+
+        oldPos = cursor.positionInBlock();
+        cursor.removeSelectedText();
+        cursor.insertText(toInsert + selectedText);
+        cursor.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor, oldPos);
+        setTextCursor(cursor);
     }
     if(event->key() == Qt::Key_BraceLeft) {
         QTextCursor cursor = textCursor();
@@ -91,9 +101,7 @@ void CodeEditor::keyPressEvent(QKeyEvent* event) {
         setTextCursor(cursor);
     }
 
-    //if(event->text().size() > 0) {
-        updateFunctionHint();
-    //}
+    updateFunctionHint();
     functionHintBox->update();
 }
 
