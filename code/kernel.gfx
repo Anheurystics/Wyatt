@@ -24,7 +24,44 @@ frag basic(vec3 Pos, vec3 Norm, vec3 Col) {
 	}
 }(vec4 FinalColor)
 
+vert screen(vec3 pos) {	
+	func main() {
+		FinalPosition = [pos, 1.0];
+		Pos = pos;
+	}
+}(vec4 FinalPosition, vec3 Pos)
+
+frag screen(vec3 Pos) {
+	
+	texture2D tex;
+	
+	vec3 kernel0;
+	vec3 kernel1;
+	vec3 kernel2;
+	
+	func main() {
+		vec2 UV = (Pos.xy + 1.0) * 0.5;
+		vec2 step = 1.0 / textureSize(tex, 0);
+		float dx = step.x;
+		float dy = step.y;
+		float ndx = 0.0 - dx;
+		float ndy = 0.0 - dy;
+		FinalColor = (texture(tex, UV + [ndx, dy]) * kernel0.x) + 
+				     (texture(tex, UV + [0, dy]) * kernel0.y) + 
+				     (texture(tex, UV + [dx, dy]) * kernel0.z) +
+				     (texture(tex, UV + [ndx, 0]) * kernel1.x) + 
+				     (texture(tex, UV + [0, 0]) * kernel1.y) + 
+				     (texture(tex, UV + [dx, 0]) * kernel1.z) +
+				     (texture(tex, UV + [ndx, ndy]) * kernel2.x) +
+				     (texture(tex, UV + [0, ndy]) * kernel2.y) + 
+				     (texture(tex, UV + [dx, ndy]) * kernel2.z);
+	}
+}(vec4 FinalColor)
+
 buffer cube;
+buffer quad;
+
+texture2D target;
 
 float fov = 0;
 float aspect = 0;
@@ -32,7 +69,7 @@ float aspect = 0;
 float theta = 0;
 
 func init(){
-	list cube_result = generate_cube(1.0, 1);	
+	list cube_result = generate_cube(1.0, 1);
 	cube.pos += cube_result[0];
 	cube.norm += cube_result[1];
 	for(i in 0,|cube_result[0]|,1) {
@@ -41,15 +78,25 @@ func init(){
 	
 	fov = PI * 0.25;
 	aspect = WIDTH / HEIGHT;
+	
+	quad.pos += generate_quad(2.0, [0, 0, 1], [1, 0, 0], 1);
 }
 
 func loop(){	
 	theta += 0.01;
-
+	
 	basic.LightPos = [0, 0, 4];
 	basic.model = mat4_rotation_y(theta) * mat4_rotation_x(theta);
 	basic.view = mat4_lookat([0, 0, 4], [0, 0, 0], [0, 1, 0]);
 	basic.proj = mat4_perspective(fov, aspect, 0.1, 1000.0);
 	
-	draw cube using basic;
+	draw cube to target using basic;
+
+	clear;
+
+	screen.tex = target;
+	screen.kernel0 = [1/16, 1/8, 1/16];
+	screen.kernel1 = [1/8, 1/4, 1/8];
+	screen.kernel2 = [1/16, 1/8, 1/4];
+	draw quad using screen;
 }
