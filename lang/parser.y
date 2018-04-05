@@ -269,7 +269,7 @@ expr: INT { $$ = $1; set_lines($$,@1,@1); }
     | MINUS expr { $$ = make_shared<Unary>(OP_MINUS, $2); set_lines($$, @1, @2); } %prec UNARY
     | NOT expr { $$ = make_shared<Unary>(OP_NOT, $2); set_lines($$, @1, @2); } %prec UNARY
     | PIPE expr PIPE { $$ = make_shared<Unary>(OP_ABS, $2); set_lines($$, @1, @3); }
-    | OPEN_PAREN expr CLOSE_PAREN { $$ = $2; set_lines($$, @1, @3); }
+    | OPEN_PAREN expr CLOSE_PAREN { $$ = $2; $$->parenthesized = true; set_lines($$, @1, @3); }
     ;
 
 index: IDENTIFIER OPEN_BRACKET expr CLOSE_BRACKET { $$ = make_shared<Index>($1, $3); set_lines($$, @1, @4); }

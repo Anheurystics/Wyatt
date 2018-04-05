@@ -131,37 +131,38 @@ string GLSLTranspiler::resolve_binary(Binary_ptr bin) {
     string ltype = "";
     if(lhs->type == NODE_IDENT) {
         ltype = resolve_ident(static_pointer_cast<Ident>(lhs));
-    } else {
-        if(lhs->type == NODE_FLOAT) {
-            ltype = "float";
-        } else if(lhs->type == NODE_INT) {
-            ltype = "int";
-        } else {
-            vector<Expr_ptr> list;
-            Vector_ptr vec = static_pointer_cast<Vector>(lhs);
-            for(unsigned int i = 0; i < vec->size(); i++) {
-                list.push_back(vec->get(i));
-            }
-            ltype = resolve_vector(list);
+    } else if(lhs->type == NODE_FLOAT) {
+        ltype = "float";
+    } else if(lhs->type == NODE_INT) {
+        ltype = "int";
+    } else if(lhs->type == NODE_LIST) {
+        vector<Expr_ptr> list;
+        Vector_ptr vec = static_pointer_cast<Vector>(lhs);
+        for(unsigned int i = 0; i < vec->size(); i++) {
+            list.push_back(vec->get(i));
         }
+        ltype = resolve_vector(list);
+    } else if(lhs->type == NODE_BINARY) {
+        ltype = resolve_binary(static_pointer_cast<Binary>(lhs)); 
     }
+    
 
     string rtype = "";
     if(rhs->type == NODE_IDENT) {
         rtype = resolve_ident(static_pointer_cast<Ident>(rhs));
-    } else {
-        if(rhs->type == NODE_FLOAT) {
-            rtype = "float";
-        } else if(rhs->type == NODE_INT) {
-            rtype = "int";
-        } else {
-            vector<Expr_ptr> list;
-            Vector_ptr vec = static_pointer_cast<Vector>(rhs);
-            for(unsigned int i = 0; i < vec->size(); i++) {
-                list.push_back(vec->get(i));
-            }
-            rtype = resolve_vector(list);
+    } else if(rhs->type == NODE_FLOAT) {
+        rtype = "float";
+    } else if(rhs->type == NODE_INT) {
+        rtype = "int";
+    } else if(rhs->type == NODE_LIST) {
+        vector<Expr_ptr> list;
+        Vector_ptr vec = static_pointer_cast<Vector>(rhs);
+        for(unsigned int i = 0; i < vec->size(); i++) {
+            list.push_back(vec->get(i));
         }
+        rtype = resolve_vector(list);
+    } else if (rhs->type == NODE_BINARY) {
+        rtype = resolve_binary(static_pointer_cast<Binary>(rhs));
     }
 
     int n = 0;
@@ -257,34 +258,42 @@ string GLSLTranspiler::eval_invoke(Invoke_ptr invoke) {
 }
 
 string GLSLTranspiler::eval_expr(Expr_ptr expr) {
+    string output = "";
     switch(expr->type) {
         case NODE_INT:
-            return to_string(static_pointer_cast<Int>(expr)->value);
+            output = to_string(static_pointer_cast<Int>(expr)->value);
+            break;
         case NODE_FLOAT:
-            return to_string(static_pointer_cast<Float>(expr)->value);
+            output = to_string(static_pointer_cast<Float>(expr)->value);
+            break;
         case NODE_IDENT:
             {
                 string name = static_pointer_cast<Ident>(expr)->name;
                 if(name == "FinalPosition") {
-                    return "gl_Position";
+                    output = "gl_Position";
+                } else {
+                    output = name;
                 }
-                return name;
+                break;
             }
         case NODE_DOT:
             {
                 Dot_ptr dot = static_pointer_cast<Dot>(expr);
-                return dot->owner->name + "." + dot->name;
+                output = dot->owner->name + "." + dot->name;
+                break;
             }
         case NODE_BINARY:
             {
-                return eval_binary(static_pointer_cast<Binary>(expr));
+                output = eval_binary(static_pointer_cast<Binary>(expr));
+                break;
             }
         case NODE_VECTOR2:
             {
                 Vector2_ptr vec2 = static_pointer_cast<Vector2>(expr);
                 Expr_ptr x = vec2->x;
                 Expr_ptr y = vec2->y;
-                return eval_vector({x, y});
+                output = eval_vector({x, y});
+                break;
             }
         case NODE_VECTOR3:
             {
@@ -292,7 +301,8 @@ string GLSLTranspiler::eval_expr(Expr_ptr expr) {
                 Expr_ptr x = vec3->x;
                 Expr_ptr y = vec3->y;
                 Expr_ptr z = vec3->z;
-                return eval_vector({x, y, z});
+                output = eval_vector({x, y, z});
+                break;
             }
         case NODE_VECTOR4:
             {
@@ -301,16 +311,23 @@ string GLSLTranspiler::eval_expr(Expr_ptr expr) {
                 Expr_ptr y = vec4->y;
                 Expr_ptr z = vec4->z;
                 Expr_ptr w = vec4->w;
-                return eval_vector({x, y, z, w});
+                output = eval_vector({x, y, z, w});
+                break;
             }
         case NODE_FUNCEXPR:
             {
                 FuncExpr_ptr func = static_pointer_cast<FuncExpr>(expr);
-                return eval_invoke(func->invoke);
+                output = eval_invoke(func->invoke);
+                break;
             }
         default:
-            return "";
+            output = "";
+            break;
     }
+    if(expr->parenthesized) {
+        output = "(" + output + ")";
+    }
+    return output;
 }
 
 string GLSLTranspiler::eval_binary(Binary_ptr bin) {

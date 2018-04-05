@@ -153,8 +153,9 @@ class Node {
 
 class Expr: public Node {
     public:
-        Expr(): Node(NODE_EXPR) {}
-        Expr(NodeType type): Node(type) {}
+        bool parenthesized = false;
+        Expr(): Node(NODE_EXPR) { }
+        Expr(NodeType type): Node(type) { }
 };
 
 class Ident: public Expr {
