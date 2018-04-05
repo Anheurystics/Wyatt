@@ -1,0 +1,55 @@
+import "shapes.gfx";
+
+vert basic(vec3 pos, vec3 norm, vec3 col) {
+	mat4 model;
+	mat4 view;
+	mat4 proj;
+	
+	func main() {
+		FinalPosition = proj * view * model * [pos, 1.0];
+		Pos = vec3(model * [pos, 1.0]);
+		Norm = vec3(model * [norm, 1.0]);
+		Col = col;
+	}
+}(vec4 FinalPosition, vec3 Pos, vec3 Norm, vec3 Col)
+
+frag basic(vec3 Pos, vec3 Norm, vec3 Col) {
+	
+	vec3 LightPos;	
+	
+	func main() {
+		vec3 ambient = [0.3, 0.3, 0.3];
+		vec3 diffuse = max(0.0, dot(normalize(Norm), normalize(LightPos - Pos))) * [1.0, 1.0, 1.0];
+		FinalColor = [Col * (ambient + diffuse), 1.0];
+	}
+}(vec4 FinalColor)
+
+buffer cube;
+
+float fov = 0;
+float aspect = 0;
+
+float theta = 0;
+
+func init(){
+	list cube_result = generate_cube(1.0, 1);	
+	cube.pos += cube_result[0];
+	cube.norm += cube_result[1];
+	for(i in 0,|cube_result[0]|,1) {
+		cube.col += [1.0, 0.3, 0.3];
+	}
+	
+	fov = PI * 0.25;
+	aspect = WIDTH / HEIGHT;
+}
+
+func loop(){	
+	theta += 0.01;
+
+	basic.LightPos = [0, 0, 4];
+	basic.model = mat4_rotation_y(theta) * mat4_rotation_x(theta);
+	basic.view = mat4_lookat([0, 0, 4], [0, 0, 0], [0, 1, 0]);
+	basic.proj = mat4_perspective(fov, aspect, 0.1, 1000.0);
+	
+	draw cube using basic;
+}
