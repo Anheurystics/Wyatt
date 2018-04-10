@@ -114,3 +114,9 @@ Three things happened here:
 ![Colored triangle][color_tri]
 
 [color_tri]: color_tri.png
+
+## Part 2.5: Indexing
+## Part 3: Transformation
+## Part 3.5: Camera setup
+## Part 4: Textures
+## Part 4.5: Render-to-texture
