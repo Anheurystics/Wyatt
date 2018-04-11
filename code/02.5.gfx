@@ -1,10 +1,6 @@
-import "utils.gfx";	
-
 vert basic(vec3 pos, vec3 color) {
-	mat4 model;
-	
 	func main() {
-		FinalPosition = model * [pos, 1.0];
+		FinalPosition = [pos, 1.0];
 		Color = color;
 	}
 }(vec4 FinalPosition, vec3 Color)
@@ -16,18 +12,13 @@ frag basic(vec3 Color) {
 }(vec4 FinalColor)
 
 buffer tri;
-mat4 model = mat4_identity();
 
 func init(){
 	tri.pos += [1.0, -1.0, 0.0], [-1.0, 1.0, 0.0], [-1.0, -1.0, 0.0], [1.0, 1.0, 0.0];
 	tri.color += [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0];
     tri.indices += 0, 1, 2, 1, 0, 3;
-	
-	basic.model = model;
 }
 
 func loop(){
-	model *= mat4_rotation_z(0.01);
-	basic.model = model;	
 	draw tri using basic;
 }

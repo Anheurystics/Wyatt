@@ -56,7 +56,7 @@ func init() {
 ```
 With our attributes set, it's time to write our shaders. We will create a vertex shader that simply takes the input position attribute and outputs it as the final position output.
 ```js
-vert simple(vec3 pos) {
+vert basic(vec3 pos) {
     func main() {
         FinalPosition = [pos, 1.0];
     }
@@ -66,7 +66,7 @@ The FinalPosition will always be a `vec4`, so we have to "convert" our `vec3` in
 
 Our fragment shader wil determine the output color. Since we want to have a flat-colored triangle, we hardcode the output color as white.
 ```js
-frag simple() {
+frag basic() {
     func main() {
         FinalColor = [1.0, 1.0, 1.0, 1.0];
     }
@@ -74,10 +74,10 @@ frag simple() {
 ```
 In later examples, the fragment shader will get interpolated data from the vertex shader.
 
-The last step would be to draw the contents of the `triangle` buffer using the pipeline described by the `simple` shaders. This is to be done in the loop function (so it'll draw every frame)
+The last step would be to draw the contents of the `triangle` buffer using the pipeline described by the `basic` shaders. This is to be done in the loop function (so it'll draw every frame)
 ```js
 func loop() {
-    draw triangle using simple;
+    draw triangle using basic;
 }
 ```
 
@@ -95,14 +95,14 @@ func init() {
 ```
 The three vertices will now be colored red, green, and blue. We then have to modify our shaders to make sure that the attribute data `col` will be used in determining the final fragment color.
 ```js
-vert simple(vec3 pos, vec3 col) {
+vert basic(vec3 pos, vec3 col) {
     func main() {
         FinalPosition = [pos, 1.0];
         Color = col;
     }
 }(vec4 FinalPosition, vec3 Color)
 
-frag simple(vec3 Color) {
+frag basic(vec3 Color) {
     func main() {
         FinalColor = [Color, 1.0];
     }
@@ -233,4 +233,51 @@ func loop() {
 [proj_quad]: proj_quad.png
 
 ## Part 4: Textures
+2D textures are usually for projecting images onto geometry to give more detail, instead of relying on just flat colors. To use 2D textures, you have to **UV map** each vertex of a geometry to a certain texture coordinate. This specifies how the image should be "drawn" in the triangle. The texture coordinates are in the range [0, 0] to [1, 1], where [0, 0] is the lower left corner and [1, 1] is the upper right corner.
+
+Texture coordinates (also referred to as UV coordinates) are treated as another attributes, and are specified in a way similar to position and color attributes. So given our quad example:
+```js
+vert basic(vec3 pos, vec3 color, vec2 uv) {
+    <uniforms>
+
+    func main() {
+        <other operations>
+        UV = uv;
+    }
+}(vec4 FinalPosition, vec2 UV);
+
+func init() {
+	tri.pos += [1.0, -1.0, 0.0], [-1.0, 1.0, 0.0], [-1.0, -1.0, 0.0], [1.0, 1.0, 0.0];
+	tri.color += [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0], [0.0, 0.0, 1.0];
+    tri.uv += [1.0, 0.0], [0.0, 1.0], [0.0, 0.0], [1.0, 1.0];
+
+    // the first triangle will use vertices 0, 1, 2, and the second one will use vertices 1, 0, 3
+    tri.indices += 0, 1, 2, 1, 0, 3;
+}
+```
+Next we'll have to load the texture itself. Supported filetypes are PNG and JPG. The variable type of all textures is `texture2D`, and can be loaded by just assigning the string describing the filename of the image to the texture2D object;
+```js
+<shader code>
+
+texture2D tex = "texture.jpg";
+
+func init() {
+```
+To actually use the texture's colors, we have to pass it as a uniform to the fragment shader. The UV should also be passed from the vertex to the fragment shader, similar to the Color (it will be interpolated). To get the color of a texture at a certain UV coordinate, the `texture` function is used, and it returns a `vec4` (the color)
+
+```js
+frag basic(vec3 Color, vec2 UV) {
+    texture2D tex;
+
+    func main() {
+        FinalColor = texture(tex, UV); 
+    }
+}(vec4 FinalColor)
+```
+
+Instead of fully replacing Color with the texture, you can also blend the two colors together, tinting the image.
+```js
+FinalColor = texture(tex, UV) * Color;
+```
+
 ## Part 4.5: Render-to-texture
