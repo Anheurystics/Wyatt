@@ -83,8 +83,8 @@ const          { return Parser::make_CONST(curr_location); }
 "("            { return Parser::make_OPEN_PAREN(curr_location); }
 ")"            { return Parser::make_CLOSE_PAREN(curr_location); }
 "<-"           { return Parser::make_UPLOAD(curr_location); }
-"<"            { return Parser::make_LESS_THAN(curr_location); }
-">"            { return Parser::make_GREATER_THAN(curr_location); }
+"<"            { return Parser::make_LTHAN(curr_location); }
+">"            { return Parser::make_GTHAN(curr_location); }
 ">="           { return Parser::make_GEQUAL(curr_location); }
 "<="           { return Parser::make_LEQUAL(curr_location); }
 "=="           { return Parser::make_EQUAL(curr_location); }
@@ -99,6 +99,7 @@ const          { return Parser::make_CONST(curr_location); }
 "-"            { return Parser::make_MINUS(curr_location); }
 "-="           { return Parser::make_COMP_MINUS(curr_location); }
 "*"            { return Parser::make_MULT(curr_location); }
+"**"           { return Parser::make_EXP(curr_location); }
 "*="           { return Parser::make_COMP_MULT(curr_location); }
 "!"            { return Parser::make_NOT(curr_location); }
 "/"            { return Parser::make_DIV(curr_location); }

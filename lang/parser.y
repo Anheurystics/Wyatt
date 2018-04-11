@@ -71,12 +71,18 @@
 %token PIPE "|";
 %token OPEN_PAREN "(";
 %token CLOSE_PAREN ")";
-%token LESS_THAN "<";
-%token GREATER_THAN ">";
+%token LTHAN "<";
+%token GTHAN ">";
 %token OPEN_BRACKET "[";
 %token CLOSE_BRACKET "]";
 %token COMMA ",";
 %token PERIOD  ".";
+%token PLUS "+";
+%token MINUS "-";
+%token MULT "*";
+%token EXP "**";
+%token DIV "/";
+%token MOD "%";
 %token EQUALS "=";
 %token COMP_PLUS "+=";
 %token COMP_MINUS "-=";
@@ -110,12 +116,12 @@
 %token RETURN "return";
 
 %left PLUS MINUS
-%left MULT DIV MOD
+%left MULT EXP DIV MOD
 %left AND OR
 %right UNARY
 
 %nonassoc EQUAL NEQUAL GEQUAL LEQUAL
-%nonassoc LESS_THAN GREATER_THAN
+%nonassoc LTHAN GTHAN
 
 %type<shared_ptr<Invoke>> invoke;
 %type<shared_ptr<Expr>> expr index
@@ -256,10 +262,11 @@ expr: INT { $$ = $1; set_lines($$,@1,@1); }
     | expr PLUS expr { $$ = make_shared<Binary>($1, OP_PLUS, $3); set_lines($$, @1, @3); }
     | expr MINUS expr { $$ = make_shared<Binary>($1, OP_MINUS, $3); set_lines($$, @1, @3); }
     | expr MULT expr { $$ = make_shared<Binary>($1, OP_MULT, $3); set_lines($$, @1, @3); }
+    | expr EXP expr { $$ = make_shared<Binary>($1, OP_EXP, $3); set_lines($$, @1, @3); }
     | expr DIV expr { $$ = make_shared<Binary>($1, OP_DIV, $3); set_lines($$, @1, @3); }
     | expr MOD expr { $$ = make_shared<Binary>($1, OP_MOD, $3); set_lines($$, @1, @3); }
-    | expr LESS_THAN expr { $$ = make_shared<Binary>($1, OP_LESSTHAN, $3); set_lines($$, @1, @3);}
-    | expr GREATER_THAN expr { $$ = make_shared<Binary>($1, OP_GREATERTHAN, $3); set_lines($$, @1, @3); }
+    | expr LTHAN expr { $$ = make_shared<Binary>($1, OP_LESSTHAN, $3); set_lines($$, @1, @3);}
+    | expr GTHAN expr { $$ = make_shared<Binary>($1, OP_GREATERTHAN, $3); set_lines($$, @1, @3); }
     | expr EQUAL expr { $$ = make_shared<Binary>($1, OP_EQUAL, $3); set_lines($$, @1, @3); }
     | expr NEQUAL expr { $$ = make_shared<Binary>($1, OP_NEQUAL, $3); set_lines($$, @1, @3); }
     | expr LEQUAL expr { $$ = make_shared<Binary>($1, OP_LEQUAL, $3); set_lines($$, @1, @3); }
