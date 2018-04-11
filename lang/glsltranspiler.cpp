@@ -169,18 +169,16 @@ string GLSLTranspiler::resolve_binary(Binary_ptr bin) {
     if((ltype == "float"|| ltype == "int") && (rtype == "float"|| rtype == "int")) {
         n = 1;
     } else
-    if(op == OP_PLUS || op == OP_MINUS) {
+    if(op == OP_PLUS || op == OP_MINUS || op == OP_MULT) {
         if(ltype == rtype) {
            if(ltype == "vec2") n = 2;
            if(ltype == "vec3") n = 3;
            if(ltype == "vec4") n = 4;
         }
     } else
-    if(op == OP_MULT) {
+    if(op == OP_EXP) {
         if(ltype == rtype) {
-           if(ltype == "vec2") n = 2;
-           if(ltype == "vec3") n = 3;
-           if(ltype == "vec4") n = 4;
+           if(ltype == "vec2" || ltype == "vec2" || ltype == "vec4") n = 1;
         }
     }
     
@@ -332,6 +330,8 @@ string GLSLTranspiler::eval_expr(Expr_ptr expr) {
 
 string GLSLTranspiler::eval_binary(Binary_ptr bin) {
     string op_str = "";
+    string lhs = eval_expr(bin->lhs);
+    string rhs = eval_expr(bin->rhs);
     switch(bin->op) {
         case OP_PLUS:
             op_str = " + ";
@@ -342,13 +342,17 @@ string GLSLTranspiler::eval_binary(Binary_ptr bin) {
         case OP_MULT:
             op_str = " * ";
             break;
+        case OP_EXP:
+            return "dot(" + lhs + ", " + rhs + ")";
+        // case OP_MOD:
+            // return "cross(" + lhs + ", " + rhs + ")";
         case OP_DIV:
             op_str = " / " ;
             break;
         default:
             op_str = " ? ";
     }
-    return eval_expr(bin->lhs) + op_str + eval_expr(bin->rhs);
+    return lhs + op_str + rhs;
 }
 
 string GLSLTranspiler::eval_stmt(Stmt_ptr stmt) {

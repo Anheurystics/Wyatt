@@ -1,4 +1,3 @@
-import "utils.gfx";
 import "shapes.gfx";
 
 buffer buf;
@@ -26,7 +25,7 @@ frag basic(vec3 Pos, vec3 Normal, vec3 Color) {
     vec3 lightPos;
     func main() {
         vec3 toLight = normalize(lightPos - Pos);
-        float diffuse = max(0.0, dot(toLight, normalize(Normal)));
+        float diffuse = max(0.0, toLight ** normalize(Normal));
         vec3 diffuseColor = diffuse * [1.0, 1.0, 1.0];
         FinalColor = [Color * diffuseColor, 1.0];
     }
@@ -43,7 +42,14 @@ frag screen(vec2 UV) {
     texture2D tex;
 
     func main() {
-        FinalColor = texture(tex, UV) * 0.99;
+    	
+		vec2 texSize = textureSize(tex, 0);
+		float ix = 1.0 / texSize.x;
+		float iy = 1.0 / texSize.y;
+    	
+        FinalColor = (texture(tex, UV + [ix,iy]) * 0.1) + (texture(tex, UV + [0,iy]) * 0.1) + (texture(tex, UV + [ix,iy]) * 0.1) +
+        			 (texture(tex, UV + [-ix,0]) * 0.1) + (texture(tex, UV + [0,0]) * 0.1) + (texture(tex, UV + [ix,0]) * 0.1) +
+        			 (texture(tex, UV + [-ix,-iy]) * 0.1) + (texture(tex, UV + [0,-iy]) * 0.1) + (texture(tex, UV + [ix,-iy]) * 0.1);
     }
 }(vec4 FinalColor)
 
@@ -55,7 +61,7 @@ func init(){
         buf.color += [1, 0.3, 0.3];
     }
 
-    basic.lightPos = [4, 4, 4];
+    basic.lightPos = [0, 0, 2];
     basic.model = mat4_identity();
     basic.normal_model = mat4_transpose(mat4_inverse(basic.model));
     basic.view = mat4_lookat([0, 0, 4], [0, 0, 0], [0, 1, 0]);
@@ -68,6 +74,11 @@ func init(){
 
 func loop(){
     clear [0.3, 0.3, 0.3];
+    basic.model = mat4_translation(-1, 0, 0);
+    draw buf to target using basic;
+    basic.model = mat4_translation(0, 0, 0);
+    draw buf to target using basic;
+    basic.model = mat4_translation(1, 0, 0);
     draw buf to target using basic;
 
     clear;
