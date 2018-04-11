@@ -2077,9 +2077,9 @@ void Prototype::Interpreter::execute_init() {
     Decl_ptr heightDecl = make_shared<Decl>(make_shared<Ident>("int"), make_shared<Ident>("HEIGHT"), make_shared<Int>(height));
     heightDecl->constant = true;
 
-    globals.push_back(piDecl);
-    globals.push_back(widthDecl);
-    globals.push_back(heightDecl);
+    globals.insert(globals.begin(), piDecl);
+    globals.insert(globals.begin(), widthDecl);
+    globals.insert(globals.begin(), heightDecl);
 
     for(auto it = globals.begin(); it != globals.end(); ++it) {
         Decl_ptr decl = *it;
