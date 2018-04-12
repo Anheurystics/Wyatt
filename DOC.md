@@ -90,7 +90,7 @@ vec3 b = [4, 5, 6];
 vec4 c = [1, 0, 0, 1];
 ```
 Binary operations for vector types are as follows:
-- addition `+`, subtraction `-`, dot product `*`, cross product `%` (between vectors with similar lengths)
+- addition `+`, subtraction `-`, multiplication `*`, dot product `**`, cross product `%` (between vectors with similar lengths)
     - dot products evaluate to a `float`, while the rest evaluate to a `vector`
 - multiplication `*` and division `\` (between a vector and a scalar) for scaling vectors
 ```js
@@ -99,7 +99,8 @@ vec3 b = [0, 1, 1];
 float c = 2;
 print a + b;    // [1, 2, 0]
 print a - b;    // [1, 0, -1]
-print a * b;    // 1
+print a * b;    // [0, 1, 0]
+print a ** b;   // 1
 print a % b;    // [1, -1, 1]
 print a * c;    // [2, 2, 0]
 print a / c;    // [0.5, 0.5, 0]
@@ -197,7 +198,7 @@ program.diffuseTex = diffuse;
 ```
 The texture object has its own members, some of which are editable
 ```js
-// Read-only memebrs
+// Read-only members
 print tex.width
 print tex.height
 print tex.channels
