@@ -1,4 +1,4 @@
-This document serves as a manual/tutorial for the Wyatt programming language/development environment
+This is the documentation for the Wyatt programming language
 
 # Introduction
 Wyatt is a beginner-friendly programming language for the creation of 3D graphics applications. It abstracts away OpenGL's boilerplate code and exposes the graphics concepts (such as the shaders, vertex buffers, etc.) in a simpler manner. 
@@ -32,7 +32,7 @@ This not only makes it easier for the user to understand that vertex data is bei
 
 # Language Specification
 ## Basic Syntax
-Wyatt is modelled after languages such as JavaScript and Python.
+Wyatt's syntax is similar to those of JavaScript and Python.
 
 ## Type System and Declaration
 The built-in primitives are `int`, `float` (both 32-bit), `bool`, and `string`.
@@ -48,6 +48,7 @@ bool a = true;
 a = "hello";    // not valid
 var d = b;      // d is implicitly defined a float
 ```
+
 A `list` is a resizable array type that can contain any combinations of types. Element accessed is done using `[]`, and length can be acquired by using the `||` operator.
 ```js
 list a = {1, 2, 3, 4, 5};
@@ -70,7 +71,7 @@ for(i in a) {
 ```
 
 ## Comments
-As seen in previous code examples, single comments can be done using `//`. Multi-line comments are surrounded by `/*` and `*/`
+Single comments can be done using `//`. Multi-line comments are surrounded by `/*` and `*/`
 ```js
 // This is a single line comment
 /*
@@ -91,7 +92,8 @@ vec4 c = [1, 0, 0, 1];
 ```
 Binary operations for vector types are as follows:
 - addition `+`, subtraction `-`, multiplication `*`, dot product `**`, cross product `%` (between vectors with similar lengths)
-    - dot products evaluate to a `float`, while the rest evaluate to a `vector`
+    - these operations only work for two vectors of the same length
+    - dot products evaluate to a `float`, while the rest evaluate to a `vector` of the same length
 - multiplication `*` and division `\` (between a vector and a scalar) for scaling vectors
 ```js
 vec3 a = [1, 1, 0];
@@ -105,29 +107,42 @@ print a % b;    // [1, -1, 1]
 print a * c;    // [2, 2, 0]
 print a / c;    // [0.5, 0.5, 0]
 ```
+
 Unary operations for vectors are negation `-` and magnitude `||`
 ```js
 print -[1, 0, -1]   // [-1, 0, 1];
 print |[1, 1, 1]|   // 1.7320
 ```
+
 ### Matrix
 Matrix types can be thought of as two-dimensional vector types, and are specified in **row-major** order
 ```js
-mnat2 a = [[1, 2], [3, 4]];
+mat2 a = [[1, 2], [3, 4]];
 mat3 b = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
 vec4 v = [1, 2, 3, 4];
 mat4 c = [v, v, v, v];
 ```
-The only valid binary operation between matrices of similar dimensions are only multiplication
+The only valid binary operation between matrices of similar dimensions is multiplication
 ```js
 mat3 a = [[1, 2, 3], [4, 5, 6], [7, 8, 9]];
 mat3 s = [[2, 0, 0], [0, 2, 0], [0, 0, 2]];
 print a * s;    // [[2, 4, 6], [8, 10, 12], [14, 16, 18]];
 ```
+
+Vectors can be transformed by matrices of equal size (via multiplication)
+```js
+mat3 m = [[1, 0, 0], [0, 2, 0], [0, 0, 3]];
+vec3 v = [1, 1, 1];
+
+// Since matrices are row-major, the vector has to be on the left-hand side 
+print v * m;    // [1, 2, 3]
+```
+
 ## 3D programming constructs
 Wyatt abstracts away from the programmer boilerplate code relating to creating, modifying, and using vertex shaders, buffers, etc. Many of the common OpenGL operations are built into the language
+
 ### Shader creation
-Instead of storing shader code in strings/files and loading them, shader code in Wyatt is part of the program itself, with the use of the `vert` and `frag` keywords. In lieu of GLSL, a subset of Wyatt is transpiled to GLSL. This makes sure that the user will only have to keep one language in mind.
+Instead of storing shader code in strings/files and loading them, shader code in Wyatt is part of the program itself, with the use of the `vert` and `frag` keywords. In lieu of GLSL, a subset of Wyatt is transpiled to GLSL. This makes sure that the user will only have to keep one language in mind. Shaders are defined outside of and before the `init` and `loop` functions.
 ```js
 vert basic(vec3 pos, vec3 col) { // Inputs go here (in / attribute)
 
@@ -156,7 +171,7 @@ frag basic(vec3 Color) { // Inputs go here (in / varying)
 }(vec4 FinalColor) // Outputs goes here
 ```
 
-Function inputs are specified llike inputs to any normal function-- the same goes for function outputs, but at the end of the definition instead. Uniforms are specified as global variables, accessible only to the main() function and any other declared functions.
+Function inputs are specified like inputs to a function-- the same goes for function outputs, but at the end of the definition instead. Uniforms are specified as global variables, accessible only to the main() function and any other declared functions.
 
 Instead of explicitly declaring a program to which the two shaders will be linked to, a vertex and fragment shader sharing the same name will automatically be bound to a program with that name.
 
@@ -176,27 +191,27 @@ buffer tri;
 tri.pos += [1, -1, 0], [0, 1, 0], [-1, -1, 0];
 tri.color += [1, 1, 1], [1, 1, 1], [1, 1, 1];
 ```
-
 This automatically performs the uploading of data (`glBufferData`) and the assigning of attribute layouts (`glVertexAttribPointer`)
 
-Buffer objects also have built-in support for indexed vertex specification, using the `indices` member
-```
+Buffers also have built-in support for indexed vertex specification, using the `indices` member
+```js
 tri.indices += 1, 2, 3;
 ```
+
 ### Simple drawing
 To `draw` the contents of a buffer using a specific shader program
 ```js
 draw <buffer> using <program>
 ```
+If the buffer's `indices` field is not empty, it will use the indices.
 
-If the buffer's `indices` field is not empty, it will use the indices accordingly.
 ### Textures
 Textures can be loaded by assigning the filename to a `texture2D` object, and are assigned to shaders as uniforms
 ```js
-texxture2D diffuse = "test.jpg";
+texture2D diffuse = "test.jpg";
 program.diffuseTex = diffuse;
 ```
-The texture object has its own members, some of which are editable
+The texture object has its own members, which are mostly read-only
 ```js
 // Read-only members
 print tex.width
@@ -205,9 +220,12 @@ print tex.channels
 ```
 
 ### Rendering to texture
-In Wyatt, the declaration of a framebuffer is implied when creating an empty `texture2D` object and rendering to it during the draw call using the `to` keyword. The texture can then be subsequently used for the usual texture mapping operations.
+The declaration of a framebuffer is implied when creating an empty `texture2D` object and rendering to it during the draw call using the `to` keyword. The texture can then be subsequently used for texture mapping.
 ```js
 texture2D target;
+
+...
+
 draw <buffer> to target using <rtt-shader>;
 shader.texture = target;
 draw <buffer2> using shader;
