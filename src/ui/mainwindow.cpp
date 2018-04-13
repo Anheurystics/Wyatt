@@ -71,6 +71,8 @@ MainWindow::MainWindow(QWidget *parent, std::string startupFile) : QMainWindow(p
     tabLayout->addWidget(codeEditor);
 
     logWindow = new LogWindow(vSplit);
+    logWindow->setReadOnly(true);
+    logWindow->setTextInteractionFlags(logWindow->textInteractionFlags() | Qt::TextSelectableByKeyboard);
 
     vSplit->addWidget(editors);
     vSplit->addWidget(logWindow);

@@ -14,8 +14,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = prototype
 TEMPLATE = app
 
-include( ui/ui.pri )
-include( lang/lang.pri )
+include( src/ui/ui.pri )
+include( src/lang/lang.pri )
 
 win32 {
     LIBS += -lopengl32
@@ -50,4 +50,4 @@ bisonheader.CONFIG += target_predeps no_link
 QMAKE_EXTRA_COMPILERS += bisonheader
 
 SOURCES += \
-    main.cpp \
+    src/main.cpp \
