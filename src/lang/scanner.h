@@ -3,16 +3,16 @@
 
 #if ! defined(yyFlexLexerOnce)
 #undef yyFlexLexer
-#define yyFlexLexer Prototype_FlexLexer
+#define yyFlexLexer Wyatt_FlexLexer
 #include <FlexLexer.h>
 #endif
 
 #undef YY_DECL
-#define YY_DECL Prototype::Parser::symbol_type Prototype::Scanner::get_next_token()
+#define YY_DECL Wyatt::Parser::symbol_type Wyatt::Scanner::get_next_token()
 
 #include "parser.hpp"
 
-namespace Prototype {
+namespace Wyatt {
 
 class Scanner: public yyFlexLexer {
     public:

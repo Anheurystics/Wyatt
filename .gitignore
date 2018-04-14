@@ -1,9 +1,9 @@
-prototype.pro.user
+wyatt.pro.user
 Makefile
 moc_*
 ui_mainwindow.h
 *.o
-prototype
+wyatt
 parsercli
 scanner.cpp
 parser.cpp
@@ -17,7 +17,7 @@ debug/
 release/
 *.Debug
 *.Release
-object_script.prototype*
+object_script.wyatt.*
 *.aux
 *.log
 *.tex

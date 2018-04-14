@@ -130,7 +130,7 @@ MainWindow::MainWindow(QWidget *parent, std::string startupFile) : QMainWindow(p
     menuAspect_Ratio->addAction(action4_3);
     menuAspect_Ratio->addAction(action16_9);
 
-    setWindowTitle(QApplication::translate("MainWindow", "Prototype", Q_NULLPTR));
+    setWindowTitle(QApplication::translate("MainWindow", "Wyatt", Q_NULLPTR));
 
     actionNew->setText(QApplication::translate("MainWindow", "New", Q_NULLPTR));
     actionNew->setShortcut(QApplication::translate("MainWindow", "Ctrl+N", Q_NULLPTR));
@@ -192,7 +192,7 @@ MainWindow::MainWindow(QWidget *parent, std::string startupFile) : QMainWindow(p
     connect(actionAuto_Execute, SIGNAL(triggered(bool)), openGLWidget, SLOT(toggleAutoExecute(bool)));
     connect(actionAuto_Execute, SIGNAL(triggered(bool)), runButton, SLOT(setDisabled(bool)));
 
-    openGLWidget->interpreter = new Prototype::Interpreter(logWindow);
+    openGLWidget->interpreter = new Wyatt::Interpreter(logWindow);
 
     txtFilter = tr("GFX files (*.gfx)");
 }

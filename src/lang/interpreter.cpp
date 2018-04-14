@@ -35,7 +35,7 @@ float resolve_scalar(Expr_ptr expr) {
 
 #define LOOP_TIMEOUT 5
 
-Prototype::Interpreter::Interpreter(LogWindow* logger): scanner(&line, &column), parser(scanner, logger, &line, &column, &imports, &globals, &functions, &layouts, &shaders), logger(logger) {
+Wyatt::Interpreter::Interpreter(LogWindow* logger): scanner(&line, &column), parser(scanner, logger, &line, &column, &imports, &globals, &functions, &layouts, &shaders), logger(logger) {
     globalScope = make_shared<Scope>("global", logger, &workingDir);
     transpiler = new GLSLTranspiler(logger);
 
@@ -48,7 +48,7 @@ Prototype::Interpreter::Interpreter(LogWindow* logger): scanner(&line, &column),
         name.erase(it); \
     } \
 
-void Prototype::Interpreter::reset() {
+void Wyatt::Interpreter::reset() {
     clear_map(shaders);
     clear_map(functions);
     clear_map(layouts);
@@ -70,7 +70,7 @@ void Prototype::Interpreter::reset() {
 
 }
 
-string Prototype::Interpreter::print_expr(Expr_ptr expr) {
+string Wyatt::Interpreter::print_expr(Expr_ptr expr) {
     if(expr == nullptr) {
         return "";
     }
@@ -158,7 +158,7 @@ string Prototype::Interpreter::print_expr(Expr_ptr expr) {
     }
 }
 
-Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
+Expr_ptr Wyatt::Interpreter::eval_binary(Binary_ptr bin) {
     Expr_ptr lhs = eval_expr(bin->lhs);
     if(lhs == nullptr) return nullptr;
 
@@ -527,7 +527,7 @@ Expr_ptr Prototype::Interpreter::eval_binary(Binary_ptr bin) {
     return nullptr;
 }
 
-Expr_ptr Prototype::Interpreter::invoke(Invoke_ptr invoke) {
+Expr_ptr Wyatt::Interpreter::invoke(Invoke_ptr invoke) {
     string name = invoke->ident->name;
     FuncDef_ptr def = nullptr;
 
@@ -600,7 +600,7 @@ Expr_ptr Prototype::Interpreter::invoke(Invoke_ptr invoke) {
     return nullptr;
 }
 
-Expr_ptr Prototype::Interpreter::resolve_vector(vector<Expr_ptr> list) {
+Expr_ptr Wyatt::Interpreter::resolve_vector(vector<Expr_ptr> list) {
     vector<float> data;
     int n = 0;
 
@@ -636,7 +636,7 @@ Expr_ptr Prototype::Interpreter::resolve_vector(vector<Expr_ptr> list) {
     return nullptr;
 }
 
-Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
+Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
 
     if(node == nullptr) {
         return nullptr;
@@ -1151,7 +1151,7 @@ Expr_ptr Prototype::Interpreter::eval_expr(Expr_ptr node) {
     }
 }
 
-Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
+Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
     switch(stmt->type) {
         case NODE_FUNCSTMT:
                 invoke(static_pointer_cast<FuncStmt>(stmt)->invoke);
@@ -1980,7 +1980,7 @@ Expr_ptr Prototype::Interpreter::eval_stmt(Stmt_ptr stmt) {
     }
 }
 
-Expr_ptr Prototype::Interpreter::execute_stmts(Stmts_ptr stmts) {
+Expr_ptr Wyatt::Interpreter::execute_stmts(Stmts_ptr stmts) {
     Expr_ptr returnValue = nullptr;
     for(unsigned int it = 0; it < stmts->list.size(); it++) { 
         Stmt_ptr stmt = stmts->list.at(it);
@@ -2010,7 +2010,7 @@ Expr_ptr Prototype::Interpreter::execute_stmts(Stmts_ptr stmts) {
     }
 }
 
-void Prototype::Interpreter::compile_shader(GLuint* handle, Shader_ptr shader) {
+void Wyatt::Interpreter::compile_shader(GLuint* handle, Shader_ptr shader) {
     transpiler->layouts = &layouts;
     string code = transpiler->transpile(shader);
     cout << code << endl;
@@ -2028,7 +2028,7 @@ void Prototype::Interpreter::compile_shader(GLuint* handle, Shader_ptr shader) {
     }
 }
 
-void Prototype::Interpreter::compile_program() {
+void Wyatt::Interpreter::compile_program() {
     for(auto it = shaders.begin(); it != shaders.end(); ++it) {
         Program_ptr program = make_shared<Program>();
         program->handle = gl->glCreateProgram();
@@ -2068,7 +2068,7 @@ void Prototype::Interpreter::compile_program() {
     }
 }
 
-void Prototype::Interpreter::execute_init() {
+void Wyatt::Interpreter::execute_init() {
     if(!init || status) return;
 
     Decl_ptr piDecl = make_shared<Decl>(make_shared<Ident>("float"), make_shared<Ident>("PI"), make_shared<Float>(3.14159f));
@@ -2092,20 +2092,20 @@ void Prototype::Interpreter::execute_init() {
     invoke(init_invoke);
 }
 
-void Prototype::Interpreter::execute_loop() {
+void Wyatt::Interpreter::execute_loop() {
     if(!loop || status) return;
 
     invoke(loop_invoke);
 }
 
-void Prototype::Interpreter::load_imports() {
+void Wyatt::Interpreter::load_imports() {
     for(unsigned int i = 0; i < imports.size(); i++) {
         string file = imports[i];
         load_import(file);
     }
 }
 
-void Prototype::Interpreter::load_import(string file) {
+void Wyatt::Interpreter::load_import(string file) {
     string src = "";
     if(file_exists(workingDir + "/" + file)) {
         src = str_from_file(workingDir + "/" + file);
@@ -2119,7 +2119,7 @@ void Prototype::Interpreter::load_import(string file) {
     }
 }
 
-void Prototype::Interpreter::parse(string code, int* status) {
+void Wyatt::Interpreter::parse(string code, int* status) {
     logger->clear();
     istringstream ss(code);
     *(scanner.line) = 1;
@@ -2128,7 +2128,7 @@ void Prototype::Interpreter::parse(string code, int* status) {
     *status = parser.parse();
 }
 
-void Prototype::Interpreter::prepare() {
+void Wyatt::Interpreter::prepare() {
     globalScope->clear();
 
     if(status == 0) {
@@ -2146,7 +2146,7 @@ void Prototype::Interpreter::prepare() {
     }
 }
 
-void Prototype::Interpreter::resize(int width, int height) {
+void Wyatt::Interpreter::resize(int width, int height) {
     this->width = width;
     this->height = height;
 

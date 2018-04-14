@@ -7,7 +7,7 @@
 %define api.token.constructor
 %define api.value.type variant
 %define parse.assert
-%define api.namespace { Prototype }
+%define api.namespace { Wyatt }
 %code requires {
     #include <cstdio>
     #include <iostream>
@@ -16,7 +16,7 @@
     #include <string>
     #include <memory>
 
-    namespace Prototype {
+    namespace Wyatt {
         class Scanner;
     }
 
@@ -36,13 +36,13 @@
     #include "interpreter.h"
     #include "location.hh"
 
-    static Prototype::Parser::symbol_type yylex(Prototype::Scanner &scanner) {
+    static Wyatt::Parser::symbol_type yylex(Wyatt::Scanner &scanner) {
         return scanner.get_next_token();
     }
 }
 
-%lex-param { Prototype::Scanner &scanner }
-%parse-param { Prototype::Scanner &scanner }
+%lex-param { Wyatt::Scanner &scanner }
+%parse-param { Wyatt::Scanner &scanner }
 %parse-param { LogWindow* logger }
 %parse-param { unsigned int* line }
 %parse-param { unsigned int* column }
@@ -381,6 +381,6 @@ vec4: OPEN_BRACKET expr COMMA expr COMMA expr COMMA expr CLOSE_BRACKET { $$ = ma
 
 %%
 
-void Prototype::Parser::error(const Prototype::location &loc, const string &message) {
+void Wyatt::Parser::error(const Wyatt::location &loc, const string &message) {
     logger->log("ERROR: " + message + " at line " + to_string(loc.begin.line));
 }

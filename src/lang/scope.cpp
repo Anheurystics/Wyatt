@@ -2,7 +2,7 @@
 
 #include <stb_image.h>
 
-namespace Prototype {
+namespace Wyatt {
     Scope::Scope(string name, LogWindow* logger, string* workingDir): name(name), logger(logger), workingDir(workingDir) {}
 
     void Scope::clear() {

@@ -17,7 +17,7 @@ using namespace std;
 %option c++
 %option outfile="scanner.cpp"
 %option yyclass="Scanner"
-%option prefix="Prototype_"
+%option prefix="Wyatt_"
 
 %x BLOCK_COMMENT
 

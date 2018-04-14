@@ -24,7 +24,7 @@
 #include "scopelist.h"
 #include "codeeditor.h"
 
-namespace Prototype {
+namespace Wyatt {
 
 class Interpreter {
     public:
@@ -51,8 +51,8 @@ class Interpreter {
         void resize(int, int);
 
     private:
-        Prototype::Scanner scanner;
-        Prototype::Parser parser;
+        Wyatt::Scanner scanner;
+        Wyatt::Parser parser;
 
         typedef shared_ptr<Layout> Layout_ptr;
         typedef shared_ptr<Scope> Scope_ptr;

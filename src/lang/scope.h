@@ -8,7 +8,7 @@
 #include "nodes.h"
 #include "helper.h"
 
-namespace Prototype {
+namespace Wyatt {
 
 class Scope {
     public:

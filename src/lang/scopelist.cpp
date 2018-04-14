@@ -1,6 +1,6 @@
 #include "scopelist.h"
 
-namespace Prototype {
+namespace Wyatt {
 
 ScopeList::ScopeList(string name, LogWindow* logger, string* workingDir): name(name), logger(logger), workingDir(workingDir)
 {

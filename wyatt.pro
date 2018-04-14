@@ -11,7 +11,7 @@ CONFIG(debug, debug|release) {
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = prototype
+TARGET = wyatt 
 TEMPLATE = app
 
 include( src/ui/ui.pri )

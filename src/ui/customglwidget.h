@@ -27,7 +27,7 @@ class CustomGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
         void resizeGL(int, int);
 
         LogWindow* logger;
-        Prototype::Interpreter* interpreter;
+        Wyatt::Interpreter* interpreter;
 
         bool codeChanged;
         bool hasResized;

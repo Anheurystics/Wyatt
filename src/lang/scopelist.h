@@ -7,7 +7,7 @@
 #include "scope.h"
 #include "nodes.h"
 
-namespace Prototype {
+namespace Wyatt {
 
 class ScopeList {
     public:
