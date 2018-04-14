@@ -315,9 +315,11 @@ void MainWindow::saveAsFile() {
         return;
     }
 
+    openFiles.erase(currentEditor->fileInfo.fileName());
     currentEditor->fileInfo.setFile(selected);
 
     saveFile();
+    openGLWidget->interpreter->workingDir = selected.toStdString();
 }
 
 int MainWindow::createNewTab(QString code) {
