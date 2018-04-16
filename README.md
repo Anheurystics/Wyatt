@@ -43,6 +43,7 @@ Building Wyatt requires
 1. Qt Creator 5.3.1, on Qt 5.9.0 
 1. Flex 2.6
 1. Bison 3.0.4
+1. `stb_image.h` (place it in src/lang)
 
 (While other version of the above tools might work, the ones listed above are the ones I personally use to build)
 

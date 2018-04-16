@@ -24,3 +24,4 @@ object_script.wyatt.*
 *.out
 *.pdf
 .qmake.stash
+**/stb_image.h
