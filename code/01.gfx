@@ -13,7 +13,6 @@ frag basic() {
 buffer tri;
 
 func init(){
-	//Counter-clockwise faces forward
 	tri.pos += [1.0, -1.0, 0.0], [0.0, 1.0, 0.0], [-1.0, -1.0, 0.0];
 }
 
