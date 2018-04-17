@@ -85,7 +85,7 @@ func loop() {
 
 ![Flat white triangle][flat_tri]
 
-[flat_tri]: flat_tri.png
+[flat_tri]: images/flat_tri.png
 
 <div style="page-break-after: always;"></div>
 
@@ -119,7 +119,7 @@ Three things happened here:
 
 ![Colored triangle][color_tri]
 
-[color_tri]: color_tri.png
+[color_tri]: images/color_tri.png
 
 <div style="page-break-after: always;"></div>
 
@@ -148,7 +148,7 @@ func init() {
 ```
 ![Quad][quad]
 
-[quad]: quad.png
+[quad]: images/quad.png
 
 <div style="page-break-after: always;"></div>
 
@@ -196,7 +196,7 @@ Since repeatedly uploading vertex data would be costly, uniforms are the best wa
 
 ![Rotated quad][spin_quad]
 
-[spin_quad]: spin_quad.png
+[spin_quad]: images/spin_quad.png
 
 <div style="page-break-after: always;"></div>
 
@@ -254,7 +254,7 @@ func loop() {
 ```
 ![Quad with Camera][proj_quad]
 
-[proj_quad]: proj_quad.png
+[proj_quad]: images/proj_quad.png
 
 <div style="page-break-after: always;"></div>
 
@@ -305,7 +305,7 @@ frag basic(vec3 Color, vec2 UV) {
 ```
 ![Textured quad][textured]
 
-[textured]: textured.png
+[textured]: images/textured.png
 
 Instead of fully replacing Color with the texture, you can also blend the two colors together, tinting the image.
 ```js
@@ -313,7 +313,7 @@ FinalColor = texture(tex, UV) * Color;
 ```
 ![Textured, blended quad][textured_blend]
 
-[textured_blend]: textured_blend.png
+[textured_blend]: images/textured_blend.png
 
 <div style="page-break-after: always;"></div>
 
