@@ -9,7 +9,11 @@ One reason for why WebGL is favored for teaching the OpenGL API is its relativel
 
 Desktop OpenGL development environments can be harder to set-up, especially if the language used is C++. Development is highly reliant on third-party libraries (GLFW/SDL for windowing, glew/glad for function loading, glm for math, etc.), and trying to teach how to include and link against those libraries can take a lot of time.
 
-The IDE included with Wyattm with its own built-in code editor, a screen for outputting results, and error handling, makes setup instantaneous.
+The IDE included with Wyatt makes setup instantaneous, and has the following features:
+1. built-in code editor and syntax highlighting
+1. function argument hints
+1. graphics output widget
+1. error log window 
 
 ## Less boilerplate
 The OpenGL API's focus on configurability, flexibility, and speed also contributes to its high barrier to entry. For example, uploading vertex data to the GPU has the following steps:
@@ -49,12 +53,14 @@ a = "hello";    // not valid
 var d = b;      // d is implicitly defined a float
 ```
 
-A `list` is a resizable array type that can contain any combinations of types. Element accessed is done using `[]`, and length can be acquired by using the `||` operator.
-```js
+A `list` is a resizable array type that can contain any combinations of types. Element access is done using `[]`, and length can be acquired by using the `||` operator.
+```python
 list a = {1, 2, 3, 4, 5};
+list b = {1, "5", "hello", 4.0};
 print a[1];     // 2
 a[2] = 6;
-print a;        //{1, 2, 6, 4, 5};
+print a;        // {1, 2, 6, 4, 5}
+print |b|;      // 4
 ```
 
 ## Looping constructs
@@ -63,11 +69,13 @@ The `for` statements in the language can either iterate using an index in a rang
 for(i in 0, 10, 1) { // start, end (exclusive), interval
     print i;
 }
+// outputs 0 to 9
 
 list a = {1, 2, 3, 4, 5};
 for(i in a) {
     print i;
 }
+// outputs 1 to 5
 ```
 
 ## Comments

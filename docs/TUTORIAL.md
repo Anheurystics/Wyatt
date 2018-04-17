@@ -1,5 +1,5 @@
 # Tutorial
-This short tutorial series aims to walk you through the language's features while providing an introduction to basic OpenGL programming concepts. It copies its structure from other OpenGL tutorials out there, sucha as [this](https://learnopengl.com/) and [this](https://open.gl)
+This short tutorial series aims to walk you through the language's features while providing an introduction to basic OpenGL programming concepts. It copies its structure from other OpenGL tutorials out there, such as [this](https://learnopengl.com/) and [this](https://open.gl)
 
 ## Part 0: Set-up and Theory
 Open up the Wyatt development environment. The initial code should look like this
@@ -160,8 +160,10 @@ There are three fundamental matrix transformation operations:
 2. Rotation matrix
 3. Translation matrix
 
-While you could specify these matrices yourselves, it is easier to use helper functions located in the `utils.gfx` file
+While you could specify these matrices yourselves, it is easier to use helper functions located in the `utils.gfx` file (you have to include `utils.gfx` at the very top). Example usages of the helper functions are listed below.
 ```js
+import "utils.gfx"
+
 // Create a matrix that scales the vertices by 0.3, shrinking the object
 mat4 scaleMatrix = mat4_scale(0.3);
 
@@ -169,7 +171,7 @@ mat4 scaleMatrix = mat4_scale(0.3);
 mat4 translationMatrix =  mat4_translation(0.5, 1.0, 2.0);
 ```
 
-However, multiplying these to the vertices directly and reuploading won't work either. The best practice is to specify them as inputs to the vertex shader, and then multiplying there
+However, multiplying these to the vertices directly and re-uploading won't work either. The best practice is to specify them as inputs to the vertex shader, and then multiplying there
 ```js
 vert basic(vec3 pos, vec3 color) {
     mat4 model;
