@@ -38,6 +38,23 @@ This not only makes it easier for the user to understand that vertex data is bei
 ## Basic Syntax
 Wyatt's syntax is similar to those of JavaScript and Python.
 
+### Printing
+Any variable or literal can be printed to the log window below.
+```js
+print 12;      // 12
+             
+print a;       // 5.0
+print "hello"; // hello
+```
+
+### Importing
+Code written from other files (usually functions) can be reused using the `import` keyword.
+```js
+import "mycode.gfx";
+
+// Any functions from mycode.gfx can now be used in this file
+```
+
 ## Type System and Declaration
 The built-in primitives are `int`, `float` (both 32-bit), `bool`, and `string`.
 
@@ -144,6 +161,19 @@ vec3 v = [1, 1, 1];
 
 // Since matrices are row-major, the vector has to be on the left-hand side 
 print v * m;    // [1, 2, 3]
+```
+
+## Functions
+Functions can be defined using the `func` keyword. The argument's type has to be specified, although the `var` type could be used for varying types.
+
+```js
+func add(int a, int b) {
+    return a + b;
+}
+
+func normalize(var v) {
+    return v / |v|;
+}
 ```
 
 ## 3D programming constructs

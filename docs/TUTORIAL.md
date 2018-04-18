@@ -10,7 +10,7 @@ func init() {
 func loop() {
 }
 ```
-From here we can begin to render our first triangle.
+From here you can begin to render the first triangle.
 
 OpenGL operate on the **graphics rendering pipeline**. This rendering pipeline is responsible for turning the 3D primitives defined by the user into 2D images on the screen using a series of steps.
 
@@ -18,7 +18,7 @@ The simplified rendering pipeline steps you would need to know would be as follo
 
 **1. Vertex data preparation**
 
-This is where the programmer specifies the shapes to draw, by specifying the different **attributes** such as position, color, etc. The name and type (float, vector) of each attribute will also be specified by the user. For example, if we want to specify a 3D polygon with lighting effects on it, then we have to specify the position, color, and normal attributes.
+This is where the programmer specifies the shapes to draw, by specifying the different **attributes** such as position, color, etc. The name and type (float, vector) of each attribute will also be specified by the user. For example, to specify a 3D polygon with lighting effects on it, then one has to specify the position, color, and normal attributes.
 
 **2. Vertex shader**
 
@@ -32,12 +32,12 @@ The fragment shader gets the output of the vertex shader and interpolates betwee
 
 The default framebuffer is the screen, but can be specified by the user. This is the step where fragments are either drawn onto the screen or discarded (if they are out of bounds).
 
-The screen follows what is called the **normalized device coordinate** system, where the leftmost and rightmost sides are -X and +X, the topmost and bottommost sides are +Y and -Y. While we will be initially defining our geometry using this system, we will be granted more freedom when we start using matrices to transform them.
+The screen follows what is called the **normalized device coordinate** system, where the leftmost and rightmost sides are -X and +X, the topmost and bottommost sides are +Y and -Y. While shapes will initially be defined this system, the introduction of matrices in the later tutorial will provide with more flexibility and freedom.
 
 <div style="page-break-after: always;"></div>
 
 ## Part 1: Flat-colored Triangle
-To render a simple white triangle, we first have to specify its appropriate vertex data. A `buffer` object is a container for all vertex data and attributes, so let's make one now.
+To render a simple white triangle, first specify its appropriate vertex data. A `buffer` object is a container for all vertex data and attributes, so let's make one now.
 ```js
 buffer triangle;
 
@@ -47,15 +47,19 @@ func init() {
 func loop() {
 }
 ```
+The attribute's name are specified by the user, but conventions should be followed to avoid confusion. The types of an attribute's elements can either be `float`, `vec2`, `vec3`, or `vec4`.
+
 Each of the buffer's attributes can be treated as a list, where the first element of attribute `xyz` can be thought of as the attribute of the first vertex, and so on. Attributes can be declared and added to on the spot. 
 
-So if we want to declare our triangle with three vertices at `[1.0, -1.0, 0.0], [0.0, 1.0, 0.0], [-1.0, -1.0, 0.0]` we first have to label it with an attribute name (`pos`, for instance), and then add data to it.
+To declare a flat triangle with three vertices at `[1.0, -1.0, 0.0], [0.0, 1.0, 0.0], [-1.0, -1.0, 0.0]`, label it first with an attribute name (`pos`), and then add data to it.
 ```js
 func init() {
     triangle.pos += [1.0, -1.0, 0.0], [0.0, 1.0, 0.0], [-1.0, -1.0, 0.0];   
 }
 ```
-With our attributes set, it's time to write our shaders. We will create a vertex shader that simply takes the input position attribute and outputs it as the final position output. This is called a pass-through shader
+With the attributes set, it's time to write the shaders. Attributes by themselves are just chunks of data-- the shaders are the one responsible for determining how those data will be manipulated. Shaders should be specified before the init and loop functions, and the global variables.
+
+Create a vertex shader that simply takes the input position attribute and outputs it as the final position output. By default, the vertex shader only outputs a `FinalPosition` (the position of the vertex on the screen)
 ```js
 vert basic(vec3 pos) {
     func main() {
@@ -63,10 +67,9 @@ vert basic(vec3 pos) {
     }
 }(vec4 FinalPosition)
 ```
-Shaders should be specified before the init and loop functions, and the global variables.
-The FinalPosition will always be a `vec4`, so we have to "convert" our `vec3` into one beforehand.
+The `FinalPosition` will always be a `vec4`, so a conversion to `vec3` (adding a `1.0` as the fourth element at the end) is needed.
 
-Our fragment shader wil determine the output color. Since we want to have a flat-colored triangle, we hardcode the output color as white.
+Crate a fragment shader that simply outputs the color white. By default, the fragment shader only outputs a `FinalColor` (the color of the shaded fragment produced by the vertices)
 ```js
 frag basic() {
     func main() {
@@ -90,14 +93,14 @@ func loop() {
 <div style="page-break-after: always;"></div>
 
 ## Part 2: Colored triangle
-We could simply change FinalColor to the desired color we want, but this would only allow us to produce flat colored triangles. If we want each vertex to have a different color, thus giving the triangle a gradient effect, we have to specify color as another attribute.
+One could simply change `FinalColor` to the desired color, but this would only produce flat colored triangles. To give each vertex a different color, giving the triangle a gradient effect, it has to be specified as another attribute.
 ```js
 func init() {
     triangle.pos += [1.0, -1.0, 0.0], [0.0, 1.0, 0.0], [-1.0, -1.0, 0.0];   
     triangle.col += [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0];
 }
 ```
-The three vertices will now be colored red, green, and blue. We then have to modify our shaders to make sure that the attribute data `col` will be used in determining the final fragment color.
+The three vertices will now be colored red, green, and blue. Modify the shaders such that the attribute data `col` will be used in determining the final fragment color.
 ```js
 vert basic(vec3 pos, vec3 col) {
     func main() {
@@ -117,6 +120,8 @@ Three things happened here:
 2. `Color` is declared both as an output of the vertex shader and an input of the fragment shader. Normally, any vertex shader outputs should also be defined as fragment shader inputs.
 3. `Color` is used by the fragment shader to determine the final output color.
 
+The triangle's vertices will now have different colors.
+
 ![Colored triangle][color_tri]
 
 [color_tri]: images/color_tri.png
@@ -124,7 +129,7 @@ Three things happened here:
 <div style="page-break-after: always;"></div>
 
 ## Part 2.5: Indexing
-Since shapes are defined using triangles, defining more complex shapes (in this example, a square) would require us to specify six vertices. In some cases, this means specifying redundant data (ie. if two vertices are specified with the same attributes)
+Since shapes are defined using triangles, defining more complex shapes (in this example, a quad) would require specifying six vertices. In some cases, this means having redundant data (ie. if two vertices are specified with the same attributes)
 ```js
 func init() {
     tri.pos += [1.0, -1.0, 0.0], [-1.0, 1.0, 0.0], [-1.0, -1.0, 0.0],
@@ -146,6 +151,8 @@ func init() {
     tri.indices += 0, 1, 2, 1, 0, 3;
 }
 ```
+Indexing is useful for avoiding reusing data, but if two vertices have similar values in **some** attributes but not all, then indexing would not work perfectly.
+
 ![Quad][quad]
 
 [quad]: images/quad.png
@@ -153,14 +160,14 @@ func init() {
 <div style="page-break-after: always;"></div>
 
 ## Part 3: Transformation
-If we want to move our geometry, we can't just modify the vertices manually per loop and re-upload. We have to use a construct called a `matrix` to perform operations on each individual vertex position.
+To move the shape, modifying the vertices manually per loop and re-uploading would work, but would be highly inefficient. Matrices, used in linear algebra, could be used to perform operations (transformations) on each individual vertex position.
 
 There are three fundamental matrix transformation operations:
 1. Scale matrix
 2. Rotation matrix
 3. Translation matrix
 
-While you could specify these matrices yourselves, it is easier to use helper functions located in the `utils.gfx` file (you have to include `utils.gfx` at the very top). Example usages of the helper functions are listed below.
+While you could specify these matrices yourselves, it is easier to use helper functions located in the `utils.gfx` file (you have to include `utils.gfx` at the very beginning of the file). Example usages of the helper functions are listed below.
 ```js
 import "utils.gfx"
 
@@ -183,7 +190,7 @@ vert basic(vec3 pos, vec3 color) {
     }
 }(vec4 FinalPosition, vec3 Color)
 ```
-Members of the shader declared this way are called `uniforms`-- unlike attributes, they retain their value for each vertex/fragment unless specified by the user. They can be thought of as a shader's global variables, and can be set just like a shader's regular members.
+Members of the shader declared this way are called `uniforms`-- unlike attributes, they retain their value for each vertex/fragment unless specified by the user. They can be thought of as a shader's global variables, and can be modified and accessed as if they were the shader's members.
 ```js
 func loop() {
     // Update the model matrix, rotation it by 0.01 radians each frame
@@ -192,7 +199,7 @@ func loop() {
     draw tri using basic;
 }
 ```
-Since repeatedly uploading vertex data would be costly, uniforms are the best way to perform such operations
+Since repeatedly multiplying uploading vertex data would be costly, uniforms are the best way to perform such operations
 
 ![Rotated quad][spin_quad]
 
@@ -201,8 +208,8 @@ Since repeatedly uploading vertex data would be costly, uniforms are the best wa
 <div style="page-break-after: always;"></div>
 
 ## Part 3.5: Camera setup
-If we want to setup a camera in scene to move around and look at different objects, we need to use two more matrices. All-in-all, there are three basic fundamental matrices used in 3D rendering:
-1. Model matrix - this is the one introduced last tutorial, which controls the object's position, size, and rotation in the world. Multiplying by the model matrix places an object in **world space**
+To setup a camera in the scene to move around and look at different objects, two more matrices are needed. All-in-all, there are three basic fundamental matrices used in 3D rendering:
+1. Model matrix - one introduced last tutorial, this controls the object's position, size, and rotation in the world. Multiplying by the model matrix places an object in **world space**
 2. View matrix - the (inverse) model matrix of the camera, and will be used to offset the positions of objects, transforming them from **world space** to **view space**
 3. Projection matrix - this is the characteristics of the camera itself, which specifies how the objects are projected. Orthographic projections are used commonly for 2D games, and perspective projections are used for 3D games. This matrix transforms from **view space** roughly to **clip space**, which roughly corresponds to (save for some extra operations) to the normalized device coordinates (NDC) mentioned earlier.
 
@@ -224,7 +231,7 @@ mat4 persp = mat4_perspective(fov, aspect, near, far);
 // TODO: Ortho
 ```
 
-So if we want use the matrices we created above, we repeat the steps we did for the model matrix.
+To use the matrices created above, repeat the steps performed for the model matrix. and send them as uniforms.
 ```js
 vert basic(vec3 pos, vec3 color) {
     mat4 model;
@@ -261,7 +268,7 @@ func loop() {
 ## Part 4: Textures
 2D textures are usually for projecting images onto geometry to give more detail, instead of relying on just flat colors. To use 2D textures, you have to **UV map** each vertex of a geometry to a certain texture coordinate. This specifies how the image should be "drawn" in the triangle. The texture coordinates are in the range [0, 0] to [1, 1], where [0, 0] is the lower left corner and [1, 1] is the upper right corner.
 
-Texture coordinates (also referred to as UV coordinates) are treated as another attributes, and are specified in a way similar to position and color attributes. So given our quad example:
+Texture coordinates (also referred to as UV coordinates) are treated as another attributes, and are specified in a way similar to position and color attributes. So given the quad example:
 ```js
 vert basic(vec3 pos, vec3 color, vec2 uv) {
     <uniforms>
@@ -284,7 +291,7 @@ func init() {
     tri.indices += 0, 1, 2, 1, 0, 3;
 }
 ```
-Next we'll have to load the texture itself. Supported filetypes are PNG and JPG. The variable type of all textures is `texture2D`, and can be loaded by just assigning the string describing the filename of the image to the texture2D object;
+Next step is to to load the texture itself. Supported filetypes are PNG and JPG. The variable type of all textures is `texture2D`, and can be loaded by just assigning the string describing the filename of the image to the texture2D object;
 ```js
 <shader code>
 
@@ -292,7 +299,7 @@ texture2D tex = "texture.jpg";
 
 func init() {
 ```
-To actually use the texture's colors, we have to pass it as a uniform to the fragment shader. The UV should also be passed from the vertex to the fragment shader, similar to the Color (it will be interpolated). To get the color of a texture at a certain UV coordinate, the `texture` function is used, and it returns a `vec4` (the color)
+To actually use the texture's colors, pass the texture as a uniform to the fragment shader. The UV should also be passed from the vertex to the fragment shader, similar to the Color (it will be interpolated). To get the color of a texture at a certain UV coordinate, the `texture` function is used, and it returns a `vec4` (the color)
 
 ```js
 frag basic(vec3 Color, vec2 UV) {
