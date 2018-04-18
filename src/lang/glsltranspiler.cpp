@@ -344,10 +344,16 @@ string GLSLTranspiler::eval_binary(Binary_ptr bin) {
             break;
         case OP_EXP:
             return "dot(" + lhs + ", " + rhs + ")";
-        // case OP_MOD:
-            // return "cross(" + lhs + ", " + rhs + ")";
+        case OP_MOD:
+            return "cross(" + lhs + ", " + rhs + ")";
         case OP_DIV:
-            op_str = " / " ;
+            op_str = " / ";
+            break;
+        case OP_LESSTHAN:
+            op_str = " < ";
+            break;
+        case OP_GREATERTHAN:
+            op_str = " > " ;
             break;
         default:
             op_str = " ? ";
@@ -382,8 +388,10 @@ string GLSLTranspiler::eval_stmt(Stmt_ptr stmt) {
                     output += eval_stmt(*it);
                 } 
                 output += "}";
-                for(auto it = ifStmt->elseIfBlocks->begin(); it != ifStmt->elseIfBlocks->end(); ++it) {
-                    output += " else " + eval_stmt(*it);
+                if(ifStmt->elseIfBlocks) {
+                    for(auto it = ifStmt->elseIfBlocks->begin(); it != ifStmt->elseIfBlocks->end(); ++it) {
+                        output += " else " + eval_stmt(*it);
+                    }
                 }
                 if(ifStmt->elseBlock != nullptr) {
                     output += " else {\n";
