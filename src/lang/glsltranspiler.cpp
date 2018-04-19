@@ -123,6 +123,39 @@ string GLSLTranspiler::resolve_ident(Ident_ptr ident) {
     return "";
 }
 
+string GLSLTranspiler::resolve_unary(Unary_ptr un) {
+    OpType op = un->op;
+    Expr_ptr rhs = un->rhs;
+
+    string rtype = "";
+    if(rhs->type == NODE_IDENT) {
+        rtype = resolve_ident(static_pointer_cast<Ident>(rhs));
+    } else if(rhs->type == NODE_FLOAT) {
+        rtype = "float";
+    } else if(rhs->type == NODE_INT) {
+        rtype = "int";
+    } else if(rhs->type == NODE_LIST) {
+        vector<Expr_ptr> list;
+        Vector_ptr vec = static_pointer_cast<Vector>(rhs);
+        for(unsigned int i = 0; i < vec->size(); i++) {
+            list.push_back(vec->get(i));
+        }
+        rtype = resolve_vector(list);
+    } else if (rhs->type == NODE_BINARY) {
+        rtype = resolve_binary(static_pointer_cast<Binary>(rhs));
+    }
+    
+    if(op == OP_MINUS) {
+        return rtype;
+    } else if(op == OP_ABS) {
+        if(rtype == "vec2" || rtype == "vec3" || rtype == "vec4") {
+            return "float";
+        } else {
+            return rtype;
+        }
+    }
+}
+
 string GLSLTranspiler::resolve_binary(Binary_ptr bin) {
     OpType op = bin->op;
     Expr_ptr lhs = bin->lhs;
@@ -167,7 +200,8 @@ string GLSLTranspiler::resolve_binary(Binary_ptr bin) {
 
     int n = 0;
     if((ltype == "float"|| ltype == "int") && (rtype == "float"|| rtype == "int")) {
-        n = 1;
+        return "float";
+        // n = 1;
     } else
     if(op == OP_PLUS || op == OP_MINUS || op == OP_MULT) {
         if(ltype == rtype) {
@@ -203,6 +237,11 @@ string GLSLTranspiler::resolve_vector(vector<Expr_ptr> list) {
             Binary_ptr bin = static_pointer_cast<Binary>(expr);
             string type = resolve_binary(bin);
             n += type_to_size(type);
+        } else
+        if(expr->type == NODE_UNARY) {
+            Unary_ptr un = static_pointer_cast<Unary>(expr);
+            string type = resolve_unary(un);
+            n += type_to_size(type);
         }
     }
 
@@ -233,6 +272,14 @@ string GLSLTranspiler::eval_vector(vector<Expr_ptr> list) {
             string type = resolve_binary(bin);
             if(type != "") {
                 output += (n != 0? "," : "") + eval_binary(bin);
+            }
+            n += type_to_size(type);
+        } else 
+        if(expr->type == NODE_UNARY) {
+            Unary_ptr un = static_pointer_cast<Unary>(expr);
+            string type = resolve_unary(un);
+            if(type != "") {
+                output += (n != 0? "," : "") + eval_unary(un);
             }
             n += type_to_size(type);
         }
@@ -285,6 +332,11 @@ string GLSLTranspiler::eval_expr(Expr_ptr expr) {
                 output = eval_binary(static_pointer_cast<Binary>(expr));
                 break;
             }
+        case NODE_UNARY:
+            {
+                output = eval_unary(static_pointer_cast<Unary>(expr));
+                break;
+            }
         case NODE_VECTOR2:
             {
                 Vector2_ptr vec2 = static_pointer_cast<Vector2>(expr);
@@ -326,6 +378,39 @@ string GLSLTranspiler::eval_expr(Expr_ptr expr) {
         output = "(" + output + ")";
     }
     return output;
+}
+
+string GLSLTranspiler::eval_unary(Unary_ptr un) {
+    Expr_ptr rhs = un->rhs;
+    string rtype = "";
+    if(rhs->type == NODE_IDENT) {
+        rtype = resolve_ident(static_pointer_cast<Ident>(rhs));
+    } else if(rhs->type == NODE_FLOAT) {
+        rtype = "float";
+    } else if(rhs->type == NODE_INT) {
+        rtype = "int";
+    } else if(rhs->type == NODE_LIST) {
+        vector<Expr_ptr> list;
+        Vector_ptr vec = static_pointer_cast<Vector>(rhs);
+        for(unsigned int i = 0; i < vec->size(); i++) {
+            list.push_back(vec->get(i));
+        }
+        rtype = resolve_vector(list);
+    } else if (rhs->type == NODE_BINARY) {
+        rtype = resolve_binary(static_pointer_cast<Binary>(rhs));
+    }
+    switch(un->op) {
+        case OP_MINUS:
+            return "-" + eval_expr(rhs);
+        case OP_ABS:
+            if(rtype == "vec2" || rtype == "vec3" || rtype == "vec4") {
+                return "length(" + eval_expr(rhs) + ")";
+            } else {
+                return "abs(" + eval_expr(rhs) + ")";
+            }
+        default:
+            return "???";
+    }
 }
 
 string GLSLTranspiler::eval_binary(Binary_ptr bin) {

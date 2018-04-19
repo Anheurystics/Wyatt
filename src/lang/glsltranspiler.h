@@ -22,11 +22,13 @@ class GLSLTranspiler
         string eval_expr(Expr_ptr);
         string eval_invoke(Invoke_ptr);
         string eval_binary(Binary_ptr);
+        string eval_unary(Unary_ptr);
         string eval_stmt(Stmt_ptr);
         string eval_vector(vector<Expr_ptr>);
         string resolve_ident(Ident_ptr);
         string resolve_vector(vector<Expr_ptr>);
         string resolve_binary(Binary_ptr);
+        string resolve_unary(Unary_ptr);
 
         map<string, string> localtypes;
 };
