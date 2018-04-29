@@ -158,6 +158,59 @@ string Wyatt::Interpreter::print_expr(Expr_ptr expr) {
     }
 }
 
+Expr_ptr vector_binary(Vector_ptr a, OpType op, Vector_ptr b) {
+    unsigned int vector_size = a->size();
+    float aComponents[vector_size];
+    float bComponents[vector_size];
+
+    for(unsigned int i = 0; i < vector_size; i++) {
+        aComponents[i] = resolve_scalar(a->get(i));
+        bComponents[i] = resolve_scalar(b->get(i));
+    }
+
+    if(op == OP_EXP) {
+        float total = 0;
+        for(unsigned int i = 0; i < vector_size; i++) {
+            total += aComponents[i] * bComponents[i];
+        }
+        return make_shared<Float>(total);
+    }
+
+    if(op == OP_MOD) {
+        if(a->size() == 2) {
+            return make_shared<Float>(aComponents[0]*bComponents[1] - aComponents[1]*bComponents[0]);
+        } else if(a->size() == 3) {
+            return make_shared<Vector3>(
+                make_shared<Float>(aComponents[1]*bComponents[2] - aComponents[2]*bComponents[1]),
+                make_shared<Float>(aComponents[2]*bComponents[0] - aComponents[0]*bComponents[2]),
+                make_shared<Float>(aComponents[0]*bComponents[1] - aComponents[1]*bComponents[0])
+            );
+        } else {
+            return nullptr;
+        }
+    }
+
+    Vector_ptr c;
+    if(a->size() == 2) { c = make_shared<Vector2>(nullptr, nullptr); }
+    if(a->size() == 3) { c = make_shared<Vector3>(nullptr, nullptr, nullptr); }
+    if(a->size() == 4) { c = make_shared<Vector4>(nullptr, nullptr, nullptr, nullptr); }
+
+    function<float(float, float)> operation;
+    switch(op) {
+        case OP_PLUS: operation = plus<float>(); break;
+        case OP_MINUS: operation = minus<float>(); break;
+        case OP_MULT: operation = multiplies<float>(); break;
+        case OP_DIV: operation = divides<float>(); break;
+        default: return nullptr;
+    }
+
+    for(unsigned int i = 0; i < a->size(); i++) {
+        c->set(i, make_shared<Float>(operation(aComponents[i], bComponents[i])));
+    }
+
+    return c;
+}
+
 Expr_ptr Wyatt::Interpreter::eval_binary(Binary_ptr bin) {
     Expr_ptr lhs = eval_expr(bin->lhs);
     if(lhs == nullptr) return nullptr;
@@ -189,7 +242,7 @@ Expr_ptr Wyatt::Interpreter::eval_binary(Binary_ptr bin) {
             case OP_PLUS: return make_shared<Int>(a + b);
             case OP_MINUS: return make_shared<Int>(a - b);
             case OP_MULT: return make_shared<Int>(a * b);
-            case OP_DIV: return make_shared<Float>(a / (float)b);
+            case OP_DIV: return make_shared<Float>(a / float(b));
             case OP_MOD: return make_shared<Int>(a % b);
             case OP_EQUAL: return make_shared<Bool>(a == b);
             case OP_LESSTHAN: return make_shared<Bool>(a < b);
@@ -262,23 +315,11 @@ Expr_ptr Wyatt::Interpreter::eval_binary(Binary_ptr bin) {
             default: break;
         }
     }
-
-    if(ltype == NODE_VECTOR2 && rtype == NODE_VECTOR2) {
-        Vector2_ptr a = static_pointer_cast<Vector2>(eval_expr(lhs));
-        Vector2_ptr b = static_pointer_cast<Vector2>(eval_expr(rhs));
-
-        float ax = resolve_scalar(a->x);
-        float ay = resolve_scalar(a->y);
-        float bx = resolve_scalar(b->x);
-        float by = resolve_scalar(b->y);
-
-        switch(op) {
-            case OP_PLUS: return make_shared<Vector2>(make_shared<Float>(ax+bx), make_shared<Float>(ay+by));
-            case OP_MINUS: return make_shared<Vector2>(make_shared<Float>(ax-bx), make_shared<Float>(ay-by));
-            case OP_MULT: return make_shared<Vector2>(make_shared<Float>(ax*bx), make_shared<Float>(ay*by));
-            case OP_EXP: return make_shared<Float>(ax*bx + ay*by);
-            case OP_MOD: return make_shared<Float>(ax*by - ay*bx);
-            default: break;
+    
+    if(ltype == rtype && (ltype == NODE_VECTOR2 || ltype == NODE_VECTOR3 || ltype == NODE_VECTOR4)) {
+        Expr_ptr result = vector_binary(static_pointer_cast<Vector>(eval_expr(lhs)), op, static_pointer_cast<Vector>(eval_expr(rhs)));
+        if(result != nullptr) {
+            return result;
         }
     }
 
@@ -305,27 +346,6 @@ Expr_ptr Wyatt::Interpreter::eval_binary(Binary_ptr bin) {
         }
     }
 
-    if(ltype == NODE_VECTOR3 && rtype == NODE_VECTOR3) {
-        Vector3_ptr a = static_pointer_cast<Vector3>(eval_expr(lhs));
-        Vector3_ptr b = static_pointer_cast<Vector3>(eval_expr(rhs));
-
-        float ax = resolve_scalar(a->x); 
-        float ay = resolve_scalar(a->y);
-        float az = resolve_scalar(a->z);
-        float bx = resolve_scalar(b->x);
-        float by = resolve_scalar(b->y);
-        float bz = resolve_scalar(b->z);
-
-        switch(op) {
-            case OP_PLUS: return make_shared<Vector3>(make_shared<Float>(ax+bx), make_shared<Float>(ay+by), make_shared<Float>(az+bz));
-            case OP_MINUS: return make_shared<Vector3>(make_shared<Float>(ax-bx), make_shared<Float>(ay-by), make_shared<Float>(az-bz));
-            case OP_MULT: return make_shared<Vector3>(make_shared<Float>(ax*bx), make_shared<Float>(ay*by), make_shared<Float>(az*bz));
-            case OP_EXP: return make_shared<Float>(ax*bx + ay*by + az*bz);
-            case OP_MOD: return make_shared<Vector3>(make_shared<Float>(ay*bz-az*by), make_shared<Float>(az*bx-ax*bz), make_shared<Float>(ax*by-ay*bx));
-            default: break;
-        }
-    }
-
     if(ltype == NODE_VECTOR3 && (rtype == NODE_INT || rtype == NODE_FLOAT)) {
         Vector3_ptr a = static_pointer_cast<Vector3>(eval_expr(lhs));
         float ax = resolve_scalar(a->x), ay = resolve_scalar(a->y), az = resolve_scalar(a->z);
@@ -345,28 +365,6 @@ Expr_ptr Wyatt::Interpreter::eval_binary(Binary_ptr bin) {
 
         switch(op) {
             case OP_MULT: return make_shared<Vector3>(make_shared<Float>(bx*a), make_shared<Float>(by*a), make_shared<Float>(bz*a));
-            default: break;
-        }
-    }
-
-    if(ltype == NODE_VECTOR4 && rtype == NODE_VECTOR4) {
-        Vector4_ptr a = static_pointer_cast<Vector4>(eval_expr(lhs));
-        Vector4_ptr b = static_pointer_cast<Vector4>(eval_expr(rhs));
-
-        float ax = resolve_scalar(a->x); 
-        float ay = resolve_scalar(a->y);
-        float az = resolve_scalar(a->z);
-        float aw = resolve_scalar(a->w);
-        float bx = resolve_scalar(b->x);
-        float by = resolve_scalar(b->y);
-        float bz = resolve_scalar(b->z);
-        float bw = resolve_scalar(b->w);
-
-        switch(op) {
-            case OP_PLUS: return make_shared<Vector4>(make_shared<Float>(ax+bx), make_shared<Float>(ay+by), make_shared<Float>(az+bz), make_shared<Float>(aw+bw));
-            case OP_MINUS: return make_shared<Vector4>(make_shared<Float>(ax-bx), make_shared<Float>(ay-by), make_shared<Float>(az-bz), make_shared<Float>(aw-bw));
-            case OP_MULT: return make_shared<Vector4>(make_shared<Float>(ax*bx), make_shared<Float>(ay*by), make_shared<Float>(az*bz), make_shared<Float>(aw*bw));
-            case OP_EXP: return make_shared<Float>(ax*bx + ay*by + az*bz + aw*bw);
             default: break;
         }
     }
