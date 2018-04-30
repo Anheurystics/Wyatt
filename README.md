@@ -1,12 +1,12 @@
 # Wyatt 
 Wyatt is a programming language and a development environment for graphics programming. 
 
-> **WARNING**: While the basic features, it is still in an early and buggy alpha state
+> **WARNING**: While the basic features are there, it is still in an early and buggy alpha state
 
 # Getting Started
-Starting the program is as simple as running the generated binary. The `docs` directory contain useful information on how to use the programming language.
+Starting the program is as simple as running the binary executable. The `docs` directory contain useful information on how to use the programming language.
 
-If you are an experienced OpenGL developer, then `docs/MANUAL.md` will help orient you with the changes. If you are new to graphics progrmaming, then `docs/TUTORIAL.md` will introduce the concepts.
+If you are an experienced OpenGL developer, then `docs/MANUAL.md` will teach you how the language abstracts the OpenGL API. If you are new to graphics progrmaming, then `docs/TUTORIAL.md` will introduce you to the concepts.
 
 ## Hello Triangle
 ```python
