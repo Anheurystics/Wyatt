@@ -40,20 +40,24 @@ func loop(){
 # Building 
 Building Wyatt requires
 1. `g++` (MinGW for Windows systems) and `make`
-1. Qt Creator 5.3.1, on Qt 5.9.0 
+1. Qt Creator and Qt5 SDK
 1. Flex 2.6
 1. Bison 3.0.4
 1. `stb_image.h` (place it in src/lang)
 
 (While other version of the above tools might work, the ones listed above are the ones I personally use to build)
 
-To build, run `make` on the root of the directory. The build type (Release or Debug) can also be specified (the build defaults to Release).
+To first generate the Makefiles, run `qmake` on the root directory. Then, run `make`.
+
+The build type (Release or Debug) can also be specified (the build defaults to Release).
 ```
 > make -f Makefile.Release
 > make -f Makefile.Debug
 ```
 
 The resulting executable can be found in the release and debug directories.
+
+Alternatively, if you have QtCreator installed, you can open the project file (`wyatt.pro`) and build from there.
 
 # License
 Wyatt (both the IDE and language) is licensed under the GPLv3 license.
