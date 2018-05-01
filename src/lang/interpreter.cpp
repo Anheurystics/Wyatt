@@ -4,7 +4,7 @@
 #include <memory>
 
 #define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
+#include "stb_image.h"
 
 int resolve_int(Expr_ptr expr) {
     return static_pointer_cast<Int>(expr)->value;
@@ -781,6 +781,8 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
                         return list;
                     }
                 }
+
+                break;
             }
 
         case NODE_BOOL:
@@ -811,7 +813,9 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
                     }
                     list->literal = false;
                     return list;
-                }
+               }
+
+                break;
             }
 
         case NODE_BUFFER:
@@ -1068,6 +1072,8 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
                     }
                     return nullptr;
                 }
+
+                break;
             }
 
         case NODE_BINARY:
@@ -1147,6 +1153,8 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
 
         default: logger->log(node, "ERROR", "Illegal expression"); return nullptr;
     }
+
+    return nullptr;
 }
 
 Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {

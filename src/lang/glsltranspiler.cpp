@@ -144,16 +144,14 @@ string GLSLTranspiler::resolve_unary(Unary_ptr un) {
     } else if (rhs->type == NODE_BINARY) {
         rtype = resolve_binary(static_pointer_cast<Binary>(rhs));
     }
-    
-    if(op == OP_MINUS) {
-        return rtype;
-    } else if(op == OP_ABS) {
+
+    if(op == OP_ABS) {
         if(rtype == "vec2" || rtype == "vec3" || rtype == "vec4") {
-            return "float";
-        } else {
-            return rtype;
+            rtype = "float";
         }
     }
+
+    return rtype;
 }
 
 string GLSLTranspiler::resolve_binary(Binary_ptr bin) {
