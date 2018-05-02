@@ -38,26 +38,28 @@ func loop(){
 ```
 
 # Building 
+## Using CMake
 Building Wyatt requires
-1. `g++` (MinGW for Windows systems) and `make`
-1. Qt Creator and Qt5 SDK
+1. gcc compiler and make
 1. Flex 2.6
 1. Bison 3.0.4
-1. `stb_image.h` (place it in src/lang)
+1. CMake 3.10
+1. Qt5 SDK
+1. `stb_image.h` (place it in CMake's build directory)
 
 (While other version of the above tools might work, the ones listed above are the ones I personally use to build)
 
-To first generate the Makefiles, run `qmake` on the root directory. Then, run `make`.
-
-The build type (Release or Debug) can also be specified (the build defaults to Release).
+Clone the repo, create a `build` folder inside it, then run CMake on the source directory. Then, run make on the generated Makefile in the build directory.
 ```
-> make -f Makefile.Release
-> make -f Makefile.Debug
+git clone https://github.com/Anheurystics/Wyatt
+mkdir build && cd build
+cmake ..
+make
+./wyatt
 ```
 
-The resulting executable can be found in the release and debug directories.
-
-Alternatively, if you have QtCreator installed, you can open the project file (`wyatt.pro`) and build from there.
+## Using Qt Creator / QMake
+Alternatively, if you have QtCreator installed, you can open the project file (`wyatt.pro`) and build from there. You can also use qmake to generate the Makefile, although the Makefile would be in the root directory, with builds going in separate release and debug directories.
 
 # License
 Wyatt (both the IDE and language) is licensed under the GPLv3 license.
