@@ -15,7 +15,6 @@ using namespace std;
 
 %option noyywrap
 %option c++
-%option outfile="scanner.cpp"
 %option yyclass="Scanner"
 %option prefix="Wyatt_"
 

@@ -25,17 +25,17 @@ linux-g++ {
     CONFIG += debug_and_release debug_and_release_target
 }
 
-flexsource.commands = flex ${QMAKE_FILE_IN}
+flexsource.commands = flex --outfile=build/scanner.cpp ${QMAKE_FILE_IN}
 flexsource.input = FLEXSOURCES
-flexsource.output = scanner.cpp
+flexsource.output = build/scanner.cpp
 flexsource.variable_out = SOURCES
 flexsource.name = Flex Sources ${QMAKE_FILE_IN}
 flexsource.CONFIG += target_predeps
 QMAKE_EXTRA_COMPILERS += flexsource
 
-bisonsource.commands = bison ${QMAKE_FILE_IN}
+bisonsource.commands = bison --defines=build/parser.hpp --output=build/parser.cpp ${QMAKE_FILE_IN}
 bisonsource.input = BISONSOURCES
-bisonsource.output = parser.cpp
+bisonsource.output = build/parser.cpp
 bisonsource.variable_out = SOURCES
 bisonsource.name = Bison Sources ${QMAKE_FILE_IN}
 bisonsource.CONFIG += target_predeps
@@ -43,11 +43,13 @@ QMAKE_EXTRA_COMPILERS += bisonsource
 
 bisonheader.commands = echo
 bisonheader.input = BISONSOURCES
-bisonheader.output = parser.hpp stack.hh location.hh position.hh
+bisonheader.output = build/parser.hpp build/stack.hh build/location.hh build/position.hh
 bisonheader.variable_out = HEADERS
 bisonheader.name = Bison Headers ${QMAKE_FILE_IN}
 bisonheader.CONFIG += target_predeps no_link
 QMAKE_EXTRA_COMPILERS += bisonheader
+
+INCLUDEPATH += build
 
 SOURCES += \
     src/main.cpp \

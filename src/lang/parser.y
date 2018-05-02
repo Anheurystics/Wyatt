@@ -1,7 +1,6 @@
 %skeleton "lalr1.cc"
 %require "3.0"
 %defines
-%output "parser.cpp"
 %define parser_class_name { Parser }
 
 %define api.token.constructor
