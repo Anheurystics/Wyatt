@@ -8,6 +8,7 @@ Starting the program is as simple as running the binary executable. The `docs` d
 
 If you are an experienced OpenGL developer, then `docs/MANUAL.md` will teach you how the language abstracts the OpenGL API. If you are new to graphics progrmaming, then `docs/TUTORIAL.md` will introduce you to the concepts.
 
+![alt text](docs/images/screenshot.png "Wyatt screenshot")
 ## Hello Triangle
 ```python
 vert basic(vec3 pos) {
