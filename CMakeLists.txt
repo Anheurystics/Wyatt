@@ -44,3 +44,9 @@ add_executable(wyatt ${SOURCES} ${BISON_WyattParser_OUPUTS} ${FLEX_WyattLexer_OU
 target_link_libraries(wyatt ${LIBS})
 
 qt5_use_modules(wyatt Core Gui Widgets)
+
+if(WIN32)
+    find_program(WINDEPLOYQT_EXECUTABLE NAMES windeployqt HINTS ${QTDIR} ENV QTDIR PATH_SUFFIXES bin)
+    add_custom_command(TARGET wyatt POST_BUILD
+    COMMAND ${WINDEPLOYQT_EXECUTABLE} --release $<TARGET_FILE:wyatt>)
+endif()
