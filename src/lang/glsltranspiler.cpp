@@ -432,10 +432,10 @@ string GLSLTranspiler::eval_binary(Binary_ptr bin) {
         case OP_DIV:
             op_str = " / ";
             break;
-        case OP_LESSTHAN:
+        case OP_LTHAN:
             op_str = " < ";
             break;
-        case OP_GREATERTHAN:
+        case OP_GTHAN:
             op_str = " > " ;
             break;
         default:

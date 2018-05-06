@@ -43,15 +43,10 @@ Wyatt::Interpreter::Interpreter(LogWindow* logger): scanner(&line, &column), par
     loop_invoke = make_shared<Invoke>(make_shared<Ident>("loop"), make_shared<ArgList>(nullptr));
 }
 
-#define clear_map(name) \
-    for(auto it = name.begin(); it != name.end(); ++it) { \
-        name.erase(it); \
-    } \
-
 void Wyatt::Interpreter::reset() {
-    clear_map(shaders);
-    clear_map(functions);
-    clear_map(layouts);
+    shaders.clear();
+    functions.clear();
+    layouts.clear();
 
     globals.clear();
     imports.clear();
@@ -66,7 +61,6 @@ void Wyatt::Interpreter::reset() {
 
     line = 1;
     column = 1;
-
 }
 
 string Wyatt::Interpreter::print_expr(Expr_ptr expr) {
@@ -248,8 +242,8 @@ Expr_ptr Wyatt::Interpreter::eval_binary(Binary_ptr bin) {
             case OP_DIV: return make_shared<Float>(a / float(b));
             case OP_MOD: return make_shared<Int>(a % b);
             case OP_EQUAL: return make_shared<Bool>(a == b);
-            case OP_LESSTHAN: return make_shared<Bool>(a < b);
-            case OP_GREATERTHAN: return make_shared<Bool>(a > b);
+            case OP_LTHAN: return make_shared<Bool>(a < b);
+            case OP_GTHAN: return make_shared<Bool>(a > b);
             case OP_NEQUAL: return make_shared<Bool>(a != b);
             case OP_LEQUAL: return make_shared<Bool>(a <= b);
             case OP_GEQUAL: return make_shared<Bool>(a >= b);
@@ -267,8 +261,8 @@ Expr_ptr Wyatt::Interpreter::eval_binary(Binary_ptr bin) {
             case OP_MULT: return make_shared<Float>(a * b);
             case OP_DIV: return make_shared<Float>(a / b);
             case OP_EQUAL: return make_shared<Bool>(a == b);
-            case OP_LESSTHAN: return make_shared<Bool>(a < b);
-            case OP_GREATERTHAN: return make_shared<Bool>(a > b);
+            case OP_LTHAN: return make_shared<Bool>(a < b);
+            case OP_GTHAN: return make_shared<Bool>(a > b);
             case OP_NEQUAL: return make_shared<Bool>(a != b);
             case OP_LEQUAL: return make_shared<Bool>(a <= b);
             case OP_GEQUAL: return make_shared<Bool>(a >= b);
@@ -286,8 +280,8 @@ Expr_ptr Wyatt::Interpreter::eval_binary(Binary_ptr bin) {
             case OP_MULT: return make_shared<Float>(a * b);
             case OP_DIV: return make_shared<Float>(a / b);
             case OP_EQUAL: return make_shared<Bool>(a == b);
-            case OP_LESSTHAN: return make_shared<Bool>(a < b);
-            case OP_GREATERTHAN: return make_shared<Bool>(a > b);
+            case OP_LTHAN: return make_shared<Bool>(a < b);
+            case OP_GTHAN: return make_shared<Bool>(a > b);
             case OP_NEQUAL: return make_shared<Bool>(a != b);
             case OP_LEQUAL: return make_shared<Bool>(a <= b);
             case OP_GEQUAL: return make_shared<Bool>(a >= b);
@@ -311,8 +305,8 @@ Expr_ptr Wyatt::Interpreter::eval_binary(Binary_ptr bin) {
         int compare = a.compare(b);
         switch(op) {
             case OP_EQUAL: return make_shared<Bool>(compare == 0);
-            case OP_LESSTHAN: return make_shared<Bool>(compare < 0);
-            case OP_GREATERTHAN: return make_shared<Bool>(compare > 0);
+            case OP_LTHAN: return make_shared<Bool>(compare < 0);
+            case OP_GTHAN: return make_shared<Bool>(compare > 0);
             case OP_LEQUAL: return make_shared<Bool>(compare <= 0);
             case OP_GEQUAL: return make_shared<Bool>(compare >= 0);
             default: break;
