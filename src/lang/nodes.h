@@ -369,9 +369,13 @@ class Buffer: public Expr {
         map<string, unsigned int> sizes;
         vector<unsigned int> indices;
 
-        shared_ptr<Layout> layout;
+        Layout* layout;
 
         Buffer(): Expr(NODE_BUFFER) {}
+
+        ~Buffer() {
+            delete layout;
+        }
 };
 
 class Texture: public Expr {

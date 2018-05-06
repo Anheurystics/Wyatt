@@ -1177,7 +1177,7 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
 
                 if(decl->datatype->name == "buffer") {
                     Buffer_ptr buf = make_shared<Buffer>();
-                    buf->layout = make_shared<Layout>();
+                    buf->layout = new Layout();
 
                     gl->glGenBuffers(1, &(buf->handle));
                     gl->glGenBuffers(1, &(buf->indexHandle));
@@ -1505,7 +1505,7 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 }
 
                 Buffer_ptr buf = make_shared<Buffer>();
-                buf->layout = make_shared<Layout>();
+                buf->layout = new Layout();
 
                 gl->glGenBuffers(1, &(buf->handle));
                 gl->glGenBuffers(1, &(buf->indexHandle));
@@ -1539,7 +1539,7 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     return nullptr;
                 }
 
-                Layout_ptr layout = buffer->layout;
+                Layout* layout = buffer->layout;
 
                 #define attrib_size(type) ((type == NODE_FLOAT? 1 : (type == NODE_VECTOR2? 2 : (type == NODE_VECTOR3? 3 : (type == NODE_VECTOR4? 4 : 0)))))
                 vector<float>* target = &(buffer->data[upload->attrib->name]);
@@ -1744,7 +1744,7 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
 
                 Buffer_ptr buffer = static_pointer_cast<Buffer>(expr);
                 if(buffer != nullptr) {
-                    Layout_ptr layout = buffer->layout;
+                    Layout* layout = buffer->layout;
                     vector<float> final_vector;
 
                     map<string, unsigned int> attributes = layout->attributes;
