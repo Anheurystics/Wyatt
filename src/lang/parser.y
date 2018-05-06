@@ -49,19 +49,19 @@
 %parse-param { vector<Decl_ptr>* globals }
 %parse-param { map<string, FuncDef_ptr>* functions }
 %parse-param { map<string, ProgramLayout_ptr>* layouts }
-%parse-param { map<string, shared_ptr<ShaderPair>>* shaders }
+%parse-param { map<string, ShaderPair_ptr>* shaders }
 %locations
 %define parse.trace
 %define parse.error verbose
 
 %define api.token.prefix {TOK_}
 
-%token<shared_ptr<Bool>> BOOL;
-%token<shared_ptr<Int>> INT;
-%token<shared_ptr<Float>> FLOAT;
-%token<shared_ptr<String>> STRING;
-%token<shared_ptr<String>> SHADER;
-%token<shared_ptr<Ident>> IDENTIFIER;
+%token<Bool_ptr> BOOL;
+%token<Int_ptr> INT;
+%token<Float_ptr> FLOAT;
+%token<String_ptr> STRING;
+%token<String_ptr> SHADER;
+%token<Ident_ptr> IDENTIFIER;
 
 %token END 0 "eof";
 %token SEMICOLON ";";
@@ -122,28 +122,28 @@
 %nonassoc EQUAL NEQUAL GEQUAL LEQUAL
 %nonassoc LTHAN GTHAN
 
-%type<shared_ptr<Invoke>> invoke;
-%type<shared_ptr<Expr>> expr index
-%type<shared_ptr<Vector2>> vec2
-%type<shared_ptr<Vector3>> vec3
-%type<shared_ptr<Vector4>> vec4
-%type<shared_ptr<Dot>> dot;
-%type<shared_ptr<List>> list;
-%type<shared_ptr<Decl>> decl;
+%type<Invoke_ptr> invoke;
+%type<Expr_ptr> expr index
+%type<Vector2_ptr> vec2
+%type<Vector3_ptr> vec3
+%type<Vector4_ptr> vec4
+%type<Dot_ptr> dot;
+%type<List_ptr> list;
+%type<Decl_ptr> decl;
 %type<shared_ptr<vector<pair<string, string>>>> shader_uniforms;
 %type<shared_ptr<map<string, FuncDef_ptr>>> shader_functions;
 %type<shared_ptr<vector<shared_ptr<Decl>>>> layout_attribs;    
 %type<ProgramLayout_ptr> layout;
 
-%type<shared_ptr<Stmt>> stmt stmt_block
-%type<shared_ptr<If>> if_stmt else_if_stmt
-%type<shared_ptr<vector<shared_ptr<If>>>> else_if_chain
-%type<shared_ptr<FuncDef>> function
-%type<shared_ptr<Stmts>> stmts block
-%type<shared_ptr<Shader>> vert_shader frag_shader
-%type<shared_ptr<UploadList>> upload_list
-%type<shared_ptr<ArgList>> arg_list
-%type<shared_ptr<ParamList>> param_list
+%type<Stmt_ptr> stmt stmt_block
+%type<If_ptr> if_stmt else_if_stmt
+%type<shared_ptr<vector<If_ptr>>> else_if_chain
+%type<FuncDef_ptr> function
+%type<Stmts_ptr> stmts block
+%type<Shader_ptr> vert_shader frag_shader
+%type<UploadList_ptr> upload_list
+%type<ArgList_ptr> arg_list
+%type<ParamList_ptr> param_list
 
 %start program
 
@@ -177,7 +177,7 @@ body:
     |
     function body{
         if(functions->find($1->ident->name) == functions->end()) {
-            functions->insert(pair<string, shared_ptr<FuncDef>>($1->ident->name, $1));
+            functions->insert(pair<string, FuncDef_ptr>($1->ident->name, $1));
         } else {
             logger->log($1, "ERROR", "Redefinition of function " + $1->ident->name);
         }
@@ -189,11 +189,11 @@ body:
     |
     vert_shader body{
         if(shaders->find($1->name) == shaders->end()) {
-            shared_ptr<ShaderPair> shaderPair = make_shared<ShaderPair>();
+            ShaderPair_ptr shaderPair = make_shared<ShaderPair>();
             shaderPair->name = $1->name;
             shaderPair->vertex = $1;
 
-            shaders->insert(pair<string, shared_ptr<ShaderPair>>($1->name, shaderPair));
+            shaders->insert(pair<string, ShaderPair_ptr>($1->name, shaderPair));
         } else {
             (*shaders)[$1->name]->vertex = $1;
         }
@@ -201,11 +201,11 @@ body:
     |
     frag_shader body {
         if(shaders->find($1->name) == shaders->end()) {
-            shared_ptr<ShaderPair> shaderPair = make_shared<ShaderPair>();
+            ShaderPair_ptr shaderPair = make_shared<ShaderPair>();
             shaderPair->name = $1->name;
             shaderPair->fragment = $1;
 
-            shaders->insert(pair<string, shared_ptr<ShaderPair>>($1->name, shaderPair));
+            shaders->insert(pair<string, ShaderPair_ptr>($1->name, shaderPair));
         } else {
             (*shaders)[$1->name]->fragment = $1;
         }
@@ -227,7 +227,7 @@ layout: LAYOUT IDENTIFIER OPEN_BRACE layout_attribs CLOSE_BRACE {
     }
     ;
 
-layout_attribs: { $$ = make_shared<vector<shared_ptr<Decl> > >(); }
+layout_attribs: { $$ = make_shared<vector<Decl_ptr>>(); }
     | layout_attribs decl SEMICOLON  {
         $1->push_back($2);
         $$ = $1;
@@ -264,8 +264,8 @@ expr: INT { $$ = $1; set_lines($$,@1,@1); }
     | expr EXP expr { $$ = make_shared<Binary>($1, OP_EXP, $3); set_lines($$, @1, @3); }
     | expr DIV expr { $$ = make_shared<Binary>($1, OP_DIV, $3); set_lines($$, @1, @3); }
     | expr MOD expr { $$ = make_shared<Binary>($1, OP_MOD, $3); set_lines($$, @1, @3); }
-    | expr LTHAN expr { $$ = make_shared<Binary>($1, OP_LESSTHAN, $3); set_lines($$, @1, @3);}
-    | expr GTHAN expr { $$ = make_shared<Binary>($1, OP_GREATERTHAN, $3); set_lines($$, @1, @3); }
+    | expr LTHAN expr { $$ = make_shared<Binary>($1, OP_LTHAN, $3); set_lines($$, @1, @3);}
+    | expr GTHAN expr { $$ = make_shared<Binary>($1, OP_GTHAN, $3); set_lines($$, @1, @3); }
     | expr EQUAL expr { $$ = make_shared<Binary>($1, OP_EQUAL, $3); set_lines($$, @1, @3); }
     | expr NEQUAL expr { $$ = make_shared<Binary>($1, OP_NEQUAL, $3); set_lines($$, @1, @3); }
     | expr LEQUAL expr { $$ = make_shared<Binary>($1, OP_LEQUAL, $3); set_lines($$, @1, @3); }
@@ -351,7 +351,7 @@ if_stmt: IF OPEN_PAREN expr CLOSE_PAREN block { $$ = make_shared<If>($3, $5); }
     | IF OPEN_PAREN expr CLOSE_PAREN stmt SEMICOLON { $$ = make_shared<If>($3, make_shared<Stmts>($5)); }
    ;
 
-else_if_chain: else_if_stmt { $$ = make_shared<vector<shared_ptr<If>>>(); $$->push_back($1); }
+else_if_chain: else_if_stmt { $$ = make_shared<vector<If_ptr>>(); $$->push_back($1); }
     | else_if_chain else_if_stmt { $$ = $1; $1->push_back($2); }
     ;
 
