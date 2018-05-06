@@ -10,7 +10,7 @@ find_package(Qt5Widgets REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 bison_target(WyattParser src/lang/parser.y ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/parser.hpp)
-flex_target(WyattLexer src/lang/scanner.l ${CMAKE_CURRENT_BINARY_DIR}/scanner.cpp)
+flex_target(WyattLexer src/lang/scanner.l ${CMAKE_CURRENT_BINARY_DIR}/scanner.cpp COMPILE_FLAGS "--nounistd")
 
 add_flex_bison_dependency(WyattLexer WyattParser)
 

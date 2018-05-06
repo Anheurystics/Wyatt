@@ -160,55 +160,59 @@ string Wyatt::Interpreter::print_expr(Expr_ptr expr) {
 
 Expr_ptr vector_binary(Vector_ptr a, OpType op, Vector_ptr b) {
     unsigned int vector_size = a->size();
-    float aComponents[vector_size];
-    float bComponents[vector_size];
+	float* aComponents = new float[vector_size];
+	float* bComponents = new float[vector_size];
 
-    for(unsigned int i = 0; i < vector_size; i++) {
+    for (unsigned int i = 0; i < vector_size; i++)
+    {
         aComponents[i] = resolve_scalar(a->get(i));
         bComponents[i] = resolve_scalar(b->get(i));
     }
 
+	Expr_ptr result = nullptr;
+
     if(op == OP_EXP) {
         float total = 0;
-        for(unsigned int i = 0; i < vector_size; i++) {
+        for (unsigned int i = 0; i < vector_size; i++)
+        {
             total += aComponents[i] * bComponents[i];
         }
-        return make_shared<Float>(total);
-    }
-
-    if(op == OP_MOD) {
+        result = make_shared<Float>(total);
+    } else if(op == OP_MOD) {
         if(a->size() == 2) {
-            return make_shared<Float>(aComponents[0]*bComponents[1] - aComponents[1]*bComponents[0]);
+            result = make_shared<Float>(aComponents[0]*bComponents[1] - aComponents[1]*bComponents[0]);
         } else if(a->size() == 3) {
-            return make_shared<Vector3>(
+            result = make_shared<Vector3>(
                 make_shared<Float>(aComponents[1]*bComponents[2] - aComponents[2]*bComponents[1]),
                 make_shared<Float>(aComponents[2]*bComponents[0] - aComponents[0]*bComponents[2]),
                 make_shared<Float>(aComponents[0]*bComponents[1] - aComponents[1]*bComponents[0])
             );
-        } else {
-            return nullptr;
         }
-    }
+	} else {
+		Vector_ptr c;
+		if(a->size() == 2) { c = make_shared<Vector2>(nullptr, nullptr); }
+		if(a->size() == 3) { c = make_shared<Vector3>(nullptr, nullptr, nullptr); }
+		if(a->size() == 4) { c = make_shared<Vector4>(nullptr, nullptr, nullptr, nullptr); }
 
-    Vector_ptr c;
-    if(a->size() == 2) { c = make_shared<Vector2>(nullptr, nullptr); }
-    if(a->size() == 3) { c = make_shared<Vector3>(nullptr, nullptr, nullptr); }
-    if(a->size() == 4) { c = make_shared<Vector4>(nullptr, nullptr, nullptr, nullptr); }
+		function<float(float, float)> operation;
+		switch(op) {
+			case OP_PLUS: operation = plus<float>(); break;
+			case OP_MINUS: operation = minus<float>(); break;
+			case OP_MULT: operation = multiplies<float>(); break;
+			case OP_DIV: operation = divides<float>(); break;
+			default: return nullptr;
+		}
 
-    function<float(float, float)> operation;
-    switch(op) {
-        case OP_PLUS: operation = plus<float>(); break;
-        case OP_MINUS: operation = minus<float>(); break;
-        case OP_MULT: operation = multiplies<float>(); break;
-        case OP_DIV: operation = divides<float>(); break;
-        default: return nullptr;
-    }
+		for(unsigned int i = 0; i < a->size(); i++) {
+			c->set(i, make_shared<Float>(operation(aComponents[i], bComponents[i])));
+		}
 
-    for(unsigned int i = 0; i < a->size(); i++) {
-        c->set(i, make_shared<Float>(operation(aComponents[i], bComponents[i])));
-    }
+		result = c;
+	}
 
-    return c;
+	delete[] aComponents;
+	delete[] bComponents;
+	return result;
 }
 
 Expr_ptr Wyatt::Interpreter::eval_binary(Binary_ptr bin) {
