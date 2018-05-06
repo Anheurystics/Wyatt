@@ -13,6 +13,7 @@
 #include <regex>
 #include <memory>
 
+#include "dummyglfunctions.h"
 #include <QOpenGLFunctions>
 
 #include "scanner.h"
@@ -44,9 +45,11 @@ class Interpreter {
         void execute_loop();
         void compile_program();
         void compile_shader(GLuint*, Shader_ptr);
+        #ifndef HEADLESS
         void setFunctions(QOpenGLFunctions* gl) {
             this->gl = gl;
         }
+        #endif
         void reset();
         void resize(int, int);
 
@@ -77,7 +80,11 @@ class Interpreter {
         FuncDef_ptr loop = nullptr;
         Invoke_ptr init_invoke;
         Invoke_ptr loop_invoke;
+        #ifdef HEADLESS
+        DummyGLFunctions* gl;
+        #else
         QOpenGLFunctions* gl;
+        #endif
 
         string print_expr(Expr_ptr);
         Expr_ptr eval_expr(Expr_ptr);

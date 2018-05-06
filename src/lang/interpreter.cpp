@@ -1,4 +1,5 @@
 #include "interpreter.h"
+#include "DummyGLFunctions.h"
 #include <sstream>
 #include <algorithm>
 #include <memory>
@@ -63,7 +64,10 @@ void Wyatt::Interpreter::reset() {
     current_program = nullptr;
     init = nullptr;
     loop = nullptr;
-    gl = nullptr;
+    gl = nullptr; 
+    #ifdef HEADLESS
+    gl = new DummyGLFunctions();
+    #endif
 
     line = 1;
     column = 1;
@@ -1296,7 +1300,7 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                     float data[4];
                                     data[0] = resolve_scalar(mat2->v0->x); data[1] = resolve_scalar(mat2->v0->y);
                                     data[2] = resolve_scalar(mat2->v1->x); data[3] = resolve_scalar(mat2->v1->y);
-                                    gl->glUniform2fv(loc, 1, data);
+                                    gl->glUniformMatrix2fv(loc, 1, false, data);
                                 } else {
                                     logger->log(dot, "ERROR", "Uniform upload mismatch: vec4 required for " + dot->name + " of shader " + current_program_name);
                                     return nullptr;

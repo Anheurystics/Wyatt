@@ -75,7 +75,9 @@ void CustomGLWidget::paintGL() {
         interpreter->reset();
         interpreter->parse(code, &(interpreter->status));
         interpreter->load_imports();
+        #ifndef HEADLESS
         interpreter->setFunctions(this);
+        #endif
         interpreter->prepare();
         interpreter->compile_program();
         interpreter->execute_init();
