@@ -25,6 +25,7 @@
 #include "scopelist.h"
 #include "codeeditor.h"
 
+// #define NO_GL
 namespace Wyatt {
 
 class Interpreter {
@@ -45,11 +46,11 @@ class Interpreter {
         void execute_loop();
         void compile_program();
         void compile_shader(GLuint*, Shader_ptr);
-        #ifndef HEADLESS
         void setFunctions(QOpenGLFunctions* gl) {
+            #ifndef NO_GL
             this->gl = gl;
+            #endif
         }
-        #endif
         void reset();
         void resize(int, int);
 
@@ -57,7 +58,6 @@ class Interpreter {
         Wyatt::Scanner scanner;
         Wyatt::Parser parser;
 
-        typedef shared_ptr<Layout> Layout_ptr;
         typedef shared_ptr<Scope> Scope_ptr;
 
         Scope_ptr globalScope;
@@ -80,10 +80,11 @@ class Interpreter {
         FuncDef_ptr loop = nullptr;
         Invoke_ptr init_invoke;
         Invoke_ptr loop_invoke;
-        #ifdef HEADLESS
-        DummyGLFunctions* gl;
+
+        #ifdef NO_GL
+        DummyGLFunctions* gl = new DummyGLFunctions();
         #else
-        QOpenGLFunctions* gl;
+        QOpenGLFunctions* gl = nullptr;
         #endif
 
         string print_expr(Expr_ptr);

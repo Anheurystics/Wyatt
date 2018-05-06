@@ -1,5 +1,4 @@
 #include "interpreter.h"
-#include "DummyGLFunctions.h"
 #include <sstream>
 #include <algorithm>
 #include <memory>
@@ -64,10 +63,6 @@ void Wyatt::Interpreter::reset() {
     current_program = nullptr;
     init = nullptr;
     loop = nullptr;
-    gl = nullptr; 
-    #ifdef HEADLESS
-    gl = new DummyGLFunctions();
-    #endif
 
     line = 1;
     column = 1;
