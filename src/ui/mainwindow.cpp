@@ -310,7 +310,9 @@ void MainWindow::saveFile() {
 }
 
 void MainWindow::saveAsFile() {
+    openGLWidget->setUpdatesEnabled(false);
     QString selected = QFileDialog::getSaveFileName(this, tr("Save As"), Q_NULLPTR, txtFilter);
+    openGLWidget->setUpdatesEnabled(true);
     if(selected == Q_NULLPTR) {
         return;
     }
