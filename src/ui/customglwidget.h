@@ -18,34 +18,34 @@ class CustomGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
     Q_OBJECT
 
-  public:
-    explicit CustomGLWidget(QWidget *parent);
-    ~CustomGLWidget();
+    public:
+        explicit CustomGLWidget(QWidget *parent);
+        ~CustomGLWidget();
 
-    void initializeGL();
-    void paintGL();
-    void resizeGL(int, int);
+        void initializeGL();
+        void paintGL();
+        void resizeGL(int, int);
 
-    LogWindow *logger;
-    Wyatt::Interpreter *interpreter;
+        LogWindow* logger;
+        Wyatt::Interpreter* interpreter;
 
-    bool codeChanged;
-    bool hasResized;
-    bool autoExecute;
+        bool codeChanged;
+        bool hasResized;
+        bool autoExecute;
 
-    float aspectRatio = 1.0f;
-    QAction *reparseOnResize;
+        float aspectRatio = 1.0f;
+        QAction* reparseOnResize;
 
-    QPushButton *runButton;
+        QPushButton* runButton;
 
-  private:
-    std::string code;
-    QTimer *updateTimer;
+    private:
+        std::string code;
+        QTimer* updateTimer;
 
-  public slots:
-    void updateCode();
-    void toggleAutoExecute(bool);
-    void toggleExecute();
+    public slots:
+        void updateCode();
+        void toggleAutoExecute(bool);
+        void toggleExecute();
 };
 
 #endif // CUSTOMGLWIDGET_H

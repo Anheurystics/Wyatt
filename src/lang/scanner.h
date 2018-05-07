@@ -1,7 +1,7 @@
 #ifndef SCANNER_H
 #define SCANNER_H
 
-#if !defined(yyFlexLexerOnce)
+#if ! defined(yyFlexLexerOnce)
 #undef yyFlexLexer
 #define yyFlexLexer Wyatt_FlexLexer
 #include <FlexLexer.h>
@@ -12,18 +12,17 @@
 
 #include "parser.hpp"
 
-namespace Wyatt
-{
+namespace Wyatt {
 
-class Scanner : public yyFlexLexer
-{
-  public:
-    Scanner(unsigned int *line, unsigned int *column) : line(line), column(column) {}
-    virtual ~Scanner() {}
-    virtual Parser::symbol_type get_next_token();
-    unsigned int *line;
-    unsigned int *column;
+class Scanner: public yyFlexLexer {
+    public:
+        Scanner(unsigned int* line, unsigned int* column): line(line), column(column) {}
+        virtual ~Scanner() {}
+        virtual Parser::symbol_type get_next_token();
+        unsigned int* line;
+        unsigned int* column;
 };
+
 }
 
 #endif

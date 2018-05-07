@@ -9,15 +9,14 @@ class Highlighter : public QSyntaxHighlighter
 {
     Q_OBJECT
 
-  public:
+public:
     Highlighter(QTextDocument *parent = 0);
 
-  protected:
+protected:
     void highlightBlock(const QString &text) override;
 
-  private:
-    struct HighlightingRule
-    {
+private:
+    struct HighlightingRule {
         QRegularExpression pattern;
         QTextCharFormat format;
     };

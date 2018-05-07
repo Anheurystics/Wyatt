@@ -1,9 +1,9 @@
 #include "customglwidget.h"
 
-CustomGLWidget::CustomGLWidget(QWidget *parent = 0) : QOpenGLWidget(parent)
+CustomGLWidget::CustomGLWidget(QWidget *parent = 0): QOpenGLWidget(parent)
 {
     updateTimer = new QTimer(this);
-    updateTimer->setInterval(17);
+    updateTimer ->setInterval(17);
     connect(updateTimer, SIGNAL(timeout()), this, SLOT(update()));
     updateTimer->start();
 
@@ -12,33 +12,24 @@ CustomGLWidget::CustomGLWidget(QWidget *parent = 0) : QOpenGLWidget(parent)
     autoExecute = true;
 }
 
-void CustomGLWidget::toggleAutoExecute(bool autoExecute)
-{
+void CustomGLWidget::toggleAutoExecute(bool autoExecute) {
     this->autoExecute = autoExecute;
-    if (autoExecute)
-    {
+    if(autoExecute) {
         updateTimer->start();
-    }
-    else
-    {
+    } else {
         updateTimer->stop();
     }
 }
 
-void CustomGLWidget::toggleExecute()
-{
-    if (!autoExecute)
-    {
-        QObject *source = QObject::sender();
-        QPushButton *button = qobject_cast<QPushButton *>(source);
-        if (button->text() == "Run")
-        {
+void CustomGLWidget::toggleExecute() {
+    if(!autoExecute) {
+        QObject* source = QObject::sender();
+        QPushButton* button = qobject_cast<QPushButton*>(source);
+        if(button->text() == "Run") {
             codeChanged = true;
             updateTimer->start();
             button->setText("Stop");
-        }
-        else
-        {
+        } else {
             updateTimer->stop();
             button->setText("Run");
         }
@@ -48,16 +39,13 @@ void CustomGLWidget::toggleExecute()
 void CustomGLWidget::updateCode()
 {
     QObject *source = QObject::sender();
-    CodeEditor *editor = qobject_cast<CodeEditor *>(source);
+    CodeEditor *editor = qobject_cast<CodeEditor*>(source);
 
     code = editor->document()->toPlainText().toStdString() + '\n';
-    if (autoExecute)
-    {
+    if(autoExecute) {
         codeChanged = true;
         hasResized = false;
-    }
-    else
-    {
+    } else {
         updateTimer->stop();
         runButton->setText("Run");
     }
@@ -68,10 +56,8 @@ void CustomGLWidget::initializeGL()
     initializeOpenGLFunctions();
 }
 
-void CustomGLWidget::paintGL()
-{
-    if (hasResized)
-    {
+void CustomGLWidget::paintGL() {
+    if(hasResized) {
         hasResized = false;
         return;
     }
@@ -79,8 +65,7 @@ void CustomGLWidget::paintGL()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
 
-    if (codeChanged)
-    {
+    if(codeChanged) {
         codeChanged = false;
 
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -96,8 +81,7 @@ void CustomGLWidget::paintGL()
         interpreter->execute_init();
     }
 
-    if (interpreter->status == 0)
-    {
+    if(interpreter->status == 0) {
         interpreter->execute_loop();
     }
 }
@@ -107,8 +91,7 @@ void CustomGLWidget::resizeGL(int width, int height)
     height = width / aspectRatio;
     resize(width, height);
     interpreter->resize(width, height);
-    if (reparseOnResize->isChecked())
-    {
+    if(reparseOnResize->isChecked()) {
         codeChanged = true;
     }
 

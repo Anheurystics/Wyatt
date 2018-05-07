@@ -23,7 +23,7 @@ MainWindow::MainWindow(QWidget *parent, std::string startupFile) : QMainWindow(p
     actionRestart_on_Resize = new QAction(this);
     actionRestart_on_Resize->setCheckable(true);
 
-    QAction *actionAuto_Execute = new QAction(this);
+    QAction* actionAuto_Execute = new QAction(this);
     actionAuto_Execute->setCheckable(true);
     actionAuto_Execute->setChecked(true);
 
@@ -165,24 +165,20 @@ MainWindow::MainWindow(QWidget *parent, std::string startupFile) : QMainWindow(p
     connect(editors, SIGNAL(currentChanged(int)), this, SLOT(switchTab(int)));
     connect(editors, SIGNAL(tabCloseRequested(int)), this, SLOT(closeTab(int)));
 
-    if (startupFile != "")
-    {
+    if(startupFile != "") {
         QString startupFileStr = QString::fromStdString(startupFile);
         ifstream file;
         file.open(startupFile);
         string contents = "";
         string line = "";
-        while (getline(file, line))
-        {
+        while(getline(file, line)) {
             contents += line + '\n';
         }
         file.close();
         currentEditor->fileInfo.setFile(startupFileStr);
         currentEditor->setPlainText(QString::fromStdString(contents));
         editors->setTabText(0, startupFileStr);
-    }
-    else
-    {
+    } else {
         currentEditor->setPlainText(startupCode);
     }
 
@@ -201,46 +197,35 @@ MainWindow::MainWindow(QWidget *parent, std::string startupFile) : QMainWindow(p
     txtFilter = tr("GFX files (*.gfx)");
 }
 
-void MainWindow::switchAspectRatio()
-{
+void MainWindow::switchAspectRatio() {
     string selected = aspectRatioGroup->checkedAction()->text().toStdString();
-    if (selected == "1:1")
-    {
+    if(selected == "1:1") {
         openGLWidget->aspectRatio = 1.0f;
     }
-    if (selected == "3:2")
-    {
+    if(selected == "3:2") {
         openGLWidget->aspectRatio = 1.5f;
     }
-    if (selected == "4:3")
-    {
-        openGLWidget->aspectRatio = 4.0f / 3.0f;
+    if(selected == "4:3") {
+        openGLWidget->aspectRatio = 4.0f/3.0f;
     }
-    if (selected == "16:9")
-    {
-        openGLWidget->aspectRatio = 16.0 / 9.0f;
+    if(selected == "16:9") {
+        openGLWidget->aspectRatio = 16.0/9.0f;
     }
     openGLWidget->resizeGL(openGLWidget->width(), 0);
 }
 
-void MainWindow::closeTab(int tab)
-{
-    CodeEditor *editor = qobject_cast<CodeEditor *>(editors->widget(tab)->findChild<QPlainTextEdit *>());
+void MainWindow::closeTab(int tab) {
+    CodeEditor* editor = qobject_cast<CodeEditor*>(editors->widget(tab)->findChild<QPlainTextEdit*>());
     QString file = editor->fileInfo.fileName();
     openFiles.erase(file);
 
-    if (editors->count() == 1)
-    {
+    if(editors->count() == 1) {
         switchTab(createNewTab(startupCode));
-    }
-    else if (editors->currentIndex() == tab)
-    {
-        if (tab + 1 < editors->count())
-        {
+    } else
+    if(editors->currentIndex() == tab) {
+        if(tab + 1 < editors->count()) {
             switchTab(tab + 1);
-        }
-        else
-        {
+        } else {
             switchTab(tab - 1);
         }
     }
@@ -248,14 +233,12 @@ void MainWindow::closeTab(int tab)
     editors->removeTab(tab);
 }
 
-void MainWindow::switchTab(int newTab)
-{
-    if (currentEditor != nullptr)
-    {
+void MainWindow::switchTab(int newTab) {
+    if(currentEditor != nullptr) {
         disconnect(currentEditor, SIGNAL(textChanged()), 0, 0);
     }
     editors->setCurrentIndex(newTab);
-    currentEditor = qobject_cast<CodeEditor *>(editors->currentWidget()->findChild<QPlainTextEdit *>());
+    currentEditor = qobject_cast<CodeEditor*>(editors->currentWidget()->findChild<QPlainTextEdit*>());
     highlighter->setDocument(currentEditor->document());
     connect(currentEditor, SIGNAL(textChanged()), openGLWidget, SLOT(updateCode()));
 
@@ -266,25 +249,21 @@ void MainWindow::switchTab(int newTab)
     //interpreter->reparse = true;
 }
 
-void MainWindow::newFile()
-{
+void MainWindow::newFile() {
     switchTab(createNewTab(startupCode));
 }
 
-void MainWindow::openFile()
-{
+void MainWindow::openFile() {
     openGLWidget->setUpdatesEnabled(false);
     QString selected = QFileDialog::getOpenFileName(this, tr("Open File"), Q_NULLPTR, txtFilter);
     openGLWidget->setUpdatesEnabled(true);
-    if (selected == Q_NULLPTR)
-    {
+    if(selected == Q_NULLPTR) {
         return;
     }
 
     QFileInfo selectedFile = QFileInfo(selected);
     QString selectedFileName = selectedFile.fileName();
-    if (openFiles.find(selectedFileName) != openFiles.end())
-    {
+    if(openFiles.find(selectedFileName) != openFiles.end()) {
         switchTab(openFiles[selectedFileName]);
         return;
     }
@@ -293,20 +272,16 @@ void MainWindow::openFile()
     file.open(selected.toStdString());
     string contents = "";
     string line = "";
-    while (getline(file, line))
-    {
+    while(getline(file, line)) {
         contents += line + '\n';
     }
     file.close();
 
-    if (currentEditor->fileInfo.fileName().size() == 0)
-    {
+    if(currentEditor->fileInfo.fileName().size() == 0) {
         currentEditor->fileInfo.setFile(selected);
         currentEditor->setPlainText(QString::fromStdString(contents));
         editors->setTabText(editors->currentIndex(), currentEditor->fileInfo.fileName());
-    }
-    else
-    {
+    } else {
         switchTab(createOpenTab(QString::fromStdString(contents), selected));
     }
 
@@ -315,16 +290,13 @@ void MainWindow::openFile()
     openFiles.insert(pair<QString, int>(selectedFileName, editors->currentIndex()));
 }
 
-void MainWindow::closeFile()
-{
+void MainWindow::closeFile() {
     closeTab(editors->currentIndex());
 }
 
-void MainWindow::saveFile()
-{
+void MainWindow::saveFile() {
     QString filePath = currentEditor->fileInfo.absoluteFilePath();
-    if (filePath.size() == 0)
-    {
+    if(filePath.size() == 0) {
         saveAsFile();
         return;
     }
@@ -337,13 +309,11 @@ void MainWindow::saveFile()
     editors->setTabText(editors->currentIndex(), currentEditor->fileInfo.fileName());
 }
 
-void MainWindow::saveAsFile()
-{
+void MainWindow::saveAsFile() {
     openGLWidget->setUpdatesEnabled(false);
     QString selected = QFileDialog::getSaveFileName(this, tr("Save As"), Q_NULLPTR, txtFilter);
     openGLWidget->setUpdatesEnabled(true);
-    if (selected == Q_NULLPTR)
-    {
+    if(selected == Q_NULLPTR) {
         return;
     }
 
@@ -354,13 +324,12 @@ void MainWindow::saveAsFile()
     openGLWidget->interpreter->workingDir = selected.toStdString();
 }
 
-int MainWindow::createNewTab(QString code)
-{
-    QWidget *paren = new QWidget;
-    QVBoxLayout *layout = new QVBoxLayout;
+int MainWindow::createNewTab(QString code) {
+    QWidget* paren = new QWidget;
+    QVBoxLayout* layout = new QVBoxLayout;
     layout->setMargin(0);
 
-    CodeEditor *newEditor = new CodeEditor(paren);
+    CodeEditor* newEditor = new CodeEditor(paren);
     newEditor->setPlainText(code);
     paren->setLayout(layout);
     layout->addWidget(newEditor);
@@ -369,10 +338,9 @@ int MainWindow::createNewTab(QString code)
     return editors->count() - 1;
 }
 
-int MainWindow::createOpenTab(QString code, QString fileName)
-{
+int MainWindow::createOpenTab(QString code, QString fileName) {
     int newTab = createNewTab(code);
-    CodeEditor *editor = (CodeEditor *)editors->widget(newTab)->findChild<QPlainTextEdit *>();
+    CodeEditor* editor = (CodeEditor*)editors->widget(newTab)->findChild<QPlainTextEdit*>();
     editor->fileInfo.setFile(fileName);
     editors->setTabText(newTab, editor->fileInfo.fileName());
     return newTab;

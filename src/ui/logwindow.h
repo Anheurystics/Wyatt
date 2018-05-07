@@ -10,8 +10,7 @@
 
 using namespace std;
 
-struct LogInfo
-{
+struct LogInfo {
     string label = "";
     unsigned int first_line = 0, last_line = 0;
     unsigned int first_column = 0, last_column = 0;
@@ -19,13 +18,13 @@ struct LogInfo
 
 class LogWindow : public QPlainTextEdit
 {
-  public:
-    explicit LogWindow(QWidget *parent);
+    public:
+        explicit LogWindow(QWidget *parent);
 
-    void log(string);
-    void log(LogInfo info, string);
-    void log(shared_ptr<Node>, string, string);
-    void clear();
+        void log(string);
+        void log(LogInfo info, string);
+        void log(shared_ptr<Node>, string, string);
+        void clear();
 };
 
 #endif // LOGWINDOW_H

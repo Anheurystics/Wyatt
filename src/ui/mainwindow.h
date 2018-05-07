@@ -32,13 +32,13 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
-  public:
+public:
     explicit MainWindow(QWidget *parent = 0, std::string startupFile = "");
     ~MainWindow();
 
     void updateCode();
 
-  private:
+private:
     QAction *actionNew;
     QAction *actionOpen;
     QAction *actionSave;
@@ -67,8 +67,8 @@ class MainWindow : public QMainWindow
     QMenu *menuOptions;
     QMenu *menuAspect_Ratio;
 
-    CodeEditor *currentEditor;
-    Highlighter *highlighter;
+    CodeEditor* currentEditor;
+    Highlighter* highlighter;
 
     map<QString, int> openFiles;
 
@@ -78,9 +78,9 @@ class MainWindow : public QMainWindow
     int createNewTab(QString);
     int createOpenTab(QString, QString);
 
-    QActionGroup *aspectRatioGroup;
+    QActionGroup* aspectRatioGroup;
 
-  private slots:
+private slots:
     void switchAspectRatio();
     void closeTab(int tab);
     void switchTab(int newTab);
