@@ -2,7 +2,7 @@
 
 std::map<string, FuncDef_ptr> CodeEditor::autocomplete_functions;
 
-CodeEditor::CodeEditor(QWidget *parent = 0): QPlainTextEdit(parent)
+CodeEditor::CodeEditor(QWidget *parent = 0) : QPlainTextEdit(parent)
 {
     monoFont.setFamily("Monospace");
     monoFont.insertSubstitution("Monospace", "Courier New");
@@ -19,20 +19,21 @@ CodeEditor::CodeEditor(QWidget *parent = 0): QPlainTextEdit(parent)
     functionHintBox = new FunctionHintBox(this);
 
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
-    connect(this, SIGNAL(updateRequest(QRect, int)), this, SLOT(updateLineNumberArea(QRect,int)));
+    connect(this, SIGNAL(updateRequest(QRect, int)), this, SLOT(updateLineNumberArea(QRect, int)));
     connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(highlightCurrentLine()));
 
     updateLineNumberAreaWidth(0);
     highlightCurrentLine();
 }
 
-void CodeEditor::updateFunctionHint() {
+void CodeEditor::updateFunctionHint()
+{
     string bef = toPlainText().left(textCursor().position()).toStdString();
     reverse(bef.begin(), bef.end());
     QString before = QString::fromStdString(bef);
     QString filtered = before.remove(QRegExp(R"(\)[\w\d\s,_]*\([\w\d_]*\s+cnuf)")).remove(QRegExp(R"("[\(\)\w\d\s._,]*")")).remove(QRegExp(R"([\(\)\w\d\s\._,]*")"));
     QRegExp re(R"(([\w\d\s\.,_]*)\(([\w\d_]+))");
-    re.indexIn(filtered); 
+    re.indexIn(filtered);
     autocompleteText = "";
 
     unsigned int typed_args = re.cap(1).count(",");
@@ -42,19 +43,24 @@ void CodeEditor::updateFunctionHint() {
 
     auto functions = CodeEditor::autocomplete_functions;
     FuncDef_ptr func = nullptr;
-    if(functions.find(function_name) != functions.end()) {
+    if (functions.find(function_name) != functions.end())
+    {
         func = functions[function_name];
     }
 
-    if(before.count("(") > before.count(")") && !filtered.contains("cnuf") && func != nullptr && typed_args < func->params->list.size()) {
+    if (before.count("(") > before.count(")") && !filtered.contains("cnuf") && func != nullptr && typed_args < func->params->list.size())
+    {
         autocompleteText = QString::fromStdString(func->ident->name + "(");
-        for(unsigned int i = 0; i < func->params->list.size(); ++i) {
+        for (unsigned int i = 0; i < func->params->list.size(); ++i)
+        {
             Decl_ptr decl = func->params->list[i];
             autocompleteText += QString::fromStdString(decl->datatype->name + " " + decl->ident->name);
-            if(i == typed_args) {
+            if (i == typed_args)
+            {
                 currentParam = QString::fromStdString(decl->datatype->name + " " + decl->ident->name);
             }
-            if(i + 1 != func->params->list.size()) {
+            if (i + 1 != func->params->list.size())
+            {
                 autocompleteText += ", ";
             }
         }
@@ -62,10 +68,12 @@ void CodeEditor::updateFunctionHint() {
     }
 }
 
-void CodeEditor::keyPressEvent(QKeyEvent* event) {
+void CodeEditor::keyPressEvent(QKeyEvent *event)
+{
     QString toInsert = "";
     QPlainTextEdit::keyPressEvent(event);
-    if(event->key() == Qt::Key_Return) {
+    if (event->key() == Qt::Key_Return)
+    {
         QTextCursor cursor = textCursor();
         cursor.movePosition(QTextCursor::Up, QTextCursor::KeepAnchor, 1);
 
@@ -81,7 +89,8 @@ void CodeEditor::keyPressEvent(QKeyEvent* event) {
         cursor.select(QTextCursor::LineUnderCursor);
         QString currLine = cursor.selectedText();
 
-        if(prevLine.endsWith("{") && !currLine.startsWith("}")) {
+        if (prevLine.endsWith("{") && !currLine.startsWith("}"))
+        {
             toInsert += "\t";
         }
 
@@ -94,7 +103,8 @@ void CodeEditor::keyPressEvent(QKeyEvent* event) {
         cursor.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor, oldPos);
         setTextCursor(cursor);
     }
-    if(event->key() == Qt::Key_BraceLeft) {
+    if (event->key() == Qt::Key_BraceLeft)
+    {
         QTextCursor cursor = textCursor();
         cursor.insertText("}");
         cursor.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor, 1);
@@ -105,18 +115,22 @@ void CodeEditor::keyPressEvent(QKeyEvent* event) {
     functionHintBox->update();
 }
 
-void CodeEditor::mousePressEvent(QMouseEvent* e) {
+void CodeEditor::mousePressEvent(QMouseEvent *e)
+{
     QPlainTextEdit::mousePressEvent(e);
-    if(e->button() == Qt::LeftButton) {
+    if (e->button() == Qt::LeftButton)
+    {
         updateFunctionHint();
     }
     functionHintBox->update();
 }
 
-int CodeEditor::lineNumberAreaWidth() {
+int CodeEditor::lineNumberAreaWidth()
+{
     int digits = 1;
     int max = qMax(1, blockCount());
-    while(max >= 10) {
+    while (max >= 10)
+    {
         max /= 10;
         ++digits;
     }
@@ -125,26 +139,34 @@ int CodeEditor::lineNumberAreaWidth() {
     return space;
 }
 
-void CodeEditor::updateLineNumberAreaWidth(int) {
+void CodeEditor::updateLineNumberAreaWidth(int)
+{
     setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);
 }
 
-void CodeEditor::updateLineNumberArea(const QRect &rect, int dy) {
-    if(dy) {
+void CodeEditor::updateLineNumberArea(const QRect &rect, int dy)
+{
+    if (dy)
+    {
         lineNumberArea->scroll(0, dy);
-    } else {
+    }
+    else
+    {
         lineNumberArea->update(0, rect.y(), lineNumberArea->width(), rect.height());
     }
 
-    if(rect.contains(viewport()->rect())) {
+    if (rect.contains(viewport()->rect()))
+    {
         updateLineNumberAreaWidth(0);
     }
 }
 
-void CodeEditor::highlightCurrentLine() {
+void CodeEditor::highlightCurrentLine()
+{
     QList<QTextEdit::ExtraSelection> extraSelections;
 
-    if(!isReadOnly()) {
+    if (!isReadOnly())
+    {
         QTextEdit::ExtraSelection selection;
         QColor lineColor = QColor(Qt::yellow).lighter(180);
 
@@ -159,17 +181,20 @@ void CodeEditor::highlightCurrentLine() {
     setExtraSelections(extraSelections);
 }
 
-void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event) {
+void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
+{
     QPainter painter(lineNumberArea);
     painter.fillRect(event->rect(), Qt::lightGray);
 
     QTextBlock block = firstVisibleBlock();
     int blockNumber = block.blockNumber();
-    int top = (int) blockBoundingGeometry(block).translated(contentOffset()).top();
+    int top = (int)blockBoundingGeometry(block).translated(contentOffset()).top();
     int bottom = top + (int)blockBoundingRect(block).height();
 
-    while(block.isValid() && top <= event->rect().bottom()) {
-        if(block.isVisible() && bottom >= event->rect().top()) {
+    while (block.isValid() && top <= event->rect().bottom())
+    {
+        if (block.isVisible() && bottom >= event->rect().top())
+        {
             QString number = QString::number(blockNumber + 1);
             painter.setPen(Qt::black);
             painter.setFont(monoFont);
@@ -183,10 +208,12 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event) {
     }
 }
 
-void CodeEditor::functionHintBoxPaintEvent(QPaintEvent*) {
+void CodeEditor::functionHintBoxPaintEvent(QPaintEvent *)
+{
     QPainter painter(functionHintBox);
 
-    if(autocompleteText != "") {
+    if (autocompleteText != "")
+    {
         QRect eventRect = cursorRect();
         painter.setPen(Qt::black);
         painter.setFont(monoFont);
@@ -200,7 +227,8 @@ void CodeEditor::functionHintBoxPaintEvent(QPaintEvent*) {
         monoFont.setBold(true);
         painter.setFont(monoFont);
         int offset = autocompleteText.indexOf(currentParam);
-        if(offset != -1) {
+        if (offset != -1)
+        {
             eventRect.setX(eventRect.x() + (offset * fontMetrics().width(" ")));
             painter.drawText(eventRect, currentParam);
         }
@@ -208,7 +236,8 @@ void CodeEditor::functionHintBoxPaintEvent(QPaintEvent*) {
     }
 }
 
-void CodeEditor::resizeEvent(QResizeEvent *e) {
+void CodeEditor::resizeEvent(QResizeEvent *e)
+{
     QPlainTextEdit::resizeEvent(e);
 
     QRect cr = contentsRect();

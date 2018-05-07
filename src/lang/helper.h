@@ -7,7 +7,7 @@
 
 using namespace std;
 
-string str_from_file(string); 
+string str_from_file(string);
 bool file_exists(string);
 
 #endif

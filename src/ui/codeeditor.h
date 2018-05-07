@@ -1,4 +1,4 @@
-#ifndef CODEEDITOR_H 
+#ifndef CODEEDITOR_H
 #define CODEEDITOR_H
 
 #include <QPlainTextEdit>
@@ -20,10 +20,10 @@ class QWidget;
 class LineNumberArea;
 class FunctionHintBox;
 
-class CodeEditor: public QPlainTextEdit
+class CodeEditor : public QPlainTextEdit
 {
     Q_OBJECT
-public:
+  public:
     explicit CodeEditor(QWidget *parent);
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
@@ -33,21 +33,21 @@ public:
     QFileInfo fileInfo;
     QFont monoFont;
 
-   static std::map<string, FuncDef_ptr> autocomplete_functions;
+    static std::map<string, FuncDef_ptr> autocomplete_functions;
 
-protected:
+  protected:
     void resizeEvent(QResizeEvent *event) override;
-    void keyPressEvent(QKeyEvent*) override;
-    void mousePressEvent(QMouseEvent*) override;
+    void keyPressEvent(QKeyEvent *) override;
+    void mousePressEvent(QMouseEvent *) override;
 
-private slots:
+  private slots:
     void updateLineNumberAreaWidth(int);
     void highlightCurrentLine();
     void updateLineNumberArea(const QRect &, int);
 
-private:
-    LineNumberArea* lineNumberArea;
-    FunctionHintBox* functionHintBox;
+  private:
+    LineNumberArea *lineNumberArea;
+    FunctionHintBox *functionHintBox;
 
     QString autocompleteText;
     QString currentParam;
@@ -57,39 +57,44 @@ private:
 
 class LineNumberArea : public QWidget
 {
-    public:
-        LineNumberArea(CodeEditor* codeEditor): QWidget(codeEditor) {
-            this->codeEditor = codeEditor;
-        }
+  public:
+    LineNumberArea(CodeEditor *codeEditor) : QWidget(codeEditor)
+    {
+        this->codeEditor = codeEditor;
+    }
 
-        QSize sizeHint() const override {
-            return QSize(codeEditor->lineNumberAreaWidth(), 0);
-        }
+    QSize sizeHint() const override
+    {
+        return QSize(codeEditor->lineNumberAreaWidth(), 0);
+    }
 
-    protected:
-        void paintEvent(QPaintEvent *event) {
-            codeEditor->lineNumberAreaPaintEvent(event);
-        }
+  protected:
+    void paintEvent(QPaintEvent *event)
+    {
+        codeEditor->lineNumberAreaPaintEvent(event);
+    }
 
-    private:
-        CodeEditor* codeEditor;
+  private:
+    CodeEditor *codeEditor;
 };
 
 class FunctionHintBox : public QWidget
 {
-    public:
-        FunctionHintBox(CodeEditor* codeEditor): QWidget(codeEditor) {
-            this->codeEditor = codeEditor;
-            setAttribute(Qt::WA_TransparentForMouseEvents);
-        }
+  public:
+    FunctionHintBox(CodeEditor *codeEditor) : QWidget(codeEditor)
+    {
+        this->codeEditor = codeEditor;
+        setAttribute(Qt::WA_TransparentForMouseEvents);
+    }
 
-    protected:
-        void paintEvent(QPaintEvent *event) {
-            codeEditor->functionHintBoxPaintEvent(event);
-        }
+  protected:
+    void paintEvent(QPaintEvent *event)
+    {
+        codeEditor->functionHintBoxPaintEvent(event);
+    }
 
-    private:
-        CodeEditor* codeEditor;
+  private:
+    CodeEditor *codeEditor;
 };
 
 #endif // CODEEDITOR_H

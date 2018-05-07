@@ -26,80 +26,83 @@
 #include "codeeditor.h"
 
 // #define NO_GL
-namespace Wyatt {
+namespace Wyatt
+{
 
-class Interpreter {
-    public:
-        Interpreter(LogWindow*);
+class Interpreter
+{
+  public:
+    Interpreter(LogWindow *);
 
-        int status = -1;
-        string workingDir = "";
+    int status = -1;
+    string workingDir = "";
 
-        unsigned int width, height;
+    unsigned int width, height;
 
-        void parse(string, int*);
-        Expr_ptr execute_stmts(Stmts_ptr);
-        void prepare();
-        void load_imports();
-        void load_import(string);
-        void execute_init();
-        void execute_loop();
-        void compile_program();
-        void compile_shader(GLuint*, Shader_ptr);
-        void setFunctions(QOpenGLFunctions* gl) {
-            #ifndef NO_GL
-            this->gl = gl;
-            #endif
-        }
-        void reset();
-        void resize(int, int);
+    void parse(string, int *);
+    Expr_ptr execute_stmts(Stmts_ptr);
+    void prepare();
+    void load_imports();
+    void load_import(string);
+    void execute_init();
+    void execute_loop();
+    void compile_program();
+    void compile_shader(GLuint *, Shader_ptr);
+    void setFunctions(QOpenGLFunctions *gl)
+    {
+#ifndef NO_GL
+        this->gl = gl;
+#endif
+    }
+    void reset();
+    void resize(int, int);
 
-    private:
-        Wyatt::Scanner scanner;
-        Wyatt::Parser parser;
+  private:
+    Wyatt::Scanner scanner;
+    Wyatt::Parser parser;
 
-        typedef shared_ptr<Scope> Scope_ptr;
+    typedef shared_ptr<Scope> Scope_ptr;
 
-        Scope_ptr globalScope;
-        std::stack<ScopeList_ptr> functionScopeStack;
-        map<string, shared_ptr<ShaderPair>> shaders;
-        map<string, FuncDef_ptr> functions;
-        map<string, ProgramLayout_ptr> layouts;
+    Scope_ptr globalScope;
+    std::stack<ScopeList_ptr> functionScopeStack;
+    map<string, shared_ptr<ShaderPair>> shaders;
+    map<string, FuncDef_ptr> functions;
+    map<string, ProgramLayout_ptr> layouts;
 
-        vector<string> imports;
-        vector<Decl_ptr> globals;
+    vector<string> imports;
+    vector<Decl_ptr> globals;
 
-        int activeTextureSlot = 0;
+    int activeTextureSlot = 0;
 
-        bool breakable = false;
+    bool breakable = false;
 
-        string current_program_name;
-        Program_ptr current_program = nullptr;
+    string current_program_name;
+    Program_ptr current_program = nullptr;
 
-        FuncDef_ptr init = nullptr;
-        FuncDef_ptr loop = nullptr;
-        Invoke_ptr init_invoke;
-        Invoke_ptr loop_invoke;
+    FuncDef_ptr init = nullptr;
+    FuncDef_ptr loop = nullptr;
+    Invoke_ptr init_invoke;
+    Invoke_ptr loop_invoke;
 
-        #ifdef NO_GL
-        DummyGLFunctions* gl = new DummyGLFunctions();
-        #else
-        QOpenGLFunctions* gl = nullptr;
-        #endif
+#ifdef NO_GL
+    DummyGLFunctions *gl = new DummyGLFunctions();
+#else
+    QOpenGLFunctions *gl = nullptr;
+#endif
 
-        string print_expr(Expr_ptr);
-        Expr_ptr eval_expr(Expr_ptr);
-        Expr_ptr eval_binary(shared_ptr<Binary>);
-        Expr_ptr invoke(shared_ptr<Invoke>);
-        Expr_ptr eval_stmt(shared_ptr<Stmt>);
-        Expr_ptr resolve_vector(vector<Expr_ptr>);
+    string print_expr(Expr_ptr);
+    Expr_ptr eval_expr(Expr_ptr);
+    Expr_ptr eval_binary(shared_ptr<Binary>);
+    Expr_ptr invoke(shared_ptr<Invoke>);
+    Expr_ptr eval_stmt(shared_ptr<Stmt>);
+    Expr_ptr resolve_vector(vector<Expr_ptr>);
 
-        LogWindow* logger;
+    LogWindow *logger;
 
-        GLSLTranspiler* transpiler;
+    GLSLTranspiler *transpiler;
 
-        unsigned int line = 1;
-        unsigned int column = 1;
+    unsigned int line = 1;
+    unsigned int column = 1;
 };
 }
 
