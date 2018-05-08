@@ -300,29 +300,66 @@ class Vector4: public Vector {
         }
 };
 
-//TODO: Refactor MatrixN class to derive from VectorN class
-class Matrix2: public Expr {
+class Matrix: public Expr {
+    public:
+        Matrix(NodeType type): Expr(type) {}
+
+        virtual Expr_ptr get_row(unsigned int i) = 0;
+        virtual Expr_ptr get_col(unsigned int i) = 0;
+        virtual void generate_columns() = 0;
+        virtual unsigned int size() = 0;
+};
+
+class Matrix2: public Matrix {
     public:
         Vector2_ptr v0, v1;
         Vector2_ptr c0, c1;
 
-        Matrix2(Vector2_ptr v0, Vector2_ptr v1): Expr(NODE_MATRIX2), v0(v0), v1(v1) {
+        Matrix2(Vector2_ptr v0, Vector2_ptr v1): Matrix(NODE_MATRIX2), v0(v0), v1(v1) {
             generate_columns();
+        }
+
+        Expr_ptr get_row(unsigned int i) {
+            if(i == 0) return v0;
+            if(i == 1) return v1;
+            return nullptr;
+        }
+
+        Expr_ptr get_col(unsigned int i) {
+            if(i == 0) return c0;
+            if(i == 1) return c1;
+            return nullptr;
         }
 
         void generate_columns() {
             c0 = make_shared<Vector2>(Expr_ptr(v0->x), Expr_ptr(v1->x));
             c1 = make_shared<Vector2>(Expr_ptr(v0->y), Expr_ptr(v1->y));
         }
+
+        unsigned int size() {
+            return 2;
+        }
 };
 
-class Matrix3: public Expr {
+class Matrix3: public Matrix {
     public:
         Vector3_ptr v0, v1, v2;
         Vector3_ptr c0, c1, c2;
 
-        Matrix3(Vector3_ptr v0, Vector3_ptr v1, Vector3_ptr v2): Expr(NODE_MATRIX3), v0(v0), v1(v1), v2(v2) {
+        Matrix3(Vector3_ptr v0, Vector3_ptr v1, Vector3_ptr v2): Matrix(NODE_MATRIX3), v0(v0), v1(v1), v2(v2) {
             generate_columns();
+        }
+
+        Expr_ptr get_row(unsigned int i) {
+            if(i == 0) return v0;
+            if(i == 1) return v1;
+            if(i == 2) return v2;
+        }
+
+        Expr_ptr get_col(unsigned int i) {
+            if(i == 0) return c0;
+            if(i == 1) return c1;
+            if(i == 2) return c2;
         }
 
         void generate_columns() {
@@ -330,15 +367,33 @@ class Matrix3: public Expr {
             c1 = make_shared<Vector3>(Expr_ptr(v0->y), Expr_ptr(v1->y), Expr_ptr(v2->y));
             c2 = make_shared<Vector3>(Expr_ptr(v0->z), Expr_ptr(v1->z), Expr_ptr(v2->z));
         }
+
+        unsigned int size() {
+            return 3;
+        }
 };
 
-class Matrix4: public Expr {
+class Matrix4: public Matrix {
     public:
         Vector4_ptr v0, v1, v2, v3;
         Vector4_ptr c0, c1, c2, c3;
 
-        Matrix4(Vector4_ptr v0, Vector4_ptr v1, Vector4_ptr v2, Vector4_ptr v3): Expr(NODE_MATRIX4), v0(v0), v1(v1), v2(v2), v3(v3) {
+        Matrix4(Vector4_ptr v0, Vector4_ptr v1, Vector4_ptr v2, Vector4_ptr v3): Matrix(NODE_MATRIX4), v0(v0), v1(v1), v2(v2), v3(v3) {
             generate_columns();
+        }
+
+        Expr_ptr get_row(unsigned int i) {
+            if(i == 0) return v0;
+            if(i == 1) return v1;
+            if(i == 2) return v2;
+            if(i == 3) return v3;
+        }
+
+        Expr_ptr get_col(unsigned int i) {
+            if(i == 0) return c0;
+            if(i == 1) return c1;
+            if(i == 2) return c2;
+            if(i == 3) return c3;
         }
 
         void generate_columns() {
@@ -346,6 +401,10 @@ class Matrix4: public Expr {
             c1 = make_shared<Vector4>(Expr_ptr(v0->y), Expr_ptr(v1->y), Expr_ptr(v2->y), Expr_ptr(v3->y));
             c2 = make_shared<Vector4>(Expr_ptr(v0->z), Expr_ptr(v1->z), Expr_ptr(v2->z), Expr_ptr(v3->z));
             c3 = make_shared<Vector4>(Expr_ptr(v0->w), Expr_ptr(v1->w), Expr_ptr(v2->w), Expr_ptr(v3->w));
+        }
+
+        unsigned int size() {
+            return 4;
         }
 };
 

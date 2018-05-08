@@ -173,12 +173,12 @@ Expr_ptr vector_binary(Vector_ptr a, OpType op, Vector_ptr b) {
         result = make_shared<Float>(total);
     } else if(op == OP_MOD) {
         if(a->size() == 2) {
-            result = make_shared<Float>(aComponents[0]*bComponents[1] - aComponents[1]*bComponents[0]);
+            result = make_shared<Float>(aComponents[0] * bComponents[1] - aComponents[1] * bComponents[0]);
         } else if(a->size() == 3) {
             result = make_shared<Vector3>(
-                make_shared<Float>(aComponents[1]*bComponents[2] - aComponents[2]*bComponents[1]),
-                make_shared<Float>(aComponents[2]*bComponents[0] - aComponents[0]*bComponents[2]),
-                make_shared<Float>(aComponents[0]*bComponents[1] - aComponents[1]*bComponents[0])
+                make_shared<Float>(aComponents[1] * bComponents[2] - aComponents[2] * bComponents[1]),
+                make_shared<Float>(aComponents[2] * bComponents[0] - aComponents[0] * bComponents[2]),
+                make_shared<Float>(aComponents[0] * bComponents[1] - aComponents[1] * bComponents[0])
             );
         }
 	} else {
@@ -312,80 +312,51 @@ Expr_ptr Wyatt::Interpreter::eval_binary(Binary_ptr bin) {
             default: break;
         }
     }
+
+    #define isvector(type) (type == NODE_VECTOR2 || type == NODE_VECTOR3 || type == NODE_VECTOR4)
     
-    if(ltype == rtype && (ltype == NODE_VECTOR2 || ltype == NODE_VECTOR3 || ltype == NODE_VECTOR4)) {
+    if(ltype == rtype && isvector(ltype)) {
         Expr_ptr result = vector_binary(static_pointer_cast<Vector>(eval_expr(lhs)), op, static_pointer_cast<Vector>(eval_expr(rhs)));
         if(result != nullptr) {
             return result;
         }
     }
 
-    if(ltype == NODE_VECTOR2 && (rtype == NODE_INT || rtype == NODE_FLOAT)) {
-        Vector2_ptr a = static_pointer_cast<Vector2>(eval_expr(lhs));
-        float ax = resolve_scalar(a->x), ay = resolve_scalar(a->y);
-        float b = resolve_scalar(rhs);
+    if((isvector(ltype) && (rtype == NODE_INT || rtype == NODE_FLOAT)) || (ltype == NODE_FLOAT || ltype == NODE_INT) && isvector(rtype)) {
+        bool lvector = isvector(ltype);
 
-        switch(op) {
-            case OP_MULT: return make_shared<Vector2>(make_shared<Float>(ax*b), make_shared<Float>(ay*b));
-            case OP_DIV: return make_shared<Vector2>(make_shared<Float>(ax/b), make_shared<Float>(ay/b));
-            default: break;
+        Vector_ptr a = static_pointer_cast<Vector>(eval_expr(lvector? lhs : rhs));
+        float* components = new float[a->size()];
+        float b = resolve_scalar(lvector? rhs : lhs);
+
+        for(unsigned int i = 0; i < a->size(); i++) {
+            components[i] = resolve_scalar(a->get(i));
         }
-    }
 
-    if((ltype == NODE_INT || ltype == NODE_FLOAT) && rtype == NODE_VECTOR2) {
-        float a = resolve_scalar(lhs);
-        Vector2_ptr b = static_pointer_cast<Vector2>(eval_expr(rhs));
-        float bx = resolve_scalar(b->x), by = resolve_scalar(b->y);
+        Vector_ptr v;
+        if(a->size() == 2) v = make_shared<Vector2>(nullptr, nullptr);
+        if(a->size() == 3) v = make_shared<Vector3>(nullptr, nullptr, nullptr);
+        if(a->size() == 4) v = make_shared<Vector4>(nullptr, nullptr, nullptr, nullptr);
 
-        switch(op) {
-            case OP_MULT: return make_shared<Vector2>(make_shared<Float>(bx*a), make_shared<Float>(by*a));
-            default: break;
+        bool no_op = false;
+
+        function<float(float, float)> operation;
+        if(op == OP_MULT) {
+            operation = multiplies<float>(); 
+        } else if (op == OP_DIV && lvector) {
+            operation = divides<float>(); 
+        } else {
+            no_op = true;
         }
-    }
 
-    if(ltype == NODE_VECTOR3 && (rtype == NODE_INT || rtype == NODE_FLOAT)) {
-        Vector3_ptr a = static_pointer_cast<Vector3>(eval_expr(lhs));
-        float ax = resolve_scalar(a->x), ay = resolve_scalar(a->y), az = resolve_scalar(a->z);
-        float b = resolve_scalar(rhs);
-
-        switch(op) {
-            case OP_MULT: return make_shared<Vector3>(make_shared<Float>(ax*b), make_shared<Float>(ay*b), make_shared<Float>(az*b));
-            case OP_DIV: return make_shared<Vector3>(make_shared<Float>(ax/b), make_shared<Float>(ay/b), make_shared<Float>(az/b));
-            default: break;
-        }
-    }
-
-    if((ltype == NODE_INT || ltype == NODE_FLOAT) && rtype == NODE_VECTOR3) {
-        float a = resolve_scalar(lhs);
-        Vector3_ptr b = static_pointer_cast<Vector3>(eval_expr(rhs));
-        float bx = resolve_scalar(b->x), by = resolve_scalar(b->y), bz = resolve_scalar(b->z);
-
-        switch(op) {
-            case OP_MULT: return make_shared<Vector3>(make_shared<Float>(bx*a), make_shared<Float>(by*a), make_shared<Float>(bz*a));
-            default: break;
-        }
-    }
-
-    if(ltype == NODE_VECTOR4 && (rtype == NODE_INT || rtype == NODE_FLOAT)) {
-        Vector4_ptr a = static_pointer_cast<Vector4>(eval_expr(lhs));
-        float ax = resolve_scalar(a->x), ay = resolve_scalar(a->y), az = resolve_scalar(a->z), aw = resolve_scalar(a->w);
-        float b = resolve_scalar(rhs);
-
-        switch(op) {
-            case OP_MULT: return make_shared<Vector4>(make_shared<Float>(ax*b), make_shared<Float>(ay*b), make_shared<Float>(az*b), make_shared<Float>(aw*b));
-            case OP_DIV: return make_shared<Vector4>(make_shared<Float>(ax/b), make_shared<Float>(ay/b), make_shared<Float>(az/b), make_shared<Float>(aw/b));
-            default: break;
-        }
-    }
-
-    if((ltype == NODE_INT || ltype == NODE_FLOAT) && rtype == NODE_VECTOR4) {
-        float a = resolve_scalar(lhs);
-        Vector4_ptr b = static_pointer_cast<Vector4>(eval_expr(rhs));
-        float bx = resolve_scalar(b->x), by = resolve_scalar(b->y), bz = resolve_scalar(b->z), bw = resolve_scalar(b->w);
-
-        switch(op) {
-            case OP_MULT: return make_shared<Vector4>(make_shared<Float>(bx*a), make_shared<Float>(by*a), make_shared<Float>(bz*a), make_shared<Float>(bw*a));
-            default: break;
+        if(no_op) {
+            delete[] components;
+        } else {
+            for(unsigned int i = 0; i < a->size(); i++) {
+                v->set(i, make_shared<Float>(operation(components[i], b)));
+            }
+            delete[] components;
+            return v;
         }
     }
 

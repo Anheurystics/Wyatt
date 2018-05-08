@@ -5,7 +5,7 @@ wyatt
 appimage/
 debug/
 release/
-build-*/
+build*/
 *.Debug
 *.Release
 .qmake.stash
