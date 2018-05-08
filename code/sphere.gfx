@@ -74,13 +74,8 @@ func init(){
 
 func loop(){
     clear [0.3, 0.3, 0.3];
-    basic.model = mat4_translation(-1, 0, 0);
-    draw buf to target using basic;
     basic.model = mat4_translation(0, 0, 0);
     draw buf to target using basic;
-    basic.model = mat4_translation(1, 0, 0);
-    draw buf to target using basic;
-
     clear;
     screen.tex = target;
     draw scrn;

@@ -774,12 +774,14 @@ Expr::ptr Wyatt::Interpreter::eval_expr(Expr::ptr node) {
                     newlist->first_line = list->first_line;
                     newlist->last_line = list->last_line;
                     return newlist;
-                } else if (list->literal) {
-                    //FIXME: This severly impacts performance
-                    for(unsigned int i = 0; i < list->list.size(); i++) {
-                        list->list[i] = eval_expr(list->list[i]);
+                } else {
+                    if(!list->evaluated) {
+                        //FIXME: This severly impacts performance
+                        for(unsigned int i = 0; i < list->list.size(); i++) {
+                            list->list[i] = eval_expr(list->list[i]);
+                        }
+                        list->evaluated = true;
                     }
-                    list->literal = false;
                     return list;
                }
 
@@ -1630,6 +1632,7 @@ Expr::ptr Wyatt::Interpreter::eval_stmt(Stmt::ptr stmt) {
                        list->list.push_back(rhs);
                     } else {
                         UploadList::ptr uploadList = static_pointer_cast<UploadList>(rhs);
+                        list->evaluated = false;
                         for(unsigned int i = 0; i < uploadList->list.size(); i++) {
                             Expr::ptr expr = eval_expr(uploadList->list[i]);
                             if(expr != nullptr) {

@@ -423,6 +423,7 @@ class List: public Expr {
 
         vector<Expr::ptr> list;
         bool literal = true;
+        bool evaluated = false;
 
         List(Expr::ptr init): Expr(NODE_LIST) {
             if(init != nullptr) {
