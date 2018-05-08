@@ -6,19 +6,19 @@ GLSLTranspiler::GLSLTranspiler(LogWindow* logger): logger(logger)
 }
 
 //TODO: Organize better
-string GLSLTranspiler::transpile(Shader_ptr shader) {
+string GLSLTranspiler::transpile(Shader::ptr shader) {
     this->shader = shader;
 
     string source = "#version 130\n";
 
-    vector<Decl_ptr> new_inputs;
+    vector<Decl::ptr> new_inputs;
     for(auto it = shader->inputs->list.begin(); it != shader->inputs->list.end(); ++it) {
-        Decl_ptr decl = *it;
+        Decl::ptr decl = *it;
         if(decl->datatype->name == "input") {
             if(layouts->find(decl->ident->name) != layouts->end()) {
-                ProgramLayout_ptr layout = layouts->at(decl->ident->name);
+                ProgramLayout::ptr layout = layouts->at(decl->ident->name);
                 for(auto jt = layout->attribs->begin(); jt != layout->attribs->end(); ++jt) {
-                    Decl_ptr attrib = *jt;
+                    Decl::ptr attrib = *jt;
                     source += "in " + attrib->datatype->name + " " + attrib->ident->name + ";\n";
                     new_inputs.push_back(attrib);
                 }
@@ -43,17 +43,17 @@ string GLSLTranspiler::transpile(Shader_ptr shader) {
 
     source += "\n";
 
-    vector<Decl_ptr> new_outputs;
+    vector<Decl::ptr> new_outputs;
     for(auto it = shader->outputs->list.begin(); it != shader->outputs->list.end(); ++it) {
-        Decl_ptr decl = *it;
+        Decl::ptr decl = *it;
         if(decl->ident->name == "FinalPosition") {
             continue;
         }
         if(decl->datatype->name == "output") {
             if(layouts->find(decl->ident->name) != layouts->end()) {
-                ProgramLayout_ptr layout = layouts->at(decl->ident->name);
+                ProgramLayout::ptr layout = layouts->at(decl->ident->name);
                 for(auto jt = layout->attribs->begin(); jt != layout->attribs->end(); ++jt) {
-                    Decl_ptr attrib = *jt;
+                    Decl::ptr attrib = *jt;
                     source += "out " + attrib->datatype->name + " " + attrib->ident->name + ";\n";
                     new_outputs.push_back(attrib);
                 }
@@ -76,8 +76,8 @@ string GLSLTranspiler::transpile(Shader_ptr shader) {
 
         source += type + " " + it->first + "() {\n";
 
-        FuncDef_ptr def = it->second;
-        Stmts_ptr stmts = def->stmts;
+        FuncDef::ptr def = it->second;
+        Stmts::ptr stmts = def->stmts;
         for(auto jt = stmts->list.begin(); jt != stmts->list.end(); ++jt) {
             source += "\t" + eval_stmt(*jt) + "\n";
         }
@@ -104,7 +104,7 @@ int type_to_size(string type) {
     return 0;
 }
 
-string GLSLTranspiler::resolve_ident(Ident_ptr ident) {
+string GLSLTranspiler::resolve_ident(Ident::ptr ident) {
     string name = ident->name;
     if(localtypes.find(name) != localtypes.end()) {
         return localtypes[name];
@@ -113,7 +113,7 @@ string GLSLTranspiler::resolve_ident(Ident_ptr ident) {
         return shader->uniforms->at(name);
     } else {
         for(auto jt = shader->inputs->list.begin(); jt != shader->inputs->list.end(); ++jt) {
-            Decl_ptr decl = *jt;
+            Decl::ptr decl = *jt;
             if(decl->ident->name == name) {
                 return decl->datatype->name;
             }
@@ -123,9 +123,9 @@ string GLSLTranspiler::resolve_ident(Ident_ptr ident) {
     return "";
 }
 
-string GLSLTranspiler::resolve_unary(Unary_ptr un) {
+string GLSLTranspiler::resolve_unary(Unary::ptr un) {
     OpType op = un->op;
-    Expr_ptr rhs = un->rhs;
+    Expr::ptr rhs = un->rhs;
 
     string rtype = "";
     if(rhs->type == NODE_IDENT) {
@@ -135,8 +135,8 @@ string GLSLTranspiler::resolve_unary(Unary_ptr un) {
     } else if(rhs->type == NODE_INT) {
         rtype = "int";
     } else if(rhs->type == NODE_LIST) {
-        vector<Expr_ptr> list;
-        Vector_ptr vec = static_pointer_cast<Vector>(rhs);
+        vector<Expr::ptr> list;
+        Vector::ptr vec = static_pointer_cast<Vector>(rhs);
         for(unsigned int i = 0; i < vec->size(); i++) {
             list.push_back(vec->get(i));
         }
@@ -154,10 +154,10 @@ string GLSLTranspiler::resolve_unary(Unary_ptr un) {
     return rtype;
 }
 
-string GLSLTranspiler::resolve_binary(Binary_ptr bin) {
+string GLSLTranspiler::resolve_binary(Binary::ptr bin) {
     OpType op = bin->op;
-    Expr_ptr lhs = bin->lhs;
-    Expr_ptr rhs = bin->rhs;
+    Expr::ptr lhs = bin->lhs;
+    Expr::ptr rhs = bin->rhs;
 
     string ltype = "";
     if(lhs->type == NODE_IDENT) {
@@ -167,8 +167,8 @@ string GLSLTranspiler::resolve_binary(Binary_ptr bin) {
     } else if(lhs->type == NODE_INT) {
         ltype = "int";
     } else if(lhs->type == NODE_LIST) {
-        vector<Expr_ptr> list;
-        Vector_ptr vec = static_pointer_cast<Vector>(lhs);
+        vector<Expr::ptr> list;
+        Vector::ptr vec = static_pointer_cast<Vector>(lhs);
         for(unsigned int i = 0; i < vec->size(); i++) {
             list.push_back(vec->get(i));
         }
@@ -186,8 +186,8 @@ string GLSLTranspiler::resolve_binary(Binary_ptr bin) {
     } else if(rhs->type == NODE_INT) {
         rtype = "int";
     } else if(rhs->type == NODE_LIST) {
-        vector<Expr_ptr> list;
-        Vector_ptr vec = static_pointer_cast<Vector>(rhs);
+        vector<Expr::ptr> list;
+        Vector::ptr vec = static_pointer_cast<Vector>(rhs);
         for(unsigned int i = 0; i < vec->size(); i++) {
             list.push_back(vec->get(i));
         }
@@ -217,27 +217,27 @@ string GLSLTranspiler::resolve_binary(Binary_ptr bin) {
     return "vec" + to_string(n);
 }
 
-string GLSLTranspiler::resolve_vector(vector<Expr_ptr> list) {
+string GLSLTranspiler::resolve_vector(vector<Expr::ptr> list) {
     int n = 0;
     for(auto it = list.begin(); it != list.end(); ++it) {
-        Expr_ptr expr = *it;
+        Expr::ptr expr = *it;
         string type = type_to_name(expr->type);
         int type_len = type_to_size(type);
         if(type_len != 0) {
             n += type_len;
         } else
         if(expr->type == NODE_IDENT) {
-            Ident_ptr ident = static_pointer_cast<Ident>(expr);
+            Ident::ptr ident = static_pointer_cast<Ident>(expr);
             string type = resolve_ident(ident);
             n += type_to_size(type);
         } else
         if(expr->type == NODE_BINARY) {
-            Binary_ptr bin = static_pointer_cast<Binary>(expr);
+            Binary::ptr bin = static_pointer_cast<Binary>(expr);
             string type = resolve_binary(bin);
             n += type_to_size(type);
         } else
         if(expr->type == NODE_UNARY) {
-            Unary_ptr un = static_pointer_cast<Unary>(expr);
+            Unary::ptr un = static_pointer_cast<Unary>(expr);
             string type = resolve_unary(un);
             n += type_to_size(type);
         }
@@ -246,11 +246,11 @@ string GLSLTranspiler::resolve_vector(vector<Expr_ptr> list) {
     return "vec" + to_string(n);
 }
 
-string GLSLTranspiler::eval_vector(vector<Expr_ptr> list) {
+string GLSLTranspiler::eval_vector(vector<Expr::ptr> list) {
     string output = "(";
     int n = 0;
     for(auto it = list.begin(); it != list.end(); ++it) {
-        Expr_ptr expr = *it;
+        Expr::ptr expr = *it;
         string type = type_to_name(expr->type);
         int type_len = type_to_size(type);
         if(type_len != 0) {
@@ -258,7 +258,7 @@ string GLSLTranspiler::eval_vector(vector<Expr_ptr> list) {
             n += type_len;
         } else
         if(expr->type == NODE_IDENT) {
-            Ident_ptr ident = static_pointer_cast<Ident>(expr);
+            Ident::ptr ident = static_pointer_cast<Ident>(expr);
             string type = resolve_ident(ident);
             if(type != "") {
                 output += (n != 0? "," : "") + ident->name;
@@ -266,7 +266,7 @@ string GLSLTranspiler::eval_vector(vector<Expr_ptr> list) {
             n += type_to_size(type);
         } else
         if(expr->type == NODE_BINARY) {
-            Binary_ptr bin = static_pointer_cast<Binary>(expr);
+            Binary::ptr bin = static_pointer_cast<Binary>(expr);
             string type = resolve_binary(bin);
             if(type != "") {
                 output += (n != 0? "," : "") + eval_binary(bin);
@@ -274,7 +274,7 @@ string GLSLTranspiler::eval_vector(vector<Expr_ptr> list) {
             n += type_to_size(type);
         } else 
         if(expr->type == NODE_UNARY) {
-            Unary_ptr un = static_pointer_cast<Unary>(expr);
+            Unary::ptr un = static_pointer_cast<Unary>(expr);
             string type = resolve_unary(un);
             if(type != "") {
                 output += (n != 0? "," : "") + eval_unary(un);
@@ -287,10 +287,10 @@ string GLSLTranspiler::eval_vector(vector<Expr_ptr> list) {
 
 }
 
-string GLSLTranspiler::eval_invoke(Invoke_ptr invoke) {
+string GLSLTranspiler::eval_invoke(Invoke::ptr invoke) {
     string output = invoke->ident->name + "(";
     for(unsigned int i = 0; i < invoke->args->list.size(); i++) {
-        Expr_ptr e = invoke->args->list[i];
+        Expr::ptr e = invoke->args->list[i];
         if(i != 0) {
             output += ",";
         }
@@ -300,7 +300,7 @@ string GLSLTranspiler::eval_invoke(Invoke_ptr invoke) {
     return output;
 }
 
-string GLSLTranspiler::eval_expr(Expr_ptr expr) {
+string GLSLTranspiler::eval_expr(Expr::ptr expr) {
     string output = "";
     switch(expr->type) {
         case NODE_INT:
@@ -321,7 +321,7 @@ string GLSLTranspiler::eval_expr(Expr_ptr expr) {
             }
         case NODE_DOT:
             {
-                Dot_ptr dot = static_pointer_cast<Dot>(expr);
+                Dot::ptr dot = static_pointer_cast<Dot>(expr);
                 output = dot->owner->name + "." + dot->name;
                 break;
             }
@@ -337,34 +337,34 @@ string GLSLTranspiler::eval_expr(Expr_ptr expr) {
             }
         case NODE_VECTOR2:
             {
-                Vector2_ptr vec2 = static_pointer_cast<Vector2>(expr);
-                Expr_ptr x = vec2->x;
-                Expr_ptr y = vec2->y;
+                Vector2::ptr vec2 = static_pointer_cast<Vector2>(expr);
+                Expr::ptr x = vec2->x;
+                Expr::ptr y = vec2->y;
                 output = eval_vector({x, y});
                 break;
             }
         case NODE_VECTOR3:
             {
-                Vector3_ptr vec3 = static_pointer_cast<Vector3>(expr);
-                Expr_ptr x = vec3->x;
-                Expr_ptr y = vec3->y;
-                Expr_ptr z = vec3->z;
+                Vector3::ptr vec3 = static_pointer_cast<Vector3>(expr);
+                Expr::ptr x = vec3->x;
+                Expr::ptr y = vec3->y;
+                Expr::ptr z = vec3->z;
                 output = eval_vector({x, y, z});
                 break;
             }
         case NODE_VECTOR4:
             {
-                Vector4_ptr vec4 = static_pointer_cast<Vector4>(expr);
-                Expr_ptr x = vec4->x;
-                Expr_ptr y = vec4->y;
-                Expr_ptr z = vec4->z;
-                Expr_ptr w = vec4->w;
+                Vector4::ptr vec4 = static_pointer_cast<Vector4>(expr);
+                Expr::ptr x = vec4->x;
+                Expr::ptr y = vec4->y;
+                Expr::ptr z = vec4->z;
+                Expr::ptr w = vec4->w;
                 output = eval_vector({x, y, z, w});
                 break;
             }
         case NODE_FUNCEXPR:
             {
-                FuncExpr_ptr func = static_pointer_cast<FuncExpr>(expr);
+                FuncExpr::ptr func = static_pointer_cast<FuncExpr>(expr);
                 output = eval_invoke(func->invoke);
                 break;
             }
@@ -378,8 +378,8 @@ string GLSLTranspiler::eval_expr(Expr_ptr expr) {
     return output;
 }
 
-string GLSLTranspiler::eval_unary(Unary_ptr un) {
-    Expr_ptr rhs = un->rhs;
+string GLSLTranspiler::eval_unary(Unary::ptr un) {
+    Expr::ptr rhs = un->rhs;
     string rtype = "";
     if(rhs->type == NODE_IDENT) {
         rtype = resolve_ident(static_pointer_cast<Ident>(rhs));
@@ -388,8 +388,8 @@ string GLSLTranspiler::eval_unary(Unary_ptr un) {
     } else if(rhs->type == NODE_INT) {
         rtype = "int";
     } else if(rhs->type == NODE_LIST) {
-        vector<Expr_ptr> list;
-        Vector_ptr vec = static_pointer_cast<Vector>(rhs);
+        vector<Expr::ptr> list;
+        Vector::ptr vec = static_pointer_cast<Vector>(rhs);
         for(unsigned int i = 0; i < vec->size(); i++) {
             list.push_back(vec->get(i));
         }
@@ -411,7 +411,7 @@ string GLSLTranspiler::eval_unary(Unary_ptr un) {
     }
 }
 
-string GLSLTranspiler::eval_binary(Binary_ptr bin) {
+string GLSLTranspiler::eval_binary(Binary::ptr bin) {
     string op_str = "";
     string lhs = eval_expr(bin->lhs);
     string rhs = eval_expr(bin->rhs);
@@ -444,11 +444,11 @@ string GLSLTranspiler::eval_binary(Binary_ptr bin) {
     return lhs + op_str + rhs;
 }
 
-string GLSLTranspiler::eval_stmt(Stmt_ptr stmt) {
+string GLSLTranspiler::eval_stmt(Stmt::ptr stmt) {
     switch(stmt->type) {
         case NODE_DECL:
             {
-                Decl_ptr decl = static_pointer_cast<Decl>(stmt);
+                Decl::ptr decl = static_pointer_cast<Decl>(stmt);
                 string output = decl->datatype->name + " " + decl->ident->name;
                 if(decl->value != nullptr) {
                     output += " = " + eval_expr(decl->value);
@@ -459,12 +459,12 @@ string GLSLTranspiler::eval_stmt(Stmt_ptr stmt) {
             }
         case NODE_ASSIGN:
             {
-                Assign_ptr a = static_pointer_cast<Assign>(stmt);
+                Assign::ptr a = static_pointer_cast<Assign>(stmt);
                 return eval_expr(a->lhs) + " = " + eval_expr(a->value) + ";";
             }
         case NODE_IF:
             {
-                If_ptr ifStmt = static_pointer_cast<If>(stmt);
+                If::ptr ifStmt = static_pointer_cast<If>(stmt);
                 string output = "if(";
                 output += eval_expr(ifStmt->condition) + ") {\n";
                 for(auto it = ifStmt->block->list.begin(); it != ifStmt->block->list.end(); ++it) {

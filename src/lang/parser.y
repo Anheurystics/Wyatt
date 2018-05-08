@@ -46,22 +46,22 @@
 %parse-param { unsigned int* line }
 %parse-param { unsigned int* column }
 %parse-param { vector<string>* imports }
-%parse-param { vector<Decl_ptr>* globals }
-%parse-param { map<string, FuncDef_ptr>* functions }
-%parse-param { map<string, ProgramLayout_ptr>* layouts }
-%parse-param { map<string, ShaderPair_ptr>* shaders }
+%parse-param { vector<Decl::ptr>* globals }
+%parse-param { map<string, FuncDef::ptr>* functions }
+%parse-param { map<string, ProgramLayout::ptr>* layouts }
+%parse-param { map<string, ShaderPair::ptr>* shaders }
 %locations
 %define parse.trace
 %define parse.error verbose
 
 %define api.token.prefix {TOK_}
 
-%token<Bool_ptr> BOOL;
-%token<Int_ptr> INT;
-%token<Float_ptr> FLOAT;
-%token<String_ptr> STRING;
-%token<String_ptr> SHADER;
-%token<Ident_ptr> IDENTIFIER;
+%token<Bool::ptr> BOOL;
+%token<Int::ptr> INT;
+%token<Float::ptr> FLOAT;
+%token<String::ptr> STRING;
+%token<String::ptr> SHADER;
+%token<Ident::ptr> IDENTIFIER;
 
 %token END 0 "eof";
 %token SEMICOLON ";";
@@ -122,28 +122,28 @@
 %nonassoc EQUAL NEQUAL GEQUAL LEQUAL
 %nonassoc LTHAN GTHAN
 
-%type<Invoke_ptr> invoke;
-%type<Expr_ptr> expr index
-%type<Vector2_ptr> vec2
-%type<Vector3_ptr> vec3
-%type<Vector4_ptr> vec4
-%type<Dot_ptr> dot;
-%type<List_ptr> list;
-%type<Decl_ptr> decl;
+%type<Invoke::ptr> invoke;
+%type<Expr::ptr> expr index
+%type<Vector2::ptr> vec2
+%type<Vector3::ptr> vec3
+%type<Vector4::ptr> vec4
+%type<Dot::ptr> dot;
+%type<List::ptr> list;
+%type<Decl::ptr> decl;
 %type<shared_ptr<vector<pair<string, string>>>> shader_uniforms;
-%type<shared_ptr<map<string, FuncDef_ptr>>> shader_functions;
+%type<shared_ptr<map<string, FuncDef::ptr>>> shader_functions;
 %type<shared_ptr<vector<shared_ptr<Decl>>>> layout_attribs;    
-%type<ProgramLayout_ptr> layout;
+%type<ProgramLayout::ptr> layout;
 
-%type<Stmt_ptr> stmt stmt_block
-%type<If_ptr> if_stmt else_if_stmt
-%type<shared_ptr<vector<If_ptr>>> else_if_chain
-%type<FuncDef_ptr> function
-%type<Stmts_ptr> stmts block
-%type<Shader_ptr> vert_shader frag_shader
-%type<UploadList_ptr> upload_list
-%type<ArgList_ptr> arg_list
-%type<ParamList_ptr> param_list
+%type<Stmt::ptr> stmt stmt_block
+%type<If::ptr> if_stmt else_if_stmt
+%type<shared_ptr<vector<If::ptr>>> else_if_chain
+%type<FuncDef::ptr> function
+%type<Stmts::ptr> stmts block
+%type<Shader::ptr> vert_shader frag_shader
+%type<UploadList::ptr> upload_list
+%type<ArgList::ptr> arg_list
+%type<ParamList::ptr> param_list
 
 %start program
 
@@ -177,23 +177,23 @@ body:
     |
     function body{
         if(functions->find($1->ident->name) == functions->end()) {
-            functions->insert(pair<string, FuncDef_ptr>($1->ident->name, $1));
+            functions->insert(pair<string, FuncDef::ptr>($1->ident->name, $1));
         } else {
             logger->log($1, "ERROR", "Redefinition of function " + $1->ident->name);
         }
     }
     |
     layout body {
-        layouts->insert(pair<string, ProgramLayout_ptr>($1->ident->name, $1));
+        layouts->insert(pair<string, ProgramLayout::ptr>($1->ident->name, $1));
     }
     |
     vert_shader body{
         if(shaders->find($1->name) == shaders->end()) {
-            ShaderPair_ptr shaderPair = make_shared<ShaderPair>();
+            ShaderPair::ptr shaderPair = make_shared<ShaderPair>();
             shaderPair->name = $1->name;
             shaderPair->vertex = $1;
 
-            shaders->insert(pair<string, ShaderPair_ptr>($1->name, shaderPair));
+            shaders->insert(pair<string, ShaderPair::ptr>($1->name, shaderPair));
         } else {
             (*shaders)[$1->name]->vertex = $1;
         }
@@ -201,11 +201,11 @@ body:
     |
     frag_shader body {
         if(shaders->find($1->name) == shaders->end()) {
-            ShaderPair_ptr shaderPair = make_shared<ShaderPair>();
+            ShaderPair::ptr shaderPair = make_shared<ShaderPair>();
             shaderPair->name = $1->name;
             shaderPair->fragment = $1;
 
-            shaders->insert(pair<string, ShaderPair_ptr>($1->name, shaderPair));
+            shaders->insert(pair<string, ShaderPair::ptr>($1->name, shaderPair));
         } else {
             (*shaders)[$1->name]->fragment = $1;
         }
@@ -216,8 +216,8 @@ shader_uniforms: { $$ = make_shared<vector<pair<string, string>>>(); }
     | shader_uniforms decl SEMICOLON { $$ = $1; $1->push_back(pair<string, string>($2->ident->name, $2->datatype->name)); }
     ;
 
-shader_functions: FUNC MAIN OPEN_PAREN CLOSE_PAREN block { $$ = make_shared<map<string, FuncDef_ptr>>(); $$->insert(pair<string, FuncDef_ptr>("main", make_shared<FuncDef>(make_shared<Ident>("main"), make_shared<ParamList>(nullptr), $5)));}
-    | function shader_functions { $2->insert(pair<string, FuncDef_ptr>($1->ident->name, $1)); }
+shader_functions: FUNC MAIN OPEN_PAREN CLOSE_PAREN block { $$ = make_shared<map<string, FuncDef::ptr>>(); $$->insert(pair<string, FuncDef::ptr>("main", make_shared<FuncDef>(make_shared<Ident>("main"), make_shared<ParamList>(nullptr), $5)));}
+    | function shader_functions { $2->insert(pair<string, FuncDef::ptr>($1->ident->name, $1)); }
     ;
 
 layout: LAYOUT IDENTIFIER OPEN_BRACE layout_attribs CLOSE_BRACE {
@@ -227,7 +227,7 @@ layout: LAYOUT IDENTIFIER OPEN_BRACE layout_attribs CLOSE_BRACE {
     }
     ;
 
-layout_attribs: { $$ = make_shared<vector<Decl_ptr>>(); }
+layout_attribs: { $$ = make_shared<vector<Decl::ptr>>(); }
     | layout_attribs decl SEMICOLON  {
         $1->push_back($2);
         $$ = $1;
@@ -351,7 +351,7 @@ if_stmt: IF OPEN_PAREN expr CLOSE_PAREN block { $$ = make_shared<If>($3, $5); }
     | IF OPEN_PAREN expr CLOSE_PAREN stmt SEMICOLON { $$ = make_shared<If>($3, make_shared<Stmts>($5)); }
    ;
 
-else_if_chain: else_if_stmt { $$ = make_shared<vector<If_ptr>>(); $$->push_back($1); }
+else_if_chain: else_if_stmt { $$ = make_shared<vector<If::ptr>>(); $$->push_back($1); }
     | else_if_chain else_if_stmt { $$ = $1; $1->push_back($2); }
     ;
 

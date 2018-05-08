@@ -23,7 +23,7 @@ class LogWindow : public QPlainTextEdit
 
         void log(string);
         void log(LogInfo info, string);
-        void log(shared_ptr<Node>, string, string);
+        void log(Node::ptr, string, string);
         void clear();
 };
 

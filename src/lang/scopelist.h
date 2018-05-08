@@ -11,23 +11,23 @@ namespace Wyatt {
 
 class ScopeList {
     public:
+        typedef shared_ptr<ScopeList> ptr;
+
         string name;
         LogWindow* logger;
         string* workingDir;
 
         ScopeList(string name, LogWindow* logger, string* workingDir);
 
-        Scope_ptr current();
-        Scope_ptr attach(string name);
+        Scope::ptr current();
+        Scope::ptr attach(string name);
         void detach();
-        Expr_ptr get(string name);
-        bool assign(Stmt_ptr assign, Ident_ptr, Expr_ptr);
+        Expr::ptr get(string name);
+        bool assign(Stmt::ptr assign, Ident::ptr, Expr::ptr);
 
     private:
-        vector<Scope_ptr> chain;
+        vector<Scope::ptr> chain;
 };
-
-typedef shared_ptr<ScopeList> ScopeList_ptr;
 
 }
 

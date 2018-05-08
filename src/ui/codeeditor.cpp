@@ -1,6 +1,6 @@
 ﻿#include "codeeditor.h"
 
-std::map<string, FuncDef_ptr> CodeEditor::autocomplete_functions;
+std::map<string, FuncDef::ptr> CodeEditor::autocomplete_functions;
 
 CodeEditor::CodeEditor(QWidget *parent = 0): QPlainTextEdit(parent)
 {
@@ -41,7 +41,7 @@ void CodeEditor::updateFunctionHint() {
     reverse(function_name.begin(), function_name.end());
 
     auto functions = CodeEditor::autocomplete_functions;
-    FuncDef_ptr func = nullptr;
+    FuncDef::ptr func = nullptr;
     if(functions.find(function_name) != functions.end()) {
         func = functions[function_name];
     }
@@ -49,7 +49,7 @@ void CodeEditor::updateFunctionHint() {
     if(before.count("(") > before.count(")") && !filtered.contains("cnuf") && func != nullptr && typed_args < func->params->list.size()) {
         autocompleteText = QString::fromStdString(func->ident->name + "(");
         for(unsigned int i = 0; i < func->params->list.size(); ++i) {
-            Decl_ptr decl = func->params->list[i];
+            Decl::ptr decl = func->params->list[i];
             autocompleteText += QString::fromStdString(decl->datatype->name + " " + decl->ident->name);
             if(i == typed_args) {
                 currentParam = QString::fromStdString(decl->datatype->name + " " + decl->ident->name);

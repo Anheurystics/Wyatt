@@ -113,14 +113,14 @@ class Interpreter {
         unsigned int width, height;
 
         void parse(string, int*);
-        Expr_ptr execute_stmts(Stmts_ptr);
+        Expr::ptr execute_stmts(Stmts::ptr);
         void prepare();
         void load_imports();
         void load_import(string);
         void execute_init();
         void execute_loop();
         void compile_program();
-        void compile_shader(GLuint*, Shader_ptr);
+        void compile_shader(GLuint*, Shader::ptr);
         void setFunctions(QOpenGLFunctions* gl) {
             #ifndef NO_GL
             this->gl = gl;
@@ -133,28 +133,26 @@ class Interpreter {
         Wyatt::Scanner scanner;
         Wyatt::Parser parser;
 
-        typedef shared_ptr<Scope> Scope_ptr;
-
-        Scope_ptr globalScope;
-        std::stack<ScopeList_ptr> functionScopeStack;
+        Scope::ptr globalScope;
+        std::stack<ScopeList::ptr> functionScopeStack;
         map<string, shared_ptr<ShaderPair>> shaders;
-        map<string, FuncDef_ptr> functions;
-        map<string, ProgramLayout_ptr> layouts;
+        map<string, FuncDef::ptr> functions;
+        map<string, ProgramLayout::ptr> layouts;
 
         vector<string> imports;
-        vector<Decl_ptr> globals;
+        vector<Decl::ptr> globals;
 
         int activeTextureSlot = 0;
 
         bool breakable = false;
 
         string current_program_name;
-        Program_ptr current_program = nullptr;
+        Program::ptr current_program = nullptr;
 
-        FuncDef_ptr init = nullptr;
-        FuncDef_ptr loop = nullptr;
-        Invoke_ptr init_invoke;
-        Invoke_ptr loop_invoke;
+        FuncDef::ptr init = nullptr;
+        FuncDef::ptr loop = nullptr;
+        Invoke::ptr init_invoke;
+        Invoke::ptr loop_invoke;
 
         #ifdef NO_GL
         DummyGLFunctions* gl = new DummyGLFunctions();
@@ -162,12 +160,12 @@ class Interpreter {
         QOpenGLFunctions* gl = nullptr;
         #endif
 
-        string print_expr(Expr_ptr);
-        Expr_ptr eval_expr(Expr_ptr);
-        Expr_ptr eval_binary(shared_ptr<Binary>);
-        Expr_ptr invoke(shared_ptr<Invoke>);
-        Expr_ptr eval_stmt(shared_ptr<Stmt>);
-        Expr_ptr resolve_vector(vector<Expr_ptr>);
+        string print_expr(Expr::ptr);
+        Expr::ptr eval_expr(Expr::ptr);
+        Expr::ptr eval_binary(shared_ptr<Binary>);
+        Expr::ptr invoke(shared_ptr<Invoke>);
+        Expr::ptr eval_stmt(shared_ptr<Stmt>);
+        Expr::ptr resolve_vector(vector<Expr::ptr>);
 
         LogWindow* logger;
 

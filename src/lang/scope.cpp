@@ -17,7 +17,7 @@ namespace Wyatt {
         }
     }
 
-    void Scope::declare(Stmt_ptr decl, Ident_ptr ident, string type, Expr_ptr value) {
+    void Scope::declare(Stmt::ptr decl, Ident::ptr ident, string type, Expr::ptr value) {
         types[ident->name] = type;
         assign(decl, ident, value == nullptr? null_expr : value);
         if(decl != nullptr && decl->type == NODE_DECL) {
@@ -27,7 +27,7 @@ namespace Wyatt {
         }
     }
 
-    bool Scope::assign(Stmt_ptr assign, Ident_ptr ident, Expr_ptr value) {
+    bool Scope::assign(Stmt::ptr assign, Ident::ptr ident, Expr::ptr value) {
         string name = ident->name;
 
         if(constants.find(name) != constants.end()) {
@@ -52,7 +52,7 @@ namespace Wyatt {
         }
         if(types[name] == "texture2D") {
             if(value_type == NODE_STRING) {
-                Texture_ptr tex = make_shared<Texture>();
+                Texture::ptr tex = make_shared<Texture>();
                 string filename = static_pointer_cast<String>(value)->value;
                 string realfilename = "";
                 if(file_exists(*workingDir + "/" + filename)) {
@@ -88,11 +88,11 @@ namespace Wyatt {
     }
 
     // to be used internally
-    void Scope::fast_assign(string name, Expr_ptr value) {
+    void Scope::fast_assign(string name, Expr::ptr value) {
         variables[name] = value;
     }
 
-    Expr_ptr Scope::get(string name) {
+    Expr::ptr Scope::get(string name) {
         if(variables.find(name) != variables.end()) {
             return variables[name];
         }

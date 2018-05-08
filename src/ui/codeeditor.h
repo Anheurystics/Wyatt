@@ -33,7 +33,7 @@ public:
     QFileInfo fileInfo;
     QFont monoFont;
 
-   static std::map<string, FuncDef_ptr> autocomplete_functions;
+   static std::map<string, FuncDef::ptr> autocomplete_functions;
 
 protected:
     void resizeEvent(QResizeEvent *event) override;

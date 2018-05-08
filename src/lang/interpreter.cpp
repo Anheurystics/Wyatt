@@ -6,15 +6,15 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-int resolve_int(Expr_ptr expr) {
+int resolve_int(Expr::ptr expr) {
     return static_pointer_cast<Int>(expr)->value;
 }
 
-float resolve_float(Expr_ptr expr) {
+float resolve_float(Expr::ptr expr) {
     return static_pointer_cast<Float>(expr)->value;
 }
 
-float resolve_scalar(Expr_ptr expr) {
+float resolve_scalar(Expr::ptr expr) {
     if(expr->type == NODE_INT) {
         return (float)resolve_int(expr);
     } else {
@@ -63,7 +63,7 @@ void Wyatt::Interpreter::reset() {
     column = 1;
 }
 
-string Wyatt::Interpreter::print_expr(Expr_ptr expr) {
+string Wyatt::Interpreter::print_expr(Expr::ptr expr) {
     if(expr == nullptr) {
         return "";
     }
@@ -86,7 +86,7 @@ string Wyatt::Interpreter::print_expr(Expr_ptr expr) {
         case NODE_VECTOR2: case NODE_VECTOR3: case NODE_VECTOR4:
             {
                 string result = "[";
-                Vector_ptr vec = static_pointer_cast<Vector>(expr);
+                Vector::ptr vec = static_pointer_cast<Vector>(expr);
                 for(unsigned int i = 0; i < vec->size(); i++) {
                     result += print_expr(vec->get(i));
                     if(i < vec->size() - 1) {
@@ -98,20 +98,20 @@ string Wyatt::Interpreter::print_expr(Expr_ptr expr) {
             }
         case NODE_MATRIX2:
             {
-                Matrix2_ptr mat2 = static_pointer_cast<Matrix2>(expr);
+                Matrix2::ptr mat2 = static_pointer_cast<Matrix2>(expr);
                 return "|" + print_expr(mat2->v0->x) + ", " + print_expr(mat2->v0->y) + "|\n" +
                        "|" + print_expr(mat2->v1->x) + ", " + print_expr(mat2->v1->y) + "|";
             }
         case NODE_MATRIX3:
             {
-                Matrix3_ptr mat3 = static_pointer_cast<Matrix3>(expr);
+                Matrix3::ptr mat3 = static_pointer_cast<Matrix3>(expr);
                 return "|" + print_expr(mat3->v0->x) + ", " + print_expr(mat3->v0->y) + ", " + print_expr(mat3->v0->z) + "|\n" +
                        "|" + print_expr(mat3->v1->x) + ", " + print_expr(mat3->v1->y) + ", " + print_expr(mat3->v1->z) + "|\n" +
                        "|" + print_expr(mat3->v2->x) + ", " + print_expr(mat3->v2->y) + ", " + print_expr(mat3->v2->z) + "|";
             }
         case NODE_MATRIX4:
             {
-                Matrix4_ptr mat4 = static_pointer_cast<Matrix4>(expr);
+                Matrix4::ptr mat4 = static_pointer_cast<Matrix4>(expr);
                 return "|" + print_expr(mat4->v0->x) + ", " + print_expr(mat4->v0->y) + ", " + print_expr(mat4->v0->z) + ", " + print_expr(mat4->v0->w) + "|\n" +
                        "|" + print_expr(mat4->v1->x) + ", " + print_expr(mat4->v1->y) + ", " + print_expr(mat4->v1->z) + ", " + print_expr(mat4->v1->w) + "|\n" +
                        "|" + print_expr(mat4->v2->x) + ", " + print_expr(mat4->v2->y) + ", " + print_expr(mat4->v2->z) + ", " + print_expr(mat4->v2->w) + "|\n" +
@@ -119,7 +119,7 @@ string Wyatt::Interpreter::print_expr(Expr_ptr expr) {
             }
         case NODE_LIST:
             {
-                List_ptr lst = static_pointer_cast<List>(expr);
+                List::ptr lst = static_pointer_cast<List>(expr);
                 string output = "{";
                 for(unsigned int i = 0; i < lst->list.size(); i++) {
                     if(i != 0) output += ", ";
@@ -130,7 +130,7 @@ string Wyatt::Interpreter::print_expr(Expr_ptr expr) {
             }
         case NODE_BUFFER:
             {
-                Buffer_ptr buffer = static_pointer_cast<Buffer>(expr);
+                Buffer::ptr buffer = static_pointer_cast<Buffer>(expr);
                 string output = "";
                 for(auto it = buffer->layout->list.begin(); it != buffer->layout->list.end(); ++it) {
                     string attrib = *it;
@@ -151,7 +151,7 @@ string Wyatt::Interpreter::print_expr(Expr_ptr expr) {
     }
 }
 
-Expr_ptr vector_binary(Vector_ptr a, OpType op, Vector_ptr b) {
+Expr::ptr vector_binary(Vector::ptr a, OpType op, Vector::ptr b) {
     unsigned int vector_size = a->size();
 	float* aComponents = new float[vector_size];
 	float* bComponents = new float[vector_size];
@@ -162,7 +162,7 @@ Expr_ptr vector_binary(Vector_ptr a, OpType op, Vector_ptr b) {
         bComponents[i] = resolve_scalar(b->get(i));
     }
 
-	Expr_ptr result = nullptr;
+	Expr::ptr result = nullptr;
 
     if(op == OP_EXP) {
         float total = 0;
@@ -182,7 +182,7 @@ Expr_ptr vector_binary(Vector_ptr a, OpType op, Vector_ptr b) {
             );
         }
 	} else {
-		Vector_ptr c;
+		Vector::ptr c;
 		if(a->size() == 2) { c = make_shared<Vector2>(nullptr, nullptr); }
 		if(a->size() == 3) { c = make_shared<Vector3>(nullptr, nullptr, nullptr); }
 		if(a->size() == 4) { c = make_shared<Vector4>(nullptr, nullptr, nullptr, nullptr); }
@@ -208,13 +208,13 @@ Expr_ptr vector_binary(Vector_ptr a, OpType op, Vector_ptr b) {
 	return result;
 }
 
-Expr_ptr Wyatt::Interpreter::eval_binary(Binary_ptr bin) {
-    Expr_ptr lhs = eval_expr(bin->lhs);
+Expr::ptr Wyatt::Interpreter::eval_binary(Binary::ptr bin) {
+    Expr::ptr lhs = eval_expr(bin->lhs);
     if(lhs == nullptr) return nullptr;
 
     OpType op = bin->op;
 
-    Expr_ptr rhs = eval_expr(bin->rhs);
+    Expr::ptr rhs = eval_expr(bin->rhs);
     if(rhs == nullptr) return nullptr;
 
     NodeType ltype = lhs->type;
@@ -291,8 +291,8 @@ Expr_ptr Wyatt::Interpreter::eval_binary(Binary_ptr bin) {
 
     if(ltype == NODE_STRING || rtype == NODE_STRING) {
         bool left = (ltype == NODE_STRING);
-        String_ptr str = (left? static_pointer_cast<String>(lhs) : static_pointer_cast<String>(rhs));
-        Expr_ptr other = eval_expr(left? rhs : lhs);
+        String::ptr str = (left? static_pointer_cast<String>(lhs) : static_pointer_cast<String>(rhs));
+        Expr::ptr other = eval_expr(left? rhs : lhs);
 
         if(op == OP_PLUS) {
             return make_shared<String>(left? (str->value + print_expr(other)) : (print_expr(other) + str->value));
@@ -316,7 +316,7 @@ Expr_ptr Wyatt::Interpreter::eval_binary(Binary_ptr bin) {
     #define isvector(type) (type == NODE_VECTOR2 || type == NODE_VECTOR3 || type == NODE_VECTOR4)
     
     if(ltype == rtype && isvector(ltype)) {
-        Expr_ptr result = vector_binary(static_pointer_cast<Vector>(eval_expr(lhs)), op, static_pointer_cast<Vector>(eval_expr(rhs)));
+        Expr::ptr result = vector_binary(static_pointer_cast<Vector>(eval_expr(lhs)), op, static_pointer_cast<Vector>(eval_expr(rhs)));
         if(result != nullptr) {
             return result;
         }
@@ -325,7 +325,7 @@ Expr_ptr Wyatt::Interpreter::eval_binary(Binary_ptr bin) {
     if((isvector(ltype) && (rtype == NODE_INT || rtype == NODE_FLOAT)) || (ltype == NODE_FLOAT || ltype == NODE_INT) && isvector(rtype)) {
         bool lvector = isvector(ltype);
 
-        Vector_ptr a = static_pointer_cast<Vector>(eval_expr(lvector? lhs : rhs));
+        Vector::ptr a = static_pointer_cast<Vector>(eval_expr(lvector? lhs : rhs));
         float* components = new float[a->size()];
         float b = resolve_scalar(lvector? rhs : lhs);
 
@@ -333,7 +333,7 @@ Expr_ptr Wyatt::Interpreter::eval_binary(Binary_ptr bin) {
             components[i] = resolve_scalar(a->get(i));
         }
 
-        Vector_ptr v;
+        Vector::ptr v;
         if(a->size() == 2) v = make_shared<Vector2>(nullptr, nullptr);
         if(a->size() == 3) v = make_shared<Vector3>(nullptr, nullptr, nullptr);
         if(a->size() == 4) v = make_shared<Vector4>(nullptr, nullptr, nullptr, nullptr);
@@ -361,39 +361,39 @@ Expr_ptr Wyatt::Interpreter::eval_binary(Binary_ptr bin) {
     }
 
     if(ltype == NODE_MATRIX2 && (rtype == NODE_INT || rtype == NODE_FLOAT)) {
-        Matrix2_ptr a = static_pointer_cast<Matrix2>(eval_expr(lhs));
+        Matrix2::ptr a = static_pointer_cast<Matrix2>(eval_expr(lhs));
 
         if(op == OP_MULT || op == OP_DIV) {
-            Vector2_ptr v0 = static_pointer_cast<Vector2>(eval_binary(make_shared<Binary>(a->v0, op, rhs)));
-            Vector2_ptr v1 = static_pointer_cast<Vector2>(eval_binary(make_shared<Binary>(a->v1, op, rhs)));
+            Vector2::ptr v0 = static_pointer_cast<Vector2>(eval_binary(make_shared<Binary>(a->v0, op, rhs)));
+            Vector2::ptr v1 = static_pointer_cast<Vector2>(eval_binary(make_shared<Binary>(a->v1, op, rhs)));
             return make_shared<Matrix2>(v0, v1);
         }
     }
 
     if((ltype == NODE_INT || ltype == NODE_FLOAT) && (rtype == NODE_MATRIX2)) {
-        Matrix2_ptr a = static_pointer_cast<Matrix2>(eval_expr(rhs));
+        Matrix2::ptr a = static_pointer_cast<Matrix2>(eval_expr(rhs));
 
         if(op == OP_MULT) {
-            Vector2_ptr v0 = static_pointer_cast<Vector2>(eval_binary(make_shared<Binary>(a->v0, op, lhs)));
-            Vector2_ptr v1 = static_pointer_cast<Vector2>(eval_binary(make_shared<Binary>(a->v1, op, lhs)));
+            Vector2::ptr v0 = static_pointer_cast<Vector2>(eval_binary(make_shared<Binary>(a->v0, op, lhs)));
+            Vector2::ptr v1 = static_pointer_cast<Vector2>(eval_binary(make_shared<Binary>(a->v1, op, lhs)));
             return make_shared<Matrix2>(v0, v1);
         }
     }
 
     if(ltype == NODE_MATRIX2 && rtype == NODE_MATRIX2) {
-        Matrix2_ptr a = static_pointer_cast<Matrix2>(eval_expr(lhs));
-        Matrix2_ptr b = static_pointer_cast<Matrix2>(eval_expr(rhs));
+        Matrix2::ptr a = static_pointer_cast<Matrix2>(eval_expr(lhs));
+        Matrix2::ptr b = static_pointer_cast<Matrix2>(eval_expr(rhs));
 
         if(op == OP_MULT) {
-            Vector2_ptr r0 = make_shared<Vector2>(make_shared<Binary>(a->v0, OP_EXP, b->c0), make_shared<Binary>(a->v0, OP_EXP, b->c1));
-            Vector2_ptr r1 = make_shared<Vector2>(make_shared<Binary>(a->v1, OP_EXP, b->c0), make_shared<Binary>(a->v1, OP_EXP, b->c1));
+            Vector2::ptr r0 = make_shared<Vector2>(make_shared<Binary>(a->v0, OP_EXP, b->c0), make_shared<Binary>(a->v0, OP_EXP, b->c1));
+            Vector2::ptr r1 = make_shared<Vector2>(make_shared<Binary>(a->v1, OP_EXP, b->c0), make_shared<Binary>(a->v1, OP_EXP, b->c1));
             return eval_expr(make_shared<Matrix2>(r0, r1));
         }
     }
 
     if(ltype == NODE_VECTOR2 && rtype == NODE_MATRIX2) {
-        Vector2_ptr a = static_pointer_cast<Vector2>(eval_expr(lhs));
-        Matrix2_ptr b = static_pointer_cast<Matrix2>(eval_expr(rhs));
+        Vector2::ptr a = static_pointer_cast<Vector2>(eval_expr(lhs));
+        Matrix2::ptr b = static_pointer_cast<Matrix2>(eval_expr(rhs));
 
         if(op == OP_MULT) {
             return eval_expr(make_shared<Vector2>(make_shared<Binary>(a, OP_EXP, b->c0), make_shared<Binary>(a, OP_EXP, b->c1)));
@@ -401,42 +401,42 @@ Expr_ptr Wyatt::Interpreter::eval_binary(Binary_ptr bin) {
     }
 
     if(ltype == NODE_MATRIX3 && (rtype == NODE_INT || rtype == NODE_FLOAT)) {
-        Matrix3_ptr a = static_pointer_cast<Matrix3>(eval_expr(lhs));
+        Matrix3::ptr a = static_pointer_cast<Matrix3>(eval_expr(lhs));
 
         if(op == OP_MULT || op == OP_DIV) {
-            Vector3_ptr v0 = static_pointer_cast<Vector3>(eval_binary(make_shared<Binary>(a->v0, op, rhs)));
-            Vector3_ptr v1 = static_pointer_cast<Vector3>(eval_binary(make_shared<Binary>(a->v1, op, rhs)));
-            Vector3_ptr v2 = static_pointer_cast<Vector3>(eval_binary(make_shared<Binary>(a->v2, op, rhs)));
+            Vector3::ptr v0 = static_pointer_cast<Vector3>(eval_binary(make_shared<Binary>(a->v0, op, rhs)));
+            Vector3::ptr v1 = static_pointer_cast<Vector3>(eval_binary(make_shared<Binary>(a->v1, op, rhs)));
+            Vector3::ptr v2 = static_pointer_cast<Vector3>(eval_binary(make_shared<Binary>(a->v2, op, rhs)));
             return make_shared<Matrix3>(v0, v1, v2);
         }
     }
 
     if((ltype == NODE_INT || ltype == NODE_FLOAT) && (rtype == NODE_MATRIX3)) {
-        Matrix3_ptr a = static_pointer_cast<Matrix3>(eval_expr(rhs));
+        Matrix3::ptr a = static_pointer_cast<Matrix3>(eval_expr(rhs));
 
         if(op == OP_MULT) {
-            Vector3_ptr v0 = static_pointer_cast<Vector3>(eval_binary(make_shared<Binary>(a->v0, op, lhs)));
-            Vector3_ptr v1 = static_pointer_cast<Vector3>(eval_binary(make_shared<Binary>(a->v1, op, lhs)));
-            Vector3_ptr v2 = static_pointer_cast<Vector3>(eval_binary(make_shared<Binary>(a->v2, op, lhs)));
+            Vector3::ptr v0 = static_pointer_cast<Vector3>(eval_binary(make_shared<Binary>(a->v0, op, lhs)));
+            Vector3::ptr v1 = static_pointer_cast<Vector3>(eval_binary(make_shared<Binary>(a->v1, op, lhs)));
+            Vector3::ptr v2 = static_pointer_cast<Vector3>(eval_binary(make_shared<Binary>(a->v2, op, lhs)));
             return make_shared<Matrix3>(v0, v1, v2);
         }
     }
 
     if(ltype == NODE_MATRIX3 && rtype == NODE_MATRIX3) {
-        Matrix3_ptr a = static_pointer_cast<Matrix3>(eval_expr(lhs));
-        Matrix3_ptr b = static_pointer_cast<Matrix3>(eval_expr(rhs));
+        Matrix3::ptr a = static_pointer_cast<Matrix3>(eval_expr(lhs));
+        Matrix3::ptr b = static_pointer_cast<Matrix3>(eval_expr(rhs));
         
         if(op == OP_MULT) {
-            Vector3_ptr r0 = make_shared<Vector3>(make_shared<Binary>(a->v0, OP_EXP, b->c0), make_shared<Binary>(a->v0, OP_EXP, b->c1), make_shared<Binary>(a->v0, OP_EXP, b->c2));
-            Vector3_ptr r1 = make_shared<Vector3>(make_shared<Binary>(a->v1, OP_EXP, b->c0), make_shared<Binary>(a->v1, OP_EXP, b->c1), make_shared<Binary>(a->v1, OP_EXP, b->c2));
-            Vector3_ptr r2 = make_shared<Vector3>(make_shared<Binary>(a->v2, OP_EXP, b->c0), make_shared<Binary>(a->v2, OP_EXP, b->c1), make_shared<Binary>(a->v2, OP_EXP, b->c2));
+            Vector3::ptr r0 = make_shared<Vector3>(make_shared<Binary>(a->v0, OP_EXP, b->c0), make_shared<Binary>(a->v0, OP_EXP, b->c1), make_shared<Binary>(a->v0, OP_EXP, b->c2));
+            Vector3::ptr r1 = make_shared<Vector3>(make_shared<Binary>(a->v1, OP_EXP, b->c0), make_shared<Binary>(a->v1, OP_EXP, b->c1), make_shared<Binary>(a->v1, OP_EXP, b->c2));
+            Vector3::ptr r2 = make_shared<Vector3>(make_shared<Binary>(a->v2, OP_EXP, b->c0), make_shared<Binary>(a->v2, OP_EXP, b->c1), make_shared<Binary>(a->v2, OP_EXP, b->c2));
             return eval_expr(make_shared<Matrix3>(r0, r1, r2));
         }
     }
 
     if(ltype == NODE_VECTOR3 && rtype == NODE_MATRIX3) {
-        Vector3_ptr a = static_pointer_cast<Vector3>(eval_expr(lhs));
-        Matrix3_ptr b = static_pointer_cast<Matrix3>(eval_expr(rhs));
+        Vector3::ptr a = static_pointer_cast<Vector3>(eval_expr(lhs));
+        Matrix3::ptr b = static_pointer_cast<Matrix3>(eval_expr(rhs));
 
         if(op == OP_MULT) {
             return eval_expr(make_shared<Vector3>(make_shared<Binary>(a, OP_EXP, b->c0), make_shared<Binary>(a, OP_EXP, b->c1), make_shared<Binary>(a, OP_EXP, b->c2)));
@@ -444,45 +444,45 @@ Expr_ptr Wyatt::Interpreter::eval_binary(Binary_ptr bin) {
     }
 
     if(ltype == NODE_MATRIX4 && (rtype == NODE_INT || rtype == NODE_FLOAT)) {
-        Matrix4_ptr a = static_pointer_cast<Matrix4>(eval_expr(lhs));
+        Matrix4::ptr a = static_pointer_cast<Matrix4>(eval_expr(lhs));
 
         if(op == OP_MULT || op == OP_DIV) {
-            Vector4_ptr v0 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v0, op, rhs)));
-            Vector4_ptr v1 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v1, op, rhs)));
-            Vector4_ptr v2 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v2, op, rhs)));
-            Vector4_ptr v3 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v3, op, rhs)));
+            Vector4::ptr v0 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v0, op, rhs)));
+            Vector4::ptr v1 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v1, op, rhs)));
+            Vector4::ptr v2 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v2, op, rhs)));
+            Vector4::ptr v3 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v3, op, rhs)));
             return make_shared<Matrix4>(v0, v1, v2, v3);
         }
     }
 
     if((ltype == NODE_INT || ltype == NODE_FLOAT) && (rtype == NODE_MATRIX4)) {
-        Matrix4_ptr a = static_pointer_cast<Matrix4>(eval_expr(rhs));
+        Matrix4::ptr a = static_pointer_cast<Matrix4>(eval_expr(rhs));
 
         if(op == OP_MULT) {
-            Vector4_ptr v0 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v0, op, lhs)));
-            Vector4_ptr v1 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v1, op, lhs)));
-            Vector4_ptr v2 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v2, op, lhs)));
-            Vector4_ptr v3 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v3, op, lhs)));
+            Vector4::ptr v0 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v0, op, lhs)));
+            Vector4::ptr v1 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v1, op, lhs)));
+            Vector4::ptr v2 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v2, op, lhs)));
+            Vector4::ptr v3 = static_pointer_cast<Vector4>(eval_binary(make_shared<Binary>(a->v3, op, lhs)));
             return make_shared<Matrix4>(v0, v1, v2, v3);
         }
     }
 
     if(ltype == NODE_MATRIX4 && rtype == NODE_MATRIX4) {
-        Matrix4_ptr a = static_pointer_cast<Matrix4>(eval_expr(lhs));
-        Matrix4_ptr b = static_pointer_cast<Matrix4>(eval_expr(rhs));
+        Matrix4::ptr a = static_pointer_cast<Matrix4>(eval_expr(lhs));
+        Matrix4::ptr b = static_pointer_cast<Matrix4>(eval_expr(rhs));
         
         if(op == OP_MULT) {
-            Vector4_ptr r0 = make_shared<Vector4>(make_shared<Binary>(a->v0, OP_EXP, b->c0), make_shared<Binary>(a->v0, OP_EXP, b->c1), make_shared<Binary>(a->v0, OP_EXP, b->c2), make_shared<Binary>(a->v0, OP_EXP, b->c3));
-            Vector4_ptr r1 = make_shared<Vector4>(make_shared<Binary>(a->v1, OP_EXP, b->c0), make_shared<Binary>(a->v1, OP_EXP, b->c1), make_shared<Binary>(a->v1, OP_EXP, b->c2), make_shared<Binary>(a->v1, OP_EXP, b->c3));
-            Vector4_ptr r2 = make_shared<Vector4>(make_shared<Binary>(a->v2, OP_EXP, b->c0), make_shared<Binary>(a->v2, OP_EXP, b->c1), make_shared<Binary>(a->v2, OP_EXP, b->c2), make_shared<Binary>(a->v2, OP_EXP, b->c3));
-            Vector4_ptr r3 = make_shared<Vector4>(make_shared<Binary>(a->v3, OP_EXP, b->c0), make_shared<Binary>(a->v3, OP_EXP, b->c1), make_shared<Binary>(a->v3, OP_EXP, b->c2), make_shared<Binary>(a->v3, OP_EXP, b->c3));
+            Vector4::ptr r0 = make_shared<Vector4>(make_shared<Binary>(a->v0, OP_EXP, b->c0), make_shared<Binary>(a->v0, OP_EXP, b->c1), make_shared<Binary>(a->v0, OP_EXP, b->c2), make_shared<Binary>(a->v0, OP_EXP, b->c3));
+            Vector4::ptr r1 = make_shared<Vector4>(make_shared<Binary>(a->v1, OP_EXP, b->c0), make_shared<Binary>(a->v1, OP_EXP, b->c1), make_shared<Binary>(a->v1, OP_EXP, b->c2), make_shared<Binary>(a->v1, OP_EXP, b->c3));
+            Vector4::ptr r2 = make_shared<Vector4>(make_shared<Binary>(a->v2, OP_EXP, b->c0), make_shared<Binary>(a->v2, OP_EXP, b->c1), make_shared<Binary>(a->v2, OP_EXP, b->c2), make_shared<Binary>(a->v2, OP_EXP, b->c3));
+            Vector4::ptr r3 = make_shared<Vector4>(make_shared<Binary>(a->v3, OP_EXP, b->c0), make_shared<Binary>(a->v3, OP_EXP, b->c1), make_shared<Binary>(a->v3, OP_EXP, b->c2), make_shared<Binary>(a->v3, OP_EXP, b->c3));
             return eval_expr(make_shared<Matrix4>(r0, r1, r2, r3));
         }
     }
 
     if(ltype == NODE_VECTOR4 && rtype == NODE_MATRIX4) {
-        Vector4_ptr a = static_pointer_cast<Vector4>(eval_expr(lhs));
-        Matrix4_ptr b = static_pointer_cast<Matrix4>(eval_expr(rhs));
+        Vector4::ptr a = static_pointer_cast<Vector4>(eval_expr(lhs));
+        Matrix4::ptr b = static_pointer_cast<Matrix4>(eval_expr(rhs));
 
         if(op == OP_MULT) {
             return eval_expr(make_shared<Vector4>(make_shared<Binary>(a, OP_EXP, b->c0), make_shared<Binary>(a, OP_EXP, b->c1), make_shared<Binary>(a, OP_EXP, b->c2), make_shared<Binary>(a, OP_EXP, b->c3)));
@@ -493,13 +493,13 @@ Expr_ptr Wyatt::Interpreter::eval_binary(Binary_ptr bin) {
     return nullptr;
 }
 
-Expr_ptr Wyatt::Interpreter::invoke(Invoke_ptr invoke) {
+Expr::ptr Wyatt::Interpreter::invoke(Invoke::ptr invoke) {
     string name = invoke->ident->name;
-    FuncDef_ptr def = nullptr;
+    FuncDef::ptr def = nullptr;
 
     if(name == "cos") {
         if(invoke->args->list.size() == 1) {
-            Expr_ptr v = eval_expr(invoke->args->list[0]);
+            Expr::ptr v = eval_expr(invoke->args->list[0]);
             if(v->type == NODE_FLOAT || v->type == NODE_INT) {
                 return make_shared<Float>(cosf(resolve_scalar(v)));
             }
@@ -508,7 +508,7 @@ Expr_ptr Wyatt::Interpreter::invoke(Invoke_ptr invoke) {
 
     if(name == "sin") {
         if(invoke->args->list.size() == 1) {
-            Expr_ptr v = eval_expr(invoke->args->list[0]);
+            Expr::ptr v = eval_expr(invoke->args->list[0]);
             if(v->type == NODE_FLOAT || v->type == NODE_INT) {
                 return make_shared<Float>(sinf(resolve_scalar(v)));
             }
@@ -517,7 +517,7 @@ Expr_ptr Wyatt::Interpreter::invoke(Invoke_ptr invoke) {
 
     if(name == "tan") {
         if(invoke->args->list.size() == 1) {
-            Expr_ptr v = eval_expr(invoke->args->list[0]);
+            Expr::ptr v = eval_expr(invoke->args->list[0]);
             if(v->type == NODE_FLOAT || v->type == NODE_INT) {
                 return make_shared<Float>(tanf(resolve_scalar(v)));
             }
@@ -535,7 +535,7 @@ Expr_ptr Wyatt::Interpreter::invoke(Invoke_ptr invoke) {
     }
 
     if(def != nullptr) {
-        ScopeList_ptr localScope = make_shared<ScopeList>(name, logger, &workingDir);
+        ScopeList::ptr localScope = make_shared<ScopeList>(name, logger, &workingDir);
         unsigned int nParams = def->params->list.size();
         unsigned int nArgs = invoke->args->list.size();
 
@@ -545,19 +545,19 @@ Expr_ptr Wyatt::Interpreter::invoke(Invoke_ptr invoke) {
         }
         if(nParams > 0) {
             for(unsigned int i = 0; i < nParams; i++) {
-                Expr_ptr arg = eval_expr(invoke->args->list[i]);
+                Expr::ptr arg = eval_expr(invoke->args->list[i]);
                 if(arg == nullptr) {
                     logger->log(invoke->args->list[i], "ERROR", "Invalid argument passed on to " + name);
                     return nullptr;
                 }
 
-                Decl_ptr param = def->params->list[i];
+                Decl::ptr param = def->params->list[i];
                 localScope->current()->declare(param, param->ident, param->datatype->name, arg);
             }
         }
 
         functionScopeStack.push(localScope);
-        Expr_ptr retValue = execute_stmts(def->stmts);
+        Expr::ptr retValue = execute_stmts(def->stmts);
         functionScopeStack.pop();
         return retValue;
     } else {
@@ -566,12 +566,12 @@ Expr_ptr Wyatt::Interpreter::invoke(Invoke_ptr invoke) {
     return nullptr;
 }
 
-Expr_ptr Wyatt::Interpreter::resolve_vector(vector<Expr_ptr> list) {
+Expr::ptr Wyatt::Interpreter::resolve_vector(vector<Expr::ptr> list) {
     vector<float> data;
     int n = 0;
 
     for(unsigned int i = 0; i < list.size(); i++) {
-        Expr_ptr expr = list[i];
+        Expr::ptr expr = list[i];
         if(expr == nullptr) {
             logger->log(expr, "ERROR", "Invalid vector/matrix element");
             return nullptr;
@@ -581,7 +581,7 @@ Expr_ptr Wyatt::Interpreter::resolve_vector(vector<Expr_ptr> list) {
             n += 1;
         } else
         if(expr->type == NODE_VECTOR2 || expr->type == NODE_VECTOR3 || expr->type == NODE_VECTOR4) {
-            Vector_ptr vec = static_pointer_cast<Vector>(eval_expr(expr));
+            Vector::ptr vec = static_pointer_cast<Vector>(eval_expr(expr));
             for(unsigned int i = 0; i < vec->size(); i++) {
                 data.push_back(resolve_scalar(vec->get(i)));
             }
@@ -602,7 +602,7 @@ Expr_ptr Wyatt::Interpreter::resolve_vector(vector<Expr_ptr> list) {
     return nullptr;
 }
 
-Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
+Expr::ptr Wyatt::Interpreter::eval_expr(Expr::ptr node) {
 
     if(node == nullptr) {
         return nullptr;
@@ -615,8 +615,8 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
             }
         case NODE_IDENT: 
             {
-                Ident_ptr ident = static_pointer_cast<Ident>(node);
-                Expr_ptr value = nullptr;
+                Ident::ptr ident = static_pointer_cast<Ident>(node);
+                Expr::ptr value = nullptr;
                 get_variable(value, ident->name);
                 if(value == nullptr) {
                     logger->log(ident, "ERROR", "Variable " + ident->name + " does not exist");
@@ -626,8 +626,8 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
             }
        case NODE_DOT:
             {
-                Dot_ptr dot = static_pointer_cast<Dot>(node);
-                Expr_ptr owner;
+                Dot::ptr dot = static_pointer_cast<Dot>(node);
+                Expr::ptr owner;
                 get_variable(owner, dot->owner->name);
                 if(owner == nullptr || owner->type == NODE_NULL) {
                     logger->log(dot, "ERROR", "Can't access member of variable " + dot->owner->name);
@@ -635,7 +635,7 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
                 }
 
                 if(owner->type == NODE_PROGRAM) {
-                    Program_ptr program = static_pointer_cast<Program>(owner);
+                    Program::ptr program = static_pointer_cast<Program>(owner);
 
                     bool reupload = false;
                     if(current_program_name != dot->owner->name) {
@@ -653,7 +653,7 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
                         gl->glUseProgram(current_program->handle);
                     }
 
-                    Shader_ptr src = current_program->vertSource;
+                    Shader::ptr src = current_program->vertSource;
                     string type = "";
                     if(src->uniforms->find(dot->name) != src->uniforms->end()) {
                         type = src->uniforms->at(dot->name);
@@ -669,7 +669,7 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
 
                     GLint loc = gl->glGetUniformLocation(current_program->handle, dot->name.c_str());
                     if(type == "float") {
-                        Float_ptr f = make_shared<Float>(0);
+                        Float::ptr f = make_shared<Float>(0);
                         gl->glGetUniformfv(current_program->handle, loc, &(f->value));
                         return f;
                     } else
@@ -714,7 +714,7 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
                     }
                 } else
                 if(owner->type == NODE_TEXTURE) {
-                    Texture_ptr texture = static_pointer_cast<Texture>(owner);
+                    Texture::ptr texture = static_pointer_cast<Texture>(owner);
                     if(dot->name == "width") {
                         return make_shared<Int>(texture->width);
                     }
@@ -727,10 +727,10 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
                     return nullptr;
                 } else
                 if(owner->type == NODE_BUFFER) {
-                    Buffer_ptr buffer = static_pointer_cast<Buffer>(owner);
+                    Buffer::ptr buffer = static_pointer_cast<Buffer>(owner);
                     if(buffer->data.find(dot->name) != buffer->data.end()) {
                         vector<float> attrib_data = buffer->data[dot->name];
-                        List_ptr list = make_shared<List>(nullptr);
+                        List::ptr list = make_shared<List>(nullptr);
                         int size = buffer->sizes[dot->name];
                         for(unsigned int i = 0 ; i < attrib_data.size(); i += size) {
                             if(size == 1) {
@@ -767,9 +767,9 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
 
         case NODE_LIST:
             {
-                List_ptr list = static_pointer_cast<List>(node);
+                List::ptr list = static_pointer_cast<List>(node);
                 if(list->list.size() == 0 && list->literal) {
-                    List_ptr newlist = make_shared<List>(nullptr);
+                    List::ptr newlist = make_shared<List>(nullptr);
                     newlist->literal = false;
                     newlist->first_line = list->first_line;
                     newlist->last_line = list->last_line;
@@ -797,9 +797,9 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
 
         case NODE_VECTOR2:
             {
-                Vector2_ptr vec2 = static_pointer_cast<Vector2>(node);
-                Expr_ptr x = eval_expr(vec2->x);
-                Expr_ptr y = eval_expr(vec2->y);
+                Vector2::ptr vec2 = static_pointer_cast<Vector2>(node);
+                Expr::ptr x = eval_expr(vec2->x);
+                Expr::ptr y = eval_expr(vec2->y);
 
                 if(x == nullptr) {
                     logger->log(vec2->x, "ERROR", "Invalid component of index 0");
@@ -823,10 +823,10 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
 
         case NODE_VECTOR3:
             {
-                Vector3_ptr vec3 = static_pointer_cast<Vector3>((node));
-                Expr_ptr x = eval_expr(vec3->x);
-                Expr_ptr y = eval_expr(vec3->y);
-                Expr_ptr z = eval_expr(vec3->z);
+                Vector3::ptr vec3 = static_pointer_cast<Vector3>((node));
+                Expr::ptr x = eval_expr(vec3->x);
+                Expr::ptr y = eval_expr(vec3->y);
+                Expr::ptr z = eval_expr(vec3->z);
 
                 if(x == nullptr) {
                     logger->log(vec3->x, "ERROR", "Invalid component of index 0");
@@ -854,11 +854,11 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
 
         case NODE_VECTOR4:
             {
-                Vector4_ptr vec4 = static_pointer_cast<Vector4>((node));
-                Expr_ptr x = eval_expr(vec4->x);
-                Expr_ptr y = eval_expr(vec4->y);
-                Expr_ptr z = eval_expr(vec4->z);
-                Expr_ptr w = eval_expr(vec4->w);
+                Vector4::ptr vec4 = static_pointer_cast<Vector4>((node));
+                Expr::ptr x = eval_expr(vec4->x);
+                Expr::ptr y = eval_expr(vec4->y);
+                Expr::ptr z = eval_expr(vec4->z);
+                Expr::ptr w = eval_expr(vec4->w);
                 
                 if(x == nullptr) {
                     logger->log(vec4->x, "ERROR", "Invalid component of index 0");
@@ -890,9 +890,9 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
 
         case NODE_MATRIX2:
             {
-                Matrix2_ptr mat2 = static_pointer_cast<Matrix2>(node);
-                Expr_ptr v0 = eval_expr(mat2->v0);
-                Expr_ptr v1 = eval_expr(mat2->v1);
+                Matrix2::ptr mat2 = static_pointer_cast<Matrix2>(node);
+                Expr::ptr v0 = eval_expr(mat2->v0);
+                Expr::ptr v1 = eval_expr(mat2->v1);
 
                 if(v0 == nullptr) {
                     logger->log(mat2->v0, "ERROR", "Invalid component of index 0");
@@ -910,10 +910,10 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
 
         case NODE_MATRIX3:
             {
-                Matrix3_ptr mat3 = static_pointer_cast<Matrix3>(node);
-                Expr_ptr v0 = eval_expr(mat3->v0);
-                Expr_ptr v1 = eval_expr(mat3->v1);
-                Expr_ptr v2 = eval_expr(mat3->v2);
+                Matrix3::ptr mat3 = static_pointer_cast<Matrix3>(node);
+                Expr::ptr v0 = eval_expr(mat3->v0);
+                Expr::ptr v1 = eval_expr(mat3->v1);
+                Expr::ptr v2 = eval_expr(mat3->v2);
 
                 if(v0 == nullptr) {
                     logger->log(mat3->v0, "ERROR", "Invalid component of index 0");
@@ -936,11 +936,11 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
 
         case NODE_MATRIX4:
             {
-                Matrix4_ptr mat4 = static_pointer_cast<Matrix4>(node);
-                Expr_ptr v0 = eval_expr(mat4->v0);
-                Expr_ptr v1 = eval_expr(mat4->v1);
-                Expr_ptr v2 = eval_expr(mat4->v2);
-                Expr_ptr v3 = eval_expr(mat4->v3);
+                Matrix4::ptr mat4 = static_pointer_cast<Matrix4>(node);
+                Expr::ptr v0 = eval_expr(mat4->v0);
+                Expr::ptr v1 = eval_expr(mat4->v1);
+                Expr::ptr v2 = eval_expr(mat4->v2);
+                Expr::ptr v3 = eval_expr(mat4->v3);
 
                 if(v0 == nullptr) {
                     logger->log(mat4->v0, "ERROR", "Invalid component of index 0");
@@ -968,18 +968,18 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
 
         case NODE_UNARY:
             {
-                Unary_ptr un = static_pointer_cast<Unary>(node);
-                Expr_ptr rhs = eval_expr(un->rhs);
+                Unary::ptr un = static_pointer_cast<Unary>(node);
+                Expr::ptr rhs = eval_expr(un->rhs);
 
                 if(!rhs) return nullptr;
 
                 if(un->op == OP_MINUS) {
                     if(rhs->type == NODE_INT) {
-                        Int_ptr i = static_pointer_cast<Int>(rhs);
+                        Int::ptr i = static_pointer_cast<Int>(rhs);
                         return make_shared<Int>(-(i->value));
                     }
                     if(rhs->type == NODE_FLOAT) {
-                        Float_ptr fl = static_pointer_cast<Float>(rhs);
+                        Float::ptr fl = static_pointer_cast<Float>(rhs);
                         return make_shared<Float>(-(fl->value));
                     }
                     if(rhs->type == NODE_VECTOR2 || rhs->type == NODE_VECTOR3 || rhs->type == NODE_VECTOR4) {
@@ -988,7 +988,7 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
                 }
                 if(un->op == OP_NOT) {
                     if(rhs->type == NODE_BOOL) {
-                        Bool_ptr b = static_pointer_cast<Bool>(rhs);
+                        Bool::ptr b = static_pointer_cast<Bool>(rhs);
                         return make_shared<Bool>(!(b->value));
                     }
                 }
@@ -1000,7 +1000,7 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
                         return make_shared<Float>(fabs(resolve_float(rhs)));
                     }
                     if(rhs->type == NODE_VECTOR2 || rhs->type == NODE_VECTOR3 || rhs->type == NODE_VECTOR4) {
-                        Vector_ptr vec = static_pointer_cast<Vector>(rhs);
+                        Vector::ptr vec = static_pointer_cast<Vector>(rhs);
                         float square = 0;
                         for(unsigned int i = 0; i < vec->size(); i++) {
                             float c = resolve_scalar(vec->get(i));
@@ -1009,19 +1009,19 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
                         return make_shared<Float>(sqrtf(square));
                     }
                     if(rhs->type == NODE_MATRIX2) {
-                        Matrix2_ptr mat2 = static_pointer_cast<Matrix2>(rhs);
+                        Matrix2::ptr mat2 = static_pointer_cast<Matrix2>(rhs);
                         return make_shared<Float>(resolve_scalar(mat2->v0->x) * resolve_scalar(mat2->v1->y) - resolve_scalar(mat2->v0->y) * resolve_scalar(mat2->v1->x));
                     }
                     #define mat3_det(a,b,c,d,e,f,g,h,i) (a * e * i) + (b * f * g) + (c * d * h) - (a * f * h) - (b * d * i) - (c * e * g)
                     if(rhs->type == NODE_MATRIX3) {
-                        Matrix3_ptr mat3 = static_pointer_cast<Matrix3>(rhs);
+                        Matrix3::ptr mat3 = static_pointer_cast<Matrix3>(rhs);
                         float a = resolve_scalar(mat3->v0->x), b = resolve_scalar(mat3->v0->y), c = resolve_scalar(mat3->v0->z);
                         float d = resolve_scalar(mat3->v1->x), e = resolve_scalar(mat3->v1->y), f = resolve_scalar(mat3->v1->z);
                         float g = resolve_scalar(mat3->v2->x), h = resolve_scalar(mat3->v2->y), i = resolve_scalar(mat3->v2->z);
                         return make_shared<Float>(mat3_det(a, b, c, d, e, f, g, h, i));
                     }
                     if(rhs->type == NODE_MATRIX4) {
-                        Matrix4_ptr mat4 = static_pointer_cast<Matrix4>(rhs);
+                        Matrix4::ptr mat4 = static_pointer_cast<Matrix4>(rhs);
                         float a = resolve_scalar(mat4->v0->x), b = resolve_scalar(mat4->v0->y), c = resolve_scalar(mat4->v0->z), d = resolve_scalar(mat4->v0->w);
                         float e = resolve_scalar(mat4->v1->x), f = resolve_scalar(mat4->v1->y), g = resolve_scalar(mat4->v1->z), h = resolve_scalar(mat4->v1->w);
                         float i = resolve_scalar(mat4->v2->x), j = resolve_scalar(mat4->v2->y), k = resolve_scalar(mat4->v2->z), l = resolve_scalar(mat4->v2->w);
@@ -1035,7 +1035,7 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
                         return make_shared<Float>((a * d1) - (b * d2) + (c * d3) - (d * d4));
                     }
                     if(rhs->type == NODE_LIST) {
-                        List_ptr list = static_pointer_cast<List>(rhs);
+                        List::ptr list = static_pointer_cast<List>(rhs);
                         return make_shared<Int>(list->list.size());
                     }
                     return nullptr;
@@ -1052,9 +1052,9 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
 
         case NODE_INDEX:
             {
-                Index_ptr in = static_pointer_cast<Index>(node);
-                Expr_ptr source = eval_expr(in->source);
-                Expr_ptr index = eval_expr(in->index);
+                Index::ptr in = static_pointer_cast<Index>(node);
+                Expr::ptr source = eval_expr(in->source);
+                Expr::ptr index = eval_expr(in->index);
 
                 if(source == nullptr || index == nullptr) {
                     logger->log(in, "ERROR", "Invalid index expression");
@@ -1063,7 +1063,7 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
                 
                 if(source->type == NODE_VECTOR2 || source->type == NODE_VECTOR3 || source->type == NODE_VECTOR4) {
                     if(index->type == NODE_INT) {
-                        Vector_ptr vec = static_pointer_cast<Vector>(source);
+                        Vector::ptr vec = static_pointer_cast<Vector>(source);
                         unsigned int i = resolve_int(index);
                         if(i < vec->size()) {
                             return eval_expr(vec->get(i));
@@ -1074,7 +1074,7 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
                     }
                 }
                 if(source->type == NODE_MATRIX2 && index->type == NODE_INT) {
-                    Matrix2_ptr mat2 = static_pointer_cast<Matrix2>(source);
+                    Matrix2::ptr mat2 = static_pointer_cast<Matrix2>(source);
                     int i = resolve_int(index);
                     if(i == 0) return mat2->v0;
                     if(i == 1) return mat2->v1;
@@ -1083,7 +1083,7 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
                     return nullptr;
                 }
                 if(source->type == NODE_MATRIX3 && index->type == NODE_INT) {
-                    Matrix3_ptr mat3 = static_pointer_cast<Matrix3>(source);
+                    Matrix3::ptr mat3 = static_pointer_cast<Matrix3>(source);
                     int i = resolve_int(index);
                     if(i == 0) return mat3->v0;
                     if(i == 1) return mat3->v1;
@@ -1093,7 +1093,7 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
                     return nullptr;
                 }
                 if(source->type == NODE_MATRIX4 && index->type == NODE_INT) {
-                    Matrix4_ptr mat4 = static_pointer_cast<Matrix4>(source);
+                    Matrix4::ptr mat4 = static_pointer_cast<Matrix4>(source);
                     int i = resolve_int(index);
                     if(i == 0) return mat4->v0;
                     if(i == 1) return mat4->v1;
@@ -1104,7 +1104,7 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
                     return nullptr;
                 }
                 if(source->type == NODE_LIST && index->type == NODE_INT) {
-                    List_ptr list = static_pointer_cast<List>(source);
+                    List::ptr list = static_pointer_cast<List>(source);
                     int i = resolve_int(index);
                     int size = list->list.size();
                     if(i >= 0 && i < size ) {
@@ -1125,7 +1125,7 @@ Expr_ptr Wyatt::Interpreter::eval_expr(Expr_ptr node) {
     return nullptr;
 }
 
-Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
+Expr::ptr Wyatt::Interpreter::eval_stmt(Stmt::ptr stmt) {
     switch(stmt->type) {
         case NODE_FUNCSTMT:
                 invoke(static_pointer_cast<FuncStmt>(stmt)->invoke);
@@ -1133,14 +1133,14 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
 
         case NODE_DECL:
             {
-                Decl_ptr decl = static_pointer_cast<Decl>(stmt);
-                Scope_ptr scope = globalScope;
+                Decl::ptr decl = static_pointer_cast<Decl>(stmt);
+                Scope::ptr scope = globalScope;
                 if(!functionScopeStack.empty()) {
                     scope = functionScopeStack.top()->current();
                 }
 
                 if(decl->datatype->name == "buffer") {
-                    Buffer_ptr buf = make_shared<Buffer>();
+                    Buffer::ptr buf = make_shared<Buffer>();
                     buf->layout = new Layout();
 
                     gl->glGenBuffers(1, &(buf->handle));
@@ -1160,12 +1160,12 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
             }
         case NODE_ASSIGN:
             {
-                Assign_ptr assign = static_pointer_cast<Assign>(stmt);
-                Expr_ptr rhs = eval_expr(assign->value);
+                Assign::ptr assign = static_pointer_cast<Assign>(stmt);
+                Expr::ptr rhs = eval_expr(assign->value);
                 if(rhs != nullptr) {
-                    Expr_ptr lhs = assign->lhs;
+                    Expr::ptr lhs = assign->lhs;
                     if(lhs->type == NODE_IDENT) {
-                        Ident_ptr ident = static_pointer_cast<Ident>(lhs);
+                        Ident::ptr ident = static_pointer_cast<Ident>(lhs);
                         if(!functionScopeStack.empty() && functionScopeStack.top()->assign(assign, ident, rhs)) {
                             return nullptr;
                         }
@@ -1177,8 +1177,8 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                         return nullptr;
 
                     } else if(lhs->type == NODE_DOT) {
-                        Dot_ptr dot = static_pointer_cast<Dot>(lhs);
-                        Expr_ptr owner;
+                        Dot::ptr dot = static_pointer_cast<Dot>(lhs);
+                        Expr::ptr owner;
                         get_variable(owner, dot->owner->name);
                         if(owner == nullptr || owner->type == NODE_NULL) {
                             logger->log(dot, "ERROR", "Can't assign to member of variable " + dot->owner->name);
@@ -1186,7 +1186,7 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                         }
 
                         if(owner->type == NODE_PROGRAM) {
-                            Program_ptr program = static_pointer_cast<Program>(owner);
+                            Program::ptr program = static_pointer_cast<Program>(owner);
                             bool reupload = false;
                             if(current_program_name != dot->owner->name) {
                                 current_program_name = dot->owner->name;
@@ -1203,7 +1203,7 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                 gl->glUseProgram(current_program->handle);
                             }
 
-                            Shader_ptr src = current_program->vertSource;
+                            Shader::ptr src = current_program->vertSource;
                             string type = "";
                             if(src->uniforms->find(dot->name) != src->uniforms->end()) {
                                 type = src->uniforms->at(dot->name);
@@ -1220,7 +1220,7 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                             GLint loc = gl->glGetUniformLocation(current_program->handle, dot->name.c_str());
                             if(type == "float") {
                                 if(rhs->type == NODE_FLOAT) {
-                                    Float_ptr f = static_pointer_cast<Float>(rhs);
+                                    Float::ptr f = static_pointer_cast<Float>(rhs);
                                     gl->glUniform1f(loc, resolve_float(f));
                                 } else {
                                     logger->log(dot, "ERROR", "Uniform upload mismatch: float required for " + dot->name + " of shader " + current_program_name);
@@ -1229,7 +1229,7 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                             } else
                             if(type == "vec2") {
                                 if(rhs->type == NODE_VECTOR2) {
-                                    Vector2_ptr vec2 = static_pointer_cast<Vector2>(eval_expr(rhs));
+                                    Vector2::ptr vec2 = static_pointer_cast<Vector2>(eval_expr(rhs));
                                     gl->glUniform2f(loc, resolve_vec2(vec2));
                                 } else {
                                     logger->log(dot, "ERROR", "Uniform upload mismatch: vec2 required for " + dot->name + " of shader " + current_program_name);
@@ -1238,7 +1238,7 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                             } else 
                             if(type == "vec3") {
                                 if(rhs->type == NODE_VECTOR3) {
-                                    Vector3_ptr vec3 = static_pointer_cast<Vector3>(eval_expr(rhs));
+                                    Vector3::ptr vec3 = static_pointer_cast<Vector3>(eval_expr(rhs));
                                     gl->glUniform3f(loc, resolve_vec3(vec3));
                                 } else {
                                     logger->log(dot, "ERROR", "Uniform upload mismatch: vec3 required for " + dot->name + " of shader " + current_program_name);
@@ -1247,7 +1247,7 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                             } else
                             if(type == "vec4") {
                                 if(rhs->type == NODE_VECTOR4) {
-                                    Vector4_ptr vec4 = static_pointer_cast<Vector4>(eval_expr(rhs));
+                                    Vector4::ptr vec4 = static_pointer_cast<Vector4>(eval_expr(rhs));
                                     gl->glUniform4f(loc, resolve_vec4(vec4));
                                 } else {
                                     logger->log(dot, "ERROR", "Uniform upload mismatch: vec4 required for " + dot->name + " of shader " + current_program_name);
@@ -1256,7 +1256,7 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                             } else
                             if(type == "mat2") {
                                 if(rhs->type == NODE_MATRIX2) {
-                                    Matrix2_ptr mat2 = static_pointer_cast<Matrix2>(eval_expr(rhs));
+                                    Matrix2::ptr mat2 = static_pointer_cast<Matrix2>(eval_expr(rhs));
                                     float data[4];
                                     data[0] = resolve_scalar(mat2->v0->x); data[1] = resolve_scalar(mat2->v0->y);
                                     data[2] = resolve_scalar(mat2->v1->x); data[3] = resolve_scalar(mat2->v1->y);
@@ -1268,7 +1268,7 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                             } else
                             if(type == "mat3") {
                                 if(rhs->type == NODE_MATRIX3) {
-                                    Matrix3_ptr mat3 = static_pointer_cast<Matrix3>(eval_expr(rhs));
+                                    Matrix3::ptr mat3 = static_pointer_cast<Matrix3>(eval_expr(rhs));
                                     float data[9];
                                     data[0] = resolve_scalar(mat3->v0->x); data[1] = resolve_scalar(mat3->v0->y); data[2] = resolve_scalar(mat3->v0->z);
                                     data[3] = resolve_scalar(mat3->v1->x); data[4] = resolve_scalar(mat3->v1->y); data[5] = resolve_scalar(mat3->v1->z);
@@ -1281,7 +1281,7 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                             } else
                             if(type == "mat4") {
                                 if(rhs->type == NODE_MATRIX4) {
-                                    Matrix4_ptr mat4 = static_pointer_cast<Matrix4>(eval_expr(rhs));
+                                    Matrix4::ptr mat4 = static_pointer_cast<Matrix4>(eval_expr(rhs));
                                     float data[16];
                                     data[0] = resolve_scalar(mat4->v0->x); data[1] = resolve_scalar(mat4->v0->y); data[2] = resolve_scalar(mat4->v0->z); data[3] = resolve_scalar(mat4->v0->w);
                                     data[4] = resolve_scalar(mat4->v1->x); data[5] = resolve_scalar(mat4->v1->y); data[6] = resolve_scalar(mat4->v1->z); data[7] = resolve_scalar(mat4->v1->w);
@@ -1297,12 +1297,12 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                 switch(rhs->type) {
                                     case NODE_TEXTURE:
                                         {
-                                            Shader_ptr frag = current_program->fragSource;
+                                            Shader::ptr frag = current_program->fragSource;
                                             auto texSlots = frag->textureSlots;
                                             auto it = find(texSlots->begin(), texSlots->end(), dot->name);
                                             activeTextureSlot = it - texSlots->begin();
 
-                                            Texture_ptr tex = static_pointer_cast<Texture>(rhs);
+                                            Texture::ptr tex = static_pointer_cast<Texture>(rhs);
                                             gl->glActiveTexture(GL_TEXTURE0 + activeTextureSlot);
                                             if(tex->handle == 0) {
                                                 gl->glGenTextures(1, &(tex->handle));
@@ -1360,23 +1360,23 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                             }
                         } else
                         if(owner->type == NODE_TEXTURE) {
-                            Texture_ptr texture = static_pointer_cast<Texture>(owner);
+                            Texture::ptr texture = static_pointer_cast<Texture>(owner);
                             if(dot->name == "width" || dot->name == "height" || dot->name == "channels") {
                                 logger->log(dot->owner, "ERROR", "Field \"" + dot->name + "\" of texture is read-only");
                                 return nullptr;
                             }
                         }
                     } else if (lhs->type == NODE_INDEX) {
-                        Index_ptr in = static_pointer_cast<Index>(lhs);
-                        Expr_ptr source = eval_expr(in->source);
-                        Expr_ptr index = eval_expr(in->index);
+                        Index::ptr in = static_pointer_cast<Index>(lhs);
+                        Expr::ptr source = eval_expr(in->source);
+                        Expr::ptr index = eval_expr(in->index);
                         if(source == nullptr || index == nullptr) {
                             logger->log(in, "ERROR", "Invalid index expression");
                             return nullptr;
                         }
 
                         if(source->type == NODE_LIST && index->type == NODE_INT) {
-                            List_ptr list = static_pointer_cast<List>(source);
+                            List::ptr list = static_pointer_cast<List>(source);
                             int i = resolve_int(index);
                             int size = list->list.size();
                             if(i >= 0 && i < size) {
@@ -1394,7 +1394,7 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                     logger->log(assign, "ERROR", type_to_name(rhs->type) + " component needs to be a float or an int");
                                     return nullptr;
                                 }
-                                Vector_ptr vec = static_pointer_cast<Vector>(source);
+                                Vector::ptr vec = static_pointer_cast<Vector>(source);
                                 unsigned int i = resolve_int(index);
                                 if(i < vec->size()) {
                                     vec->set(i, rhs);
@@ -1409,7 +1409,7 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                 logger->log(assign, "ERROR", "mat2 component needs to be vec2");
                                 return nullptr;
                             }
-                            Matrix2_ptr mat2 = static_pointer_cast<Matrix2>(source);
+                            Matrix2::ptr mat2 = static_pointer_cast<Matrix2>(source);
                             int i = resolve_int(index);
                             if(i == 0) mat2->v0 = static_pointer_cast<Vector2>(rhs);
                             else if(i == 1) mat2->v1 = static_pointer_cast<Vector2>(rhs);
@@ -1422,7 +1422,7 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                 logger->log(assign, "ERROR", "mat3 component needs to be vec3");
                                 return nullptr;
                             }
-                            Matrix3_ptr mat3 = static_pointer_cast<Matrix3>(source);
+                            Matrix3::ptr mat3 = static_pointer_cast<Matrix3>(source);
                             int i = resolve_int(index);
                             if(i == 0) mat3->v0 = static_pointer_cast<Vector3>(rhs);
                             else if(i == 1) mat3->v1 = static_pointer_cast<Vector3>(rhs);
@@ -1436,7 +1436,7 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                                 logger->log(assign, "ERROR", "mat4 component needs to be vec4");
                                 return nullptr;
                             }
-                            Matrix4_ptr mat4 = static_pointer_cast<Matrix4>(source);
+                            Matrix4::ptr mat4 = static_pointer_cast<Matrix4>(source);
                             int i = resolve_int(index);
                             if(i == 0) mat4->v0 =static_pointer_cast<Vector4>( rhs);
                             else if(i == 1) mat4->v1 = static_pointer_cast<Vector4>(rhs);
@@ -1461,14 +1461,14 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
             }
         case NODE_ALLOC:
             {
-                Alloc_ptr alloc = static_pointer_cast<Alloc>(stmt);
+                Alloc::ptr alloc = static_pointer_cast<Alloc>(stmt);
 
-                Scope_ptr scope = globalScope;
+                Scope::ptr scope = globalScope;
                 if(!functionScopeStack.empty()) {
                     scope = functionScopeStack.top()->current();
                 }
 
-                Buffer_ptr buf = make_shared<Buffer>();
+                Buffer::ptr buf = make_shared<Buffer>();
                 buf->layout = new Layout();
 
                 gl->glGenBuffers(1, &(buf->handle));
@@ -1480,19 +1480,19 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
             }
         case NODE_UPLOAD:
             {
-                Upload_ptr upload = static_pointer_cast<Upload>(stmt);
+                Upload::ptr upload = static_pointer_cast<Upload>(stmt);
 
-                Expr_ptr expr = nullptr;
+                Expr::ptr expr = nullptr;
                 get_variable(expr, upload->ident->name);
                 if(expr == nullptr || expr->type != NODE_BUFFER) {
                     logger->log(upload, "ERROR", "Cannot upload to non-buffer object");
                     return nullptr;
                 }
 
-                Buffer_ptr buffer = static_pointer_cast<Buffer>(expr);
+                Buffer::ptr buffer = static_pointer_cast<Buffer>(expr);
                 if(upload->attrib->name == "indices") {
                     for(unsigned int i = 0 ; i < upload->list->list.size(); i++) {
-                        Expr_ptr e = eval_expr(upload->list->list[i]);
+                        Expr::ptr e = eval_expr(upload->list->list[i]);
                         if(e == nullptr || e->type != NODE_INT) {
                             logger->log(upload, "ERROR", "Cannot upload non-int value into index buffer");
                             return nullptr;
@@ -1512,7 +1512,7 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                         logger->log(upload, "ERROR", "Can't upload illegal value into buffer");
                         return nullptr;
                     }
-                    Expr_ptr expr = eval_expr(upload->list->list[i]);
+                    Expr::ptr expr = eval_expr(upload->list->list[i]);
                     if(expr == nullptr) {
                         logger->log(upload, "ERROR", "Can't upload illegal value into buffer");
                         return nullptr;
@@ -1520,7 +1520,7 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
 
                     unsigned int size = attrib_size(expr->type);
                     if(expr->type == NODE_LIST) {
-                        List_ptr list = static_pointer_cast<List>(expr);
+                        List::ptr list = static_pointer_cast<List>(expr);
                         size = attrib_size(eval_expr(list->list[i])->type);
                     }
                     if(size == 0) {
@@ -1539,25 +1539,25 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     }
 
                     if(expr->type == NODE_FLOAT) {
-                        Float_ptr f = static_pointer_cast<Float>(expr);
+                        Float::ptr f = static_pointer_cast<Float>(expr);
                         target->push_back(resolve_scalar(f));
                     }
                     
                     if(expr->type == NODE_VECTOR2) {
-                        Vector2_ptr vec2 = static_pointer_cast<Vector2>(expr);
+                        Vector2::ptr vec2 = static_pointer_cast<Vector2>(expr);
                         target->push_back(resolve_scalar(vec2->x));
                         target->push_back(resolve_scalar(vec2->y));
                     }
 
                     if(expr->type == NODE_VECTOR3) {
-                        Vector3_ptr vec3 = static_pointer_cast<Vector3>(expr);
+                        Vector3::ptr vec3 = static_pointer_cast<Vector3>(expr);
                         target->push_back(resolve_scalar(vec3->x));
                         target->push_back(resolve_scalar(vec3->y));
                         target->push_back(resolve_scalar(vec3->z));
                     }
 
                     if(expr->type == NODE_VECTOR4) {
-                        Vector4_ptr vec4 = static_pointer_cast<Vector4>(expr);
+                        Vector4::ptr vec4 = static_pointer_cast<Vector4>(expr);
                         target->push_back(resolve_scalar(vec4->x));
                         target->push_back(resolve_scalar(vec4->y));
                         target->push_back(resolve_scalar(vec4->z));
@@ -1565,34 +1565,34 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     }
 
                     if(expr->type == NODE_LIST) {
-                        List_ptr list = static_pointer_cast<List>(expr);
+                        List::ptr list = static_pointer_cast<List>(expr);
                         for(auto it = list->list.begin(); it != list->list.end(); ++it) {
-                            Expr_ptr item = eval_expr(*it);
+                            Expr::ptr item = eval_expr(*it);
                             if(size != attrib_size(item->type)) {
                                 logger->log(upload, "ERROR", "Attribute size must be consistent");
                                 return nullptr;
                             }
 
                             if(item->type == NODE_FLOAT) {
-                                Float_ptr f = static_pointer_cast<Float>(item);
+                                Float::ptr f = static_pointer_cast<Float>(item);
                                 target->push_back(resolve_scalar(f));
                             }
                             
                             if(item->type == NODE_VECTOR2) {
-                                Vector2_ptr vec2 = static_pointer_cast<Vector2>(item);
+                                Vector2::ptr vec2 = static_pointer_cast<Vector2>(item);
                                 target->push_back(resolve_scalar(vec2->x));
                                 target->push_back(resolve_scalar(vec2->y));
                             }
 
                             if(item->type == NODE_VECTOR3) {
-                                Vector3_ptr vec3 = static_pointer_cast<Vector3>(item);
+                                Vector3::ptr vec3 = static_pointer_cast<Vector3>(item);
                                 target->push_back(resolve_scalar(vec3->x));
                                 target->push_back(resolve_scalar(vec3->y));
                                 target->push_back(resolve_scalar(vec3->z));
                             }
 
                             if(item->type == NODE_VECTOR4) {
-                                Vector4_ptr vec4 = static_pointer_cast<Vector4>(item);
+                                Vector4::ptr vec4 = static_pointer_cast<Vector4>(item);
                                 target->push_back(resolve_scalar(vec4->x));
                                 target->push_back(resolve_scalar(vec4->y));
                                 target->push_back(resolve_scalar(vec4->z));
@@ -1608,9 +1608,9 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
             }
         case NODE_COMPBINARY:
             {
-                CompBinary_ptr compbin = static_pointer_cast<CompBinary>(stmt);
-                Expr_ptr lhs = eval_expr(compbin->lhs);
-                Expr_ptr rhs = eval_expr(compbin->rhs);
+                CompBinary::ptr compbin = static_pointer_cast<CompBinary>(stmt);
+                Expr::ptr lhs = eval_expr(compbin->lhs);
+                Expr::ptr rhs = eval_expr(compbin->rhs);
                 OpType op = compbin->op;
 
                 if(lhs == nullptr) {
@@ -1624,14 +1624,14 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 }
 
                 if(op == OP_PLUS && lhs->type == NODE_LIST) {
-                    List_ptr list = static_pointer_cast<List>(lhs);
+                    List::ptr list = static_pointer_cast<List>(lhs);
 
                     if(rhs->type != NODE_UPLOADLIST) {
                        list->list.push_back(rhs);
                     } else {
-                        UploadList_ptr uploadList = static_pointer_cast<UploadList>(rhs);
+                        UploadList::ptr uploadList = static_pointer_cast<UploadList>(rhs);
                         for(unsigned int i = 0; i < uploadList->list.size(); i++) {
-                            Expr_ptr expr = eval_expr(uploadList->list[i]);
+                            Expr::ptr expr = eval_expr(uploadList->list[i]);
                             if(expr != nullptr) {
                                 list->list.push_back(expr);
                             } else {
@@ -1643,11 +1643,11 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                 } else {
                     rhs = compbin->rhs;
                     if(op == OP_PLUS && rhs->type == NODE_UPLOADLIST) {
-                        UploadList_ptr uploadList = static_pointer_cast<UploadList>(compbin->rhs);
+                        UploadList::ptr uploadList = static_pointer_cast<UploadList>(compbin->rhs);
                         rhs = uploadList->list[0];
                     }
-                    Binary_ptr bin = make_shared<Binary>(compbin->lhs, op, rhs);
-                    Assign_ptr assign = make_shared<Assign>(compbin->lhs, bin);
+                    Binary::ptr bin = make_shared<Binary>(compbin->lhs, op, rhs);
+                    Assign::ptr assign = make_shared<Assign>(compbin->lhs, bin);
                     bin->first_line = assign->first_line = compbin->first_line;
                     bin->last_line = assign->last_line = compbin->last_line;
                     return eval_stmt(assign);
@@ -1657,7 +1657,7 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
             }
         case NODE_DRAW:
             {
-                Draw_ptr draw = static_pointer_cast<Draw>(stmt);
+                Draw::ptr draw = static_pointer_cast<Draw>(stmt);
 
                 if(draw->program != nullptr) {
                     if(current_program_name != draw->program->name) {
@@ -1673,14 +1673,14 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     gl->glUseProgram(current_program->handle);
                 }
 
-                Expr_ptr expr = nullptr;
+                Expr::ptr expr = nullptr;
                 get_variable(expr, draw->ident->name);
                 if(expr  == nullptr || expr->type != NODE_BUFFER) {
                     logger->log(draw, "ERROR", "Can't draw non-buffer object");
                     return nullptr;
                 }
 
-                Texture_ptr target = static_pointer_cast<Texture>(eval_expr(draw->target));
+                Texture::ptr target = static_pointer_cast<Texture>(eval_expr(draw->target));
                 if(target != nullptr) {
                     if(target->framebuffer == 0) {
                         gl->glGenFramebuffers(1, &(target->framebuffer));
@@ -1706,7 +1706,7 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     gl->glBindFramebuffer(GL_FRAMEBUFFER, 0);
                 }
 
-                Buffer_ptr buffer = static_pointer_cast<Buffer>(expr);
+                Buffer::ptr buffer = static_pointer_cast<Buffer>(expr);
                 if(buffer != nullptr) {
                     Layout* layout = buffer->layout;
                     vector<float> final_vector;
@@ -1766,11 +1766,11 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
             }
         case NODE_CLEAR:
             {
-                Clear_ptr clear = static_pointer_cast<Clear>(stmt);
+                Clear::ptr clear = static_pointer_cast<Clear>(stmt);
                 if(clear->color != nullptr) {
-                    Expr_ptr color = eval_expr(clear->color);
+                    Expr::ptr color = eval_expr(clear->color);
                     if(color != nullptr && color->type == NODE_VECTOR3) {
-                        Vector3_ptr v = static_pointer_cast<Vector3>(color);
+                        Vector3::ptr v = static_pointer_cast<Vector3>(color);
                         gl->glClearColor(resolve_scalar(v->x), resolve_scalar(v->y), resolve_scalar(v->z), 1.0f);
                     } else {
                         logger->log(clear, "ERROR", "Invalid clear color");
@@ -1781,11 +1781,11 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
             }
         case NODE_VIEWPORT:
             {
-                Viewport_ptr viewport = static_pointer_cast<Viewport>(stmt);
+                Viewport::ptr viewport = static_pointer_cast<Viewport>(stmt);
                 if(viewport->bounds != nullptr) {
-                    Expr_ptr bounds = eval_expr(viewport->bounds);
+                    Expr::ptr bounds = eval_expr(viewport->bounds);
                     if(bounds != nullptr && bounds->type == NODE_VECTOR4) {
-                        Vector4_ptr v = static_pointer_cast<Vector4>(bounds);
+                        Vector4::ptr v = static_pointer_cast<Vector4>(bounds);
                         int bounds_int[4];
 
                         for(unsigned int i = 0; i < 4; i++) {
@@ -1807,16 +1807,16 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
             }
         case NODE_IF:
             {
-                If_ptr ifstmt = static_pointer_cast<If>(stmt);
-                Expr_ptr condition = eval_expr(ifstmt->condition);
+                If::ptr ifstmt = static_pointer_cast<If>(stmt);
+                Expr::ptr condition = eval_expr(ifstmt->condition);
                 if(!condition) return nullptr;
                 if(condition->type == NODE_BOOL) {
                     bool b = (static_pointer_cast<Bool>(condition)->value);
-                    Stmts_ptr execute = nullptr; 
+                    Stmts::ptr execute = nullptr; 
                     if(!b) {
                         if(ifstmt->elseIfBlocks != nullptr) {
                             for(auto it = ifstmt->elseIfBlocks->begin(); it != ifstmt->elseIfBlocks->end(); ++it) {
-                                If_ptr elseIf = *it;
+                                If::ptr elseIf = *it;
                                 bool eb = static_pointer_cast<Bool>(eval_expr(elseIf->condition))->value;
                                 if(eb) {
                                     execute = elseIf->block;
@@ -1832,7 +1832,7 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     }
                     if(execute != nullptr) {
                         functionScopeStack.top()->attach("if");
-                        Expr_ptr returnValue = execute_stmts(execute);
+                        Expr::ptr returnValue = execute_stmts(execute);
                         functionScopeStack.top()->detach();
                         if(returnValue != nullptr) {
                             return returnValue;
@@ -1845,8 +1845,8 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
             }
         case NODE_WHILE:
             {
-                While_ptr whilestmt = static_pointer_cast<While>(stmt);
-                Expr_ptr condition = eval_expr(whilestmt->condition);
+                While::ptr whilestmt = static_pointer_cast<While>(stmt);
+                Expr::ptr condition = eval_expr(whilestmt->condition);
                 if(!condition) return nullptr;
                 if(condition->type == NODE_BOOL) {
                     time_t start = time(nullptr);
@@ -1857,7 +1857,7 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                         bool b = (static_pointer_cast<Bool>(condition)->value);
                         if(!b) break;
 
-                        Expr_ptr returnValue = execute_stmts(whilestmt->block);
+                        Expr::ptr returnValue = execute_stmts(whilestmt->block);
                         if(returnValue != nullptr) {
                             breakable = false; 
                             return returnValue;
@@ -1878,10 +1878,10 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
             }
         case NODE_FOR:
             {
-                For_ptr forstmt = static_pointer_cast<For>(stmt);
-                Ident_ptr iterator = forstmt->iterator;
-                Expr_ptr start = eval_expr(forstmt->start), end = eval_expr(forstmt->end), increment = eval_expr(forstmt->increment);
-                Expr_ptr list = eval_expr(forstmt->list);
+                For::ptr forstmt = static_pointer_cast<For>(stmt);
+                Ident::ptr iterator = forstmt->iterator;
+                Expr::ptr start = eval_expr(forstmt->start), end = eval_expr(forstmt->end), increment = eval_expr(forstmt->increment);
+                Expr::ptr list = eval_expr(forstmt->list);
                 if(list == nullptr) {
                     if(start->type == NODE_INT || end->type == NODE_INT || increment->type == NODE_INT) {
                         functionScopeStack.top()->attach("for");
@@ -1890,12 +1890,12 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
 
                         breakable = true;
                         while(true) {
-                            Bool_ptr terminate = static_pointer_cast<Bool>(eval_binary(make_shared<Binary>(iterator, OP_EQUAL, end)));
+                            Bool::ptr terminate = static_pointer_cast<Bool>(eval_binary(make_shared<Binary>(iterator, OP_EQUAL, end)));
                             if(terminate == nullptr || terminate->value) {
                                 break;
                             }
 
-                            Expr_ptr returnValue = execute_stmts(forstmt->block);
+                            Expr::ptr returnValue = execute_stmts(forstmt->block);
                             if(returnValue != nullptr) {
                                 breakable = false;
                                 return returnValue;
@@ -1911,7 +1911,7 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                         functionScopeStack.top()->detach();
                     }
                 } else if(list->type == NODE_LIST) {
-                    List_ptr lst = static_pointer_cast<List>(list);
+                    List::ptr lst = static_pointer_cast<List>(list);
                     functionScopeStack.top()->attach("for");
                     eval_stmt(make_shared<Decl>(make_shared<Ident>("var"), iterator, nullptr));
                     unsigned int i = 0; 
@@ -1922,7 +1922,7 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
                     while(i < lst->list.size()) {
                         eval_stmt(make_shared<Assign>(iterator, lst->list[i]));
 
-                        Expr_ptr returnValue = execute_stmts(forstmt->block);
+                        Expr::ptr returnValue = execute_stmts(forstmt->block);
                         if(returnValue != nullptr) {
                             return returnValue;
                         }
@@ -1941,8 +1941,8 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
             }
         case NODE_PRINT:
             {
-                Print_ptr print = static_pointer_cast<Print>(stmt);
-                Expr_ptr output = eval_expr(print->expr);
+                Print::ptr print = static_pointer_cast<Print>(stmt);
+                Expr::ptr output = eval_expr(print->expr);
                 if(output == nullptr)
                     return nullptr;
 
@@ -1954,10 +1954,10 @@ Expr_ptr Wyatt::Interpreter::eval_stmt(Stmt_ptr stmt) {
     }
 }
 
-Expr_ptr Wyatt::Interpreter::execute_stmts(Stmts_ptr stmts) {
-    Expr_ptr returnValue = nullptr;
+Expr::ptr Wyatt::Interpreter::execute_stmts(Stmts::ptr stmts) {
+    Expr::ptr returnValue = nullptr;
     for(unsigned int it = 0; it < stmts->list.size(); it++) { 
-        Stmt_ptr stmt = stmts->list.at(it);
+        Stmt::ptr stmt = stmts->list.at(it);
         if(stmt->type == NODE_BREAK && breakable) {
             //return null_expr to break
             returnValue = null_expr;
@@ -1965,12 +1965,12 @@ Expr_ptr Wyatt::Interpreter::execute_stmts(Stmts_ptr stmts) {
         }
 
         if(stmt->type == NODE_RETURN) {
-            Return_ptr ret = static_pointer_cast<Return>(stmt);
+            Return::ptr ret = static_pointer_cast<Return>(stmt);
             returnValue = ret->value;
             break;
         }
 
-        Expr_ptr expr = eval_stmt(stmt);
+        Expr::ptr expr = eval_stmt(stmt);
         if(expr != nullptr) {
             returnValue = expr;
             break;
@@ -1984,7 +1984,7 @@ Expr_ptr Wyatt::Interpreter::execute_stmts(Stmts_ptr stmts) {
     }
 }
 
-void Wyatt::Interpreter::compile_shader(GLuint* handle, Shader_ptr shader) {
+void Wyatt::Interpreter::compile_shader(GLuint* handle, Shader::ptr shader) {
     transpiler->layouts = &layouts;
     string code = transpiler->transpile(shader);
     cout << code << endl;
@@ -2004,7 +2004,7 @@ void Wyatt::Interpreter::compile_shader(GLuint* handle, Shader_ptr shader) {
 
 void Wyatt::Interpreter::compile_program() {
     for(auto it = shaders.begin(); it != shaders.end(); ++it) {
-        Program_ptr program = make_shared<Program>();
+        Program::ptr program = make_shared<Program>();
         program->handle = gl->glCreateProgram();
         program->vert = gl->glCreateShader(GL_VERTEX_SHADER);
         program->frag = gl->glCreateShader(GL_FRAGMENT_SHADER);
@@ -2045,13 +2045,13 @@ void Wyatt::Interpreter::compile_program() {
 void Wyatt::Interpreter::execute_init() {
     if(!init || status) return;
 
-    Decl_ptr piDecl = make_shared<Decl>(make_shared<Ident>("float"), make_shared<Ident>("PI"), make_shared<Float>(3.14159f));
+    Decl::ptr piDecl = make_shared<Decl>(make_shared<Ident>("float"), make_shared<Ident>("PI"), make_shared<Float>(3.14159f));
     piDecl->constant = true;
 
-    Decl_ptr widthDecl = make_shared<Decl>(make_shared<Ident>("int"), make_shared<Ident>("WIDTH"), make_shared<Int>(width));
+    Decl::ptr widthDecl = make_shared<Decl>(make_shared<Ident>("int"), make_shared<Ident>("WIDTH"), make_shared<Int>(width));
     widthDecl->constant = true;
 
-    Decl_ptr heightDecl = make_shared<Decl>(make_shared<Ident>("int"), make_shared<Ident>("HEIGHT"), make_shared<Int>(height));
+    Decl::ptr heightDecl = make_shared<Decl>(make_shared<Ident>("int"), make_shared<Ident>("HEIGHT"), make_shared<Int>(height));
     heightDecl->constant = true;
 
     globals.insert(globals.begin(), piDecl);
@@ -2059,7 +2059,7 @@ void Wyatt::Interpreter::execute_init() {
     globals.insert(globals.begin(), heightDecl);
 
     for(auto it = globals.begin(); it != globals.end(); ++it) {
-        Decl_ptr decl = *it;
+        Decl::ptr decl = *it;
         eval_stmt(decl);
     }
 

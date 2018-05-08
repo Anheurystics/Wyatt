@@ -42,108 +42,13 @@ enum OpType {
     OP_PLUS, OP_MINUS, OP_MULT, OP_EXP, OP_DIV, OP_MOD, OP_ABS, OP_AND, OP_OR, OP_NOT, OP_EQUAL, OP_LTHAN, OP_GTHAN, OP_NEQUAL, OP_LEQUAL, OP_GEQUAL
 };
 
-class Node;
-class Expr;
-class Ident;
-class Dot;
-class Binary;
-class Unary;
-class Bool;
-class Int;
-class Float;
-class String;
-class Vector;
-class Vector2;
-class Vector3;
-class Vector4;
-class Matrix2;
-class Matrix3;
-class Matrix4;
-class Index;
-class Buffer;
-class Texture;
-class Stmt;
-class Stmts;
-class List;
-class ArgList;
-class ParamList;
-class Return;
-class FuncDef;
-class If;
-class While;
-class For;
-class Break;
-class Assign;
-class Decl;
-class Alloc;
-class UploadList;
-class Upload;
-class CompBinary;
-class Draw;
-class Clear;
-class Viewport;
-class Print;
-class Invoke;
-class FuncExpr;
-class FuncStmt;
-class Shader;
-class Program;
-class ProgramLayout;
-struct ShaderPair;
-
-typedef shared_ptr<Node> Node_ptr;
-typedef shared_ptr<Expr> Expr_ptr;
-typedef shared_ptr<Ident> Ident_ptr;
-typedef shared_ptr<Dot> Dot_ptr;
-typedef shared_ptr<Binary> Binary_ptr;
-typedef shared_ptr<Unary> Unary_ptr;
-typedef shared_ptr<Bool> Bool_ptr;
-typedef shared_ptr<Int> Int_ptr;
-typedef shared_ptr<Float> Float_ptr;
-typedef shared_ptr<String> String_ptr;
-typedef shared_ptr<Vector> Vector_ptr;
-typedef shared_ptr<Vector2> Vector2_ptr;
-typedef shared_ptr<Vector3> Vector3_ptr;
-typedef shared_ptr<Vector4> Vector4_ptr;
-typedef shared_ptr<Matrix2> Matrix2_ptr;
-typedef shared_ptr<Matrix3> Matrix3_ptr;
-typedef shared_ptr<Matrix4> Matrix4_ptr;
-typedef shared_ptr<Index> Index_ptr;
-typedef shared_ptr<Buffer> Buffer_ptr;
-typedef shared_ptr<Texture> Texture_ptr;
-typedef shared_ptr<Stmt> Stmt_ptr;
-typedef shared_ptr<Stmts> Stmts_ptr;
-typedef shared_ptr<List> List_ptr;
-typedef shared_ptr<ArgList> ArgList_ptr;
-typedef shared_ptr<ParamList> ParamList_ptr;
-typedef shared_ptr<Return> Return_ptr;
-typedef shared_ptr<FuncDef> FuncDef_ptr;
-typedef shared_ptr<If> If_ptr;
-typedef shared_ptr<While> While_ptr;
-typedef shared_ptr<Break> Break_ptr;
-typedef shared_ptr<For> For_ptr;
-typedef shared_ptr<Assign> Assign_ptr;
-typedef shared_ptr<Decl> Decl_ptr;
-typedef shared_ptr<Alloc> Alloc_ptr;
-typedef shared_ptr<UploadList> UploadList_ptr;
-typedef shared_ptr<Upload> Upload_ptr;
-typedef shared_ptr<CompBinary> CompBinary_ptr;
-typedef shared_ptr<Draw> Draw_ptr;
-typedef shared_ptr<Clear> Clear_ptr;
-typedef shared_ptr<Viewport> Viewport_ptr;
-typedef shared_ptr<Print> Print_ptr;
-typedef shared_ptr<Invoke> Invoke_ptr;
-typedef shared_ptr<FuncExpr> FuncExpr_ptr;
-typedef shared_ptr<FuncStmt> FuncStmt_ptr;
-typedef shared_ptr<Shader> Shader_ptr;
-typedef shared_ptr<Program> Program_ptr;
-typedef shared_ptr<ProgramLayout> ProgramLayout_ptr;
-typedef shared_ptr<ShaderPair> ShaderPair_ptr;
-
 #define null_expr make_shared<Expr>(NODE_NULL)
+#define DEFINE_PTR(type) typedef shared_ptr<type> ptr;
 
 class Node {
     public:
+        DEFINE_PTR(Node)
+
         unsigned int first_line, last_line;
         unsigned int first_column, last_column;
         NodeType type;
@@ -153,6 +58,8 @@ class Node {
 
 class Expr: public Node {
     public:
+        DEFINE_PTR(Expr)
+
         bool parenthesized = false;
         Expr(): Node(NODE_EXPR) { }
         Expr(NodeType type): Node(type) { }
@@ -160,6 +67,8 @@ class Expr: public Node {
 
 class Ident: public Expr {
     public:
+        DEFINE_PTR(Ident)
+
         string name;
 
         Ident(string name): Expr(NODE_IDENT), name(name) {}
@@ -167,31 +76,39 @@ class Ident: public Expr {
 
 class Dot: public Ident {
     public:
-        Ident_ptr owner;
+        DEFINE_PTR(Dot)
 
-        Dot(Ident_ptr shader, Ident_ptr ident): Ident(ident->name), owner(shader) {
+        Ident::ptr owner;
+
+        Dot(Ident::ptr shader, Ident::ptr ident): Ident(ident->name), owner(shader) {
             type = NODE_DOT;
         }
 };
 
 class Binary: public Expr {
     public:
-        OpType op;
-        Expr_ptr lhs, rhs;
+        DEFINE_PTR(Binary)
 
-        Binary(Expr_ptr lhs, OpType op, Expr_ptr rhs): Expr(NODE_BINARY), op(op), lhs(lhs), rhs(rhs) {}
+        OpType op;
+        Expr::ptr lhs, rhs;
+
+        Binary(Expr::ptr lhs, OpType op, Expr::ptr rhs): Expr(NODE_BINARY), op(op), lhs(lhs), rhs(rhs) {}
 };
 
 class Unary: public Expr {
     public:
-        OpType op;
-        Expr_ptr rhs;
+        DEFINE_PTR(Unary)
 
-        Unary(OpType op, Expr_ptr rhs): Expr(NODE_UNARY), op(op), rhs(rhs) {}
+        OpType op;
+        Expr::ptr rhs;
+
+        Unary(OpType op, Expr::ptr rhs): Expr(NODE_UNARY), op(op), rhs(rhs) {}
 };
 
 class Bool: public Expr {
     public:
+        DEFINE_PTR(Bool)
+
         bool value;
 
         Bool(bool value): Expr(NODE_BOOL), value(value) {}
@@ -199,6 +116,8 @@ class Bool: public Expr {
 
 class Int: public Expr {
     public:
+        DEFINE_PTR(Int)
+
         int value;
 
         Int(int value): Expr(NODE_INT), value(value) {}
@@ -206,6 +125,8 @@ class Int: public Expr {
 
 class Float: public Expr {
     public:
+        DEFINE_PTR(Float)
+
         float value;
 
         Float(float value): Expr(NODE_FLOAT), value(value) {}
@@ -213,6 +134,8 @@ class Float: public Expr {
 
 class String: public Expr {
     public:
+        DEFINE_PTR(String)
+
         string value;
 
         String(string value): Expr(NODE_STRING), value(value) {}
@@ -220,26 +143,30 @@ class String: public Expr {
 
 class Vector: public Expr {
     public:
+        DEFINE_PTR(Vector)
+
         Vector(NodeType type): Expr(type) {}
 
-        virtual Expr_ptr get(unsigned int i) = 0;
-        virtual void set(unsigned int i, Expr_ptr val) = 0;
+        virtual Expr::ptr get(unsigned int i) = 0;
+        virtual void set(unsigned int i, Expr::ptr val) = 0;
         virtual unsigned int size() = 0;
 };
 
 class Vector2: public Vector {
     public:
-        Expr_ptr x, y;
+        DEFINE_PTR(Vector2)
 
-        Vector2(Expr_ptr x, Expr_ptr y): Vector(NODE_VECTOR2), x(x), y(y) {}
+        Expr::ptr x, y;
 
-        Expr_ptr get(unsigned int i) {
+        Vector2(Expr::ptr x, Expr::ptr y): Vector(NODE_VECTOR2), x(x), y(y) {}
+
+        Expr::ptr get(unsigned int i) {
             if(i == 0) return x;
             if(i == 1) return y;
             return nullptr;
         }
 
-        void set(unsigned int i, Expr_ptr val) {
+        void set(unsigned int i, Expr::ptr val) {
             if(i == 0) x = val;
             if(i == 1) y = val;
         }
@@ -251,18 +178,20 @@ class Vector2: public Vector {
 
 class Vector3: public Vector {
     public:
-        Expr_ptr x, y, z;
+        DEFINE_PTR(Vector3)
 
-        Vector3(Expr_ptr x, Expr_ptr y, Expr_ptr z): Vector(NODE_VECTOR3), x(x), y(y), z(z) {}
+        Expr::ptr x, y, z;
 
-        Expr_ptr get(unsigned int i) {
+        Vector3(Expr::ptr x, Expr::ptr y, Expr::ptr z): Vector(NODE_VECTOR3), x(x), y(y), z(z) {}
+
+        Expr::ptr get(unsigned int i) {
             if(i == 0) return x;
             if(i == 1) return y;
             if(i == 2) return z;
             return nullptr;
         }
 
-        void set(unsigned int i, Expr_ptr val) {
+        void set(unsigned int i, Expr::ptr val) {
             if(i == 0) x = val;
             if(i == 1) y = val;
             if(i == 2) z = val;
@@ -275,11 +204,13 @@ class Vector3: public Vector {
 
 class Vector4: public Vector {
     public:
-        Expr_ptr x, y, z, w;
+        DEFINE_PTR(Vector4)
 
-        Vector4(Expr_ptr x, Expr_ptr y, Expr_ptr z, Expr_ptr w): Vector(NODE_VECTOR4), x(x), y(y), z(z), w(w) {}
+        Expr::ptr x, y, z, w;
 
-        Expr_ptr get(unsigned int i) {
+        Vector4(Expr::ptr x, Expr::ptr y, Expr::ptr z, Expr::ptr w): Vector(NODE_VECTOR4), x(x), y(y), z(z), w(w) {}
+
+        Expr::ptr get(unsigned int i) {
             if(i == 0) return x;
             if(i == 1) return y;
             if(i == 2) return z;
@@ -288,7 +219,7 @@ class Vector4: public Vector {
             return nullptr;
         }
 
-        void set(unsigned int i, Expr_ptr val) {
+        void set(unsigned int i, Expr::ptr val) {
             if(i == 0) x = val;
             if(i == 1) y = val;
             if(i == 2) z = val;
@@ -302,38 +233,42 @@ class Vector4: public Vector {
 
 class Matrix: public Expr {
     public:
+        DEFINE_PTR(Matrix)
+
         Matrix(NodeType type): Expr(type) {}
 
-        virtual Expr_ptr get_row(unsigned int i) = 0;
-        virtual Expr_ptr get_col(unsigned int i) = 0;
+        virtual Expr::ptr get_row(unsigned int i) = 0;
+        virtual Expr::ptr get_col(unsigned int i) = 0;
         virtual void generate_columns() = 0;
         virtual unsigned int size() = 0;
 };
 
 class Matrix2: public Matrix {
     public:
-        Vector2_ptr v0, v1;
-        Vector2_ptr c0, c1;
+        DEFINE_PTR(Matrix2)
 
-        Matrix2(Vector2_ptr v0, Vector2_ptr v1): Matrix(NODE_MATRIX2), v0(v0), v1(v1) {
+        Vector2::ptr v0, v1;
+        Vector2::ptr c0, c1;
+
+        Matrix2(Vector2::ptr v0, Vector2::ptr v1): Matrix(NODE_MATRIX2), v0(v0), v1(v1) {
             generate_columns();
         }
 
-        Expr_ptr get_row(unsigned int i) {
+        Expr::ptr get_row(unsigned int i) {
             if(i == 0) return v0;
             if(i == 1) return v1;
             return nullptr;
         }
 
-        Expr_ptr get_col(unsigned int i) {
+        Expr::ptr get_col(unsigned int i) {
             if(i == 0) return c0;
             if(i == 1) return c1;
             return nullptr;
         }
 
         void generate_columns() {
-            c0 = make_shared<Vector2>(Expr_ptr(v0->x), Expr_ptr(v1->x));
-            c1 = make_shared<Vector2>(Expr_ptr(v0->y), Expr_ptr(v1->y));
+            c0 = make_shared<Vector2>(Expr::ptr(v0->x), Expr::ptr(v1->x));
+            c1 = make_shared<Vector2>(Expr::ptr(v0->y), Expr::ptr(v1->y));
         }
 
         unsigned int size() {
@@ -343,29 +278,31 @@ class Matrix2: public Matrix {
 
 class Matrix3: public Matrix {
     public:
-        Vector3_ptr v0, v1, v2;
-        Vector3_ptr c0, c1, c2;
+        DEFINE_PTR(Matrix3)
 
-        Matrix3(Vector3_ptr v0, Vector3_ptr v1, Vector3_ptr v2): Matrix(NODE_MATRIX3), v0(v0), v1(v1), v2(v2) {
+        Vector3::ptr v0, v1, v2;
+        Vector3::ptr c0, c1, c2;
+
+        Matrix3(Vector3::ptr v0, Vector3::ptr v1, Vector3::ptr v2): Matrix(NODE_MATRIX3), v0(v0), v1(v1), v2(v2) {
             generate_columns();
         }
 
-        Expr_ptr get_row(unsigned int i) {
+        Expr::ptr get_row(unsigned int i) {
             if(i == 0) return v0;
             if(i == 1) return v1;
             if(i == 2) return v2;
         }
 
-        Expr_ptr get_col(unsigned int i) {
+        Expr::ptr get_col(unsigned int i) {
             if(i == 0) return c0;
             if(i == 1) return c1;
             if(i == 2) return c2;
         }
 
         void generate_columns() {
-            c0 = make_shared<Vector3>(Expr_ptr(v0->x), Expr_ptr(v1->x), Expr_ptr(v2->x));
-            c1 = make_shared<Vector3>(Expr_ptr(v0->y), Expr_ptr(v1->y), Expr_ptr(v2->y));
-            c2 = make_shared<Vector3>(Expr_ptr(v0->z), Expr_ptr(v1->z), Expr_ptr(v2->z));
+            c0 = make_shared<Vector3>(Expr::ptr(v0->x), Expr::ptr(v1->x), Expr::ptr(v2->x));
+            c1 = make_shared<Vector3>(Expr::ptr(v0->y), Expr::ptr(v1->y), Expr::ptr(v2->y));
+            c2 = make_shared<Vector3>(Expr::ptr(v0->z), Expr::ptr(v1->z), Expr::ptr(v2->z));
         }
 
         unsigned int size() {
@@ -375,21 +312,23 @@ class Matrix3: public Matrix {
 
 class Matrix4: public Matrix {
     public:
-        Vector4_ptr v0, v1, v2, v3;
-        Vector4_ptr c0, c1, c2, c3;
+        DEFINE_PTR(Matrix4)
 
-        Matrix4(Vector4_ptr v0, Vector4_ptr v1, Vector4_ptr v2, Vector4_ptr v3): Matrix(NODE_MATRIX4), v0(v0), v1(v1), v2(v2), v3(v3) {
+        Vector4::ptr v0, v1, v2, v3;
+        Vector4::ptr c0, c1, c2, c3;
+
+        Matrix4(Vector4::ptr v0, Vector4::ptr v1, Vector4::ptr v2, Vector4::ptr v3): Matrix(NODE_MATRIX4), v0(v0), v1(v1), v2(v2), v3(v3) {
             generate_columns();
         }
 
-        Expr_ptr get_row(unsigned int i) {
+        Expr::ptr get_row(unsigned int i) {
             if(i == 0) return v0;
             if(i == 1) return v1;
             if(i == 2) return v2;
             if(i == 3) return v3;
         }
 
-        Expr_ptr get_col(unsigned int i) {
+        Expr::ptr get_col(unsigned int i) {
             if(i == 0) return c0;
             if(i == 1) return c1;
             if(i == 2) return c2;
@@ -397,10 +336,10 @@ class Matrix4: public Matrix {
         }
 
         void generate_columns() {
-            c0 = make_shared<Vector4>(Expr_ptr(v0->x), Expr_ptr(v1->x), Expr_ptr(v2->x), Expr_ptr(v3->x));
-            c1 = make_shared<Vector4>(Expr_ptr(v0->y), Expr_ptr(v1->y), Expr_ptr(v2->y), Expr_ptr(v3->y));
-            c2 = make_shared<Vector4>(Expr_ptr(v0->z), Expr_ptr(v1->z), Expr_ptr(v2->z), Expr_ptr(v3->z));
-            c3 = make_shared<Vector4>(Expr_ptr(v0->w), Expr_ptr(v1->w), Expr_ptr(v2->w), Expr_ptr(v3->w));
+            c0 = make_shared<Vector4>(Expr::ptr(v0->x), Expr::ptr(v1->x), Expr::ptr(v2->x), Expr::ptr(v3->x));
+            c1 = make_shared<Vector4>(Expr::ptr(v0->y), Expr::ptr(v1->y), Expr::ptr(v2->y), Expr::ptr(v3->y));
+            c2 = make_shared<Vector4>(Expr::ptr(v0->z), Expr::ptr(v1->z), Expr::ptr(v2->z), Expr::ptr(v3->z));
+            c3 = make_shared<Vector4>(Expr::ptr(v0->w), Expr::ptr(v1->w), Expr::ptr(v2->w), Expr::ptr(v3->w));
         }
 
         unsigned int size() {
@@ -410,19 +349,25 @@ class Matrix4: public Matrix {
 
 class Index: public Expr {
     public:
-        Expr_ptr source;
-        Expr_ptr index;
+        DEFINE_PTR(Index)
 
-        Index(Expr_ptr source, Expr_ptr index): Expr(NODE_INDEX), source(source), index(index) {}
+        Expr::ptr source;
+        Expr::ptr index;
+
+        Index(Expr::ptr source, Expr::ptr index): Expr(NODE_INDEX), source(source), index(index) {}
 };
 
 struct Layout {
+    DEFINE_PTR(Layout)
+
     map<string, unsigned int> attributes;
     vector<string> list;
 };
 
 class Buffer: public Expr {
     public:
+        DEFINE_PTR(Buffer)
+
         GLuint handle, indexHandle;
         map<string, vector<float>> data;
         map<string, unsigned int> sizes;
@@ -439,6 +384,8 @@ class Buffer: public Expr {
 
 class Texture: public Expr {
     public:
+        DEFINE_PTR(Texture)
+
         GLuint handle;
         GLuint framebuffer;
 
@@ -453,214 +400,264 @@ class Texture: public Expr {
 
 class Stmt: public Node {
     public:
+        DEFINE_PTR(Stmt)
+
         Stmt(): Node(NODE_STMT) {}
         Stmt(NodeType type): Node(type) {}
 };
 
 class Stmts: public Node {
     public:
-        vector<Stmt_ptr> list;
+        DEFINE_PTR(Stmts)
 
-        Stmts(Stmt_ptr init): Node(NODE_STMTS) {
+        vector<Stmt::ptr> list;
+
+        Stmts(Stmt::ptr init): Node(NODE_STMTS) {
             if(init) list.insert(list.begin(), init);
         }
 };
 
 class List: public Expr {
     public:
-        vector<Expr_ptr> list;
+        DEFINE_PTR(List)
+
+        vector<Expr::ptr> list;
         bool literal = true;
 
-        List(Expr_ptr init): Expr(NODE_LIST) {
+        List(Expr::ptr init): Expr(NODE_LIST) {
             if(init != nullptr) {
                 list.insert(list.begin(), init);
             } 
         }
 };
 
+class Return: public Stmt {
+    public:
+        DEFINE_PTR(Return)
+
+        Expr::ptr value;
+
+        Return(Expr::ptr value): Stmt(NODE_RETURN), value(value) {}
+};
+
+class If: public Stmt {
+    public:
+        DEFINE_PTR(If)
+
+        Expr::ptr condition;
+        Stmts::ptr block;
+        Stmts::ptr elseBlock;
+
+        shared_ptr<vector<If::ptr>> elseIfBlocks;
+
+        If(Expr::ptr condition, Stmts::ptr block): Stmt(NODE_IF), condition(condition), block(block) {}
+};
+
+class While: public Stmt {
+    public:
+        DEFINE_PTR(While)
+
+        Expr::ptr condition;
+        Stmts::ptr block;
+
+        While(Expr::ptr condition, Stmts::ptr block): Stmt(NODE_WHILE), condition(condition), block(block) {}
+}; 
+
+class For: public Stmt {
+    public:
+        DEFINE_PTR(For)
+
+        Ident::ptr iterator;
+        Expr::ptr start, end, increment;
+        Expr::ptr list;
+        Stmts::ptr block;
+
+        For(Ident::ptr iterator, Expr::ptr start, Expr::ptr end, Expr::ptr increment, Stmts::ptr block): Stmt(NODE_FOR), iterator(iterator), start(start), end(end), increment(increment), block(block) {}
+        For(Ident::ptr iterator, Expr::ptr list, Stmts::ptr block): Stmt(NODE_FOR), iterator(iterator), list(list), block(block) {}
+};
+
+class Break: public Stmt {
+    public:
+        DEFINE_PTR(Break)
+
+        Break(): Stmt(NODE_BREAK) {}
+};
+
+class Assign: public Stmt {
+    public:
+        DEFINE_PTR(Assign)
+
+        Expr::ptr lhs;
+        Expr::ptr value;
+
+        Assign(Expr::ptr lhs, Expr::ptr value): Stmt(NODE_ASSIGN), lhs(lhs), value(value) {}
+};
+
+class Decl: public Stmt {
+    public:
+        DEFINE_PTR(Decl)
+
+        Ident::ptr datatype, ident;
+        Expr::ptr value;
+        bool constant = false;
+
+        Decl(Ident::ptr datatype, Ident::ptr ident, Expr::ptr value): Stmt(NODE_DECL), datatype(datatype), ident(ident), value(value) {}
+};
+
 class ArgList: public Node {
     public:
-        vector<Expr_ptr> list;
+        DEFINE_PTR(ArgList)
 
-        ArgList(Expr_ptr init): Node(NODE_ARGLIST) {
+        vector<Expr::ptr> list;
+
+        ArgList(Expr::ptr init): Node(NODE_ARGLIST) {
             if(init) list.push_back(init);
         }
 };
 
 class ParamList: public Node {
     public:
-        vector<Decl_ptr> list;
+        DEFINE_PTR(ParamList)
 
-        ParamList(Decl_ptr init): Node(NODE_PARAMLIST) {
+        vector<Decl::ptr> list;
+
+        ParamList(Decl::ptr init): Node(NODE_PARAMLIST) {
             if(init) list.push_back(init);
         }
 };
 
-class Return: public Stmt {
-    public:
-        Expr_ptr value;
-
-        Return(Expr_ptr value): Stmt(NODE_RETURN), value(value) {}
-};
-
 class FuncDef: public Stmt {
     public:
-        Ident_ptr ident;
-        ParamList_ptr params;
-        Stmts_ptr stmts;
+        DEFINE_PTR(FuncDef)
 
-        FuncDef(Ident_ptr ident, ParamList_ptr params, Stmts_ptr stmts): Stmt(NODE_FUNCDEF), ident(ident), params(params), stmts(stmts) {}
-};
+        Ident::ptr ident;
+        ParamList::ptr params;
+        Stmts::ptr stmts;
 
-class If: public Stmt {
-    public:
-        Expr_ptr condition;
-        Stmts_ptr block;
-        Stmts_ptr elseBlock;
-
-        shared_ptr<vector<If_ptr>> elseIfBlocks;
-
-        If(Expr_ptr condition, Stmts_ptr block): Stmt(NODE_IF), condition(condition), block(block) {}
-};
-
-class While: public Stmt {
-    public:
-        Expr_ptr condition;
-        Stmts_ptr block;
-
-        While(Expr_ptr condition, Stmts_ptr block): Stmt(NODE_WHILE), condition(condition), block(block) {}
-}; 
-
-class For: public Stmt {
-    public:
-        Ident_ptr iterator;
-        Expr_ptr start, end, increment;
-        Expr_ptr list;
-        Stmts_ptr block;
-
-        For(Ident_ptr iterator, Expr_ptr start, Expr_ptr end, Expr_ptr increment, Stmts_ptr block): Stmt(NODE_FOR), iterator(iterator), start(start), end(end), increment(increment), block(block) {}
-        For(Ident_ptr iterator, Expr_ptr list, Stmts_ptr block): Stmt(NODE_FOR), iterator(iterator), list(list), block(block) {}
-};
-
-class Break: public Stmt {
-    public:
-        Break(): Stmt(NODE_BREAK) {}
-};
-
-class Assign: public Stmt {
-    public:
-        Expr_ptr lhs;
-        Expr_ptr value;
-
-        Assign(Expr_ptr lhs, Expr_ptr value): Stmt(NODE_ASSIGN), lhs(lhs), value(value) {}
-};
-
-class Decl: public Stmt {
-    public:
-        Ident_ptr datatype, ident;
-        Expr_ptr value;
-        bool constant = false;
-
-        Decl(Ident_ptr datatype, Ident_ptr ident, Expr_ptr value): Stmt(NODE_DECL), datatype(datatype), ident(ident), value(value) {}
+        FuncDef(Ident::ptr ident, ParamList::ptr params, Stmts::ptr stmts): Stmt(NODE_FUNCDEF), ident(ident), params(params), stmts(stmts) {}
 };
 
 class Alloc: public Stmt {
     public:
-        Ident_ptr ident;
+        DEFINE_PTR(Alloc)
 
-        Alloc(Ident_ptr ident): Stmt(NODE_ALLOC) {
+        Ident::ptr ident;
+
+        Alloc(Ident::ptr ident): Stmt(NODE_ALLOC) {
             this->ident = ident;
         }
 };
 
 class UploadList: public Expr {
     public:
-        vector<Expr_ptr> list;
+        DEFINE_PTR(UploadList)
 
-        UploadList(Expr_ptr init): Expr(NODE_UPLOADLIST) {
+        vector<Expr::ptr> list;
+
+        UploadList(Expr::ptr init): Expr(NODE_UPLOADLIST) {
             list.insert(list.begin(), init);
         }
 };
 
 class Upload: public Stmt {
     public:
-        Ident_ptr ident;
-        Ident_ptr attrib;
-        UploadList_ptr list;
+        DEFINE_PTR(Upload)
 
-        Upload(Ident_ptr ident, Ident_ptr attrib, UploadList_ptr list): Stmt(NODE_UPLOAD), ident(ident), attrib(attrib), list(list) {}
+        Ident::ptr ident;
+        Ident::ptr attrib;
+        UploadList::ptr list;
+
+        Upload(Ident::ptr ident, Ident::ptr attrib, UploadList::ptr list): Stmt(NODE_UPLOAD), ident(ident), attrib(attrib), list(list) {}
 };
 
 class CompBinary: public Stmt {
     public:
-        OpType op;
-        Expr_ptr lhs, rhs;
+        DEFINE_PTR(CompBinary)
 
-        CompBinary(Expr_ptr lhs, OpType op, Expr_ptr rhs): Stmt(NODE_COMPBINARY), op(op), lhs(lhs), rhs(rhs) {}
+        OpType op;
+        Expr::ptr lhs, rhs;
+
+        CompBinary(Expr::ptr lhs, OpType op, Expr::ptr rhs): Stmt(NODE_COMPBINARY), op(op), lhs(lhs), rhs(rhs) {}
 };
 
 class Draw: public Stmt {
     public:
-        Ident_ptr ident;
-        Ident_ptr target;
-        Ident_ptr program;
+        DEFINE_PTR(Draw)
 
-        Draw(Ident_ptr ident, Ident_ptr target = nullptr, Ident_ptr program = nullptr): Stmt(NODE_DRAW), ident(ident), target(target), program(program) {}
+        Ident::ptr ident;
+        Ident::ptr target;
+        Ident::ptr program;
+
+        Draw(Ident::ptr ident, Ident::ptr target = nullptr, Ident::ptr program = nullptr): Stmt(NODE_DRAW), ident(ident), target(target), program(program) {}
 };
 
 class Clear: public Stmt {
     public:
-        Expr_ptr color;
+        DEFINE_PTR(Clear)
 
-        Clear(Expr_ptr color): Stmt(NODE_CLEAR), color(color) {}
+        Expr::ptr color;
+
+        Clear(Expr::ptr color): Stmt(NODE_CLEAR), color(color) {}
 };
 
 class Viewport: public Stmt {
     public:
-        Expr_ptr bounds;
+        DEFINE_PTR(Viewport)
 
-        Viewport(Expr_ptr bounds): Stmt(NODE_VIEWPORT), bounds(bounds) {}
+        Expr::ptr bounds;
+
+        Viewport(Expr::ptr bounds): Stmt(NODE_VIEWPORT), bounds(bounds) {}
 };
 
 class Print: public Stmt {
     public:
-        Expr_ptr expr;
+        DEFINE_PTR(Print)
 
-        Print(Expr_ptr expr): Stmt(NODE_PRINT), expr(expr) {}
+        Expr::ptr expr;
+
+        Print(Expr::ptr expr): Stmt(NODE_PRINT), expr(expr) {}
 };
 
 class Invoke: public Node {
     public:
-        Ident_ptr ident;
-        ArgList_ptr args;
+        DEFINE_PTR(Invoke)
 
-        Invoke(Ident_ptr ident, ArgList_ptr args): Node(NODE_INVOKE), ident(ident), args(args) {}
+        Ident::ptr ident;
+        ArgList::ptr args;
+
+        Invoke(Ident::ptr ident, ArgList::ptr args): Node(NODE_INVOKE), ident(ident), args(args) {}
 };
 
 class FuncExpr: public Expr {
     public:
-        Invoke_ptr invoke;
+        DEFINE_PTR(FuncExpr)
 
-        FuncExpr(Invoke_ptr invoke): Expr(NODE_FUNCEXPR), invoke(invoke) {}
+        Invoke::ptr invoke;
+
+        FuncExpr(Invoke::ptr invoke): Expr(NODE_FUNCEXPR), invoke(invoke) {}
 };
 
 class FuncStmt: public Stmt {
     public:
-        Invoke_ptr invoke;
+        DEFINE_PTR(FuncStmt)
 
-        FuncStmt(Invoke_ptr invoke): Stmt(NODE_FUNCSTMT), invoke(invoke) {}
+        Invoke::ptr invoke;
+
+        FuncStmt(Invoke::ptr invoke): Stmt(NODE_FUNCSTMT), invoke(invoke) {}
 };
 
 class Shader: public Node {
     public:
+        DEFINE_PTR(Shader)
+
         string name;
         shared_ptr<map<string, string>> uniforms;
         shared_ptr<vector<string>> textureSlots;
-        shared_ptr<map<string, FuncDef_ptr>> functions;
-        ParamList_ptr inputs;
-        ParamList_ptr outputs;
+        shared_ptr<map<string, FuncDef::ptr>> functions;
+        ParamList::ptr inputs;
+        ParamList::ptr outputs;
 
-        Shader(string name, shared_ptr<vector<pair<string, string>>> uniforms, shared_ptr<map<string, FuncDef_ptr>> functions, ParamList_ptr inputs, ParamList_ptr outputs): Node(NODE_SHADER), name(name) {
+        Shader(string name, shared_ptr<vector<pair<string, string>>> uniforms, shared_ptr<map<string, FuncDef::ptr>> functions, ParamList::ptr inputs, ParamList::ptr outputs): Node(NODE_SHADER), name(name) {
             this->uniforms = make_shared<map<string, string>>();
             this->textureSlots = make_shared<vector<string>>();
             for(auto it = uniforms->begin(); it != uniforms->end(); ++it) {
@@ -677,23 +674,29 @@ class Shader: public Node {
 
 class Program: public Expr {
     public:
+        DEFINE_PTR(Program)
+
         GLuint handle;
         GLuint vert, frag;
-        Shader_ptr vertSource, fragSource;
+        Shader::ptr vertSource, fragSource;
 
         Program(): Expr(NODE_PROGRAM) {}
 };
 
 class ProgramLayout: public Stmt {
     public:
-        Ident_ptr ident;
-        shared_ptr<vector<Decl_ptr>> attribs;
+        DEFINE_PTR(ProgramLayout)
+
+        Ident::ptr ident;
+        shared_ptr<vector<Decl::ptr>> attribs;
 };
 
 struct ShaderPair {
+    DEFINE_PTR(ShaderPair)
+
     std::string name;
-    Shader_ptr vertex = nullptr;
-    Shader_ptr fragment = nullptr;
+    Shader::ptr vertex = nullptr;
+    Shader::ptr fragment = nullptr;
 };
 
 #endif // NODES_H

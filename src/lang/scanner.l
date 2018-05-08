@@ -36,7 +36,7 @@ layout         { return Parser::make_LAYOUT(curr_location); }
 \"(\\.|[^\\"])*\" {
                  std::string str = strdup(yytext);
                  str = str.substr(1, str.length() - 2);
-                 String_ptr s = make_shared<String>(str);
+                 String::ptr s = make_shared<String>(str);
                  s->first_line = s->last_line = *line;
                  return Parser::make_STRING(s, curr_location);
                }
@@ -44,12 +44,12 @@ layout         { return Parser::make_LAYOUT(curr_location); }
 "//".*         ;
 \n             { (*line)++; (*column) = 0; }
 [0-9]+\.[0-9]+ {
-                 Float_ptr f = make_shared<Float>(float(atof(yytext)));
+                 Float::ptr f = make_shared<Float>(float(atof(yytext)));
                  f->first_line = f->last_line = *line;
                  return Parser::make_FLOAT(f, curr_location);
                }
 [0-9]+         {
-                 Int_ptr i = make_shared<Int>(atoi(yytext));
+                 Int::ptr i = make_shared<Int>(atoi(yytext));
                  i->first_line = i->last_line = *line;
                  return Parser::make_INT(i, curr_location);
                }
@@ -75,7 +75,7 @@ true           { return Parser::make_BOOL(make_shared<Bool>(true), curr_location
 false          { return Parser::make_BOOL(make_shared<Bool>(false), curr_location); }
 const          { return Parser::make_CONST(curr_location); }
 [a-zA-Z]+[a-zA-Z0-9_]* {
-                 Ident_ptr id = make_shared<Ident>(strdup(yytext));
+                 Ident::ptr id = make_shared<Ident>(strdup(yytext));
                  id->first_line = id->last_line = *line;
                  return Parser::make_IDENTIFIER(id, curr_location);
                }

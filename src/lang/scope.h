@@ -12,6 +12,8 @@ namespace Wyatt {
 
 class Scope {
     public:
+        typedef shared_ptr<Scope> ptr;
+
         string name;
         LogWindow* logger;
         string* workingDir;
@@ -19,20 +21,18 @@ class Scope {
         Scope(string name, LogWindow* logger, string* workingDir);
 
         void clear();
-        void declare(Stmt_ptr decl, Ident_ptr ident, string type, Expr_ptr value);
-        void declare_const(string type, Expr_ptr value);
-        bool assign(Stmt_ptr assign, Ident_ptr ident, Expr_ptr value);
-        void fast_assign(string name, Expr_ptr value);
+        void declare(Stmt::ptr decl, Ident::ptr ident, string type, Expr::ptr value);
+        void declare_const(string type, Expr::ptr value);
+        bool assign(Stmt::ptr assign, Ident::ptr ident, Expr::ptr value);
+        void fast_assign(string name, Expr::ptr value);
 
-        Expr_ptr get(string name);
+        Expr::ptr get(string name);
 
     private:
-        map<string, Expr_ptr> variables;
+        map<string, Expr::ptr> variables;
         map<string, string> types;
         set<string> constants;
 };
-
-typedef shared_ptr<Scope> Scope_ptr;
 
 }
 
