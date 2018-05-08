@@ -15,6 +15,12 @@
 
 #include "dummyglfunctions.h"
 #include <QOpenGLFunctions>
+#include <QVector2D>
+#include <QVector3D>
+#include <QVector4D>
+#include <QMatrix2x2>
+#include <QMatrix3x3>
+#include <QMatrix4x4>
 
 #include "scanner.h"
 #include "parser.hpp"
@@ -27,6 +33,75 @@
 
 // #define NO_GL
 namespace Wyatt {
+
+enum ValueType {
+    VALUE_INT, VALUE_FLOAT, VALUE_BOOL, VALUE_VEC2, VALUE_VEC3, VALUE_VEC4, VALUE_MAT2, VALUE_MAT3, VALUE_MAT4, VALUE_BUFFER, VALUE_TEXTURE, VALUE_PROGRAM
+};
+
+class Value {
+    public:
+        ValueType type;
+
+        Value(ValueType type): type(type) {}
+};
+/*
+class Int: public Value {
+    public:
+        int value;
+        Int(int value): Value(VALUE_INT), value(value) {}
+};
+
+class Float: public Value {
+    public:
+        float value;
+        Float(float value): Value(VALUE_FLOAT) {}
+};
+
+class Bool: public Value {
+    public:
+        Bool(bool value): Value(VALUE_BOOL) {}
+};
+*/
+
+class Vec2: public Value, public QVector2D {
+    public:
+        Vec2(float x, float y): Value(VALUE_VEC2), QVector2D(x, y) {}
+};
+
+class Vec3: public Value, public QVector3D {
+    public:
+        Vec3(float x, float y, float z): Value(VALUE_VEC2), QVector3D(x, y, z) {}
+};
+
+class Vec4: public Value, public QVector4D {
+    public:
+        Vec4(float x, float y, float z, float w): Value(VALUE_VEC4), QVector4D(x, y, z, w) {}
+};
+
+class Mat2: public Value, public QMatrix2x2 {
+    public:
+        Mat2(float a, float b, float c, float d): Value(VALUE_MAT2) {
+            float comp[] = {a, b, c, d};
+            copyDataTo(comp);
+        }
+};
+
+class Mat3: public Value, public QMatrix3x3 {
+    public:
+        Mat3(float a, float b, float c, float d, float e, float f, float g, float h, float i): Value(VALUE_MAT3) {
+            float comp[] = {a, b, c, d, e, f, g, h, i};
+            copyDataTo(comp);
+        }
+};
+
+class Mat4: public Value, public QMatrix4x4 {
+    public:
+        float a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p;
+        Mat4(float a, float b, float c, float d, float e, float f, float g, float h, float i, float j, float k, float l, float m, float n, float o, float p): Value(VALUE_MAT4) {
+            float comp[] = {a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p};
+            copyDataTo(comp);
+        }
+};
 
 class Interpreter {
     public:

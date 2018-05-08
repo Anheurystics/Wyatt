@@ -46,15 +46,15 @@ func mat3_inverse(mat3 m) {
         [ m[0][1] * m[1][2] - m[0][2] * m[1][1], m[0][0] * m[1][2] - m[0][2] * m[1][0], m[0][0] * m[1][1] - m[0][1] * m[1][0] ]
     ];
 
-        for(i in 0,3,1) {
-            for(j in 0,3,1) {
-                if(((i + j) % 2) == 1) {
-                    minors[i][j] *= -1;
-                }
+    for(i in 0,3,1) {
+        for(j in 0,3,1) {
+            if(((i + j) % 2) == 1) {
+                minors[i][j] *= -1;
             }
         }
+    }
 
-        return mat3_transpose(minors) / |m|;
+    return mat3_transpose(minors) / |m|;
 }
 
 func mat3_translation(float x, float y) {
