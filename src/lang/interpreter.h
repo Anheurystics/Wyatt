@@ -40,46 +40,62 @@ enum ValueType {
 
 class Value {
     public:
+        DEFINE_PTR(Value)
+
         ValueType type;
 
         Value(ValueType type): type(type) {}
 };
-/*
-class Int: public Value {
+
+class IntValue: public Value {
     public:
+        DEFINE_PTR(IntValue)
+
         int value;
-        Int(int value): Value(VALUE_INT), value(value) {}
+        IntValue(int value): Value(VALUE_INT), value(value) {}
 };
 
-class Float: public Value {
+class FloatValue: public Value {
     public:
+        DEFINE_PTR(FloatValue)
+
         float value;
-        Float(float value): Value(VALUE_FLOAT) {}
+        FloatValue(float value): Value(VALUE_FLOAT), value(value) {}
 };
 
-class Bool: public Value {
+class BoolValue: public Value {
     public:
-        Bool(bool value): Value(VALUE_BOOL) {}
+        DEFINE_PTR(BoolValue)
+
+        bool value;
+        BoolValue(bool value): Value(VALUE_BOOL), value(value) {}
 };
-*/
 
 class Vec2: public Value, public QVector2D {
     public:
+        DEFINE_PTR(Vec2)
+
         Vec2(float x, float y): Value(VALUE_VEC2), QVector2D(x, y) {}
 };
 
 class Vec3: public Value, public QVector3D {
     public:
+        DEFINE_PTR(Vec3)
+
         Vec3(float x, float y, float z): Value(VALUE_VEC2), QVector3D(x, y, z) {}
 };
 
 class Vec4: public Value, public QVector4D {
     public:
+        DEFINE_PTR(Vec4)
+
         Vec4(float x, float y, float z, float w): Value(VALUE_VEC4), QVector4D(x, y, z, w) {}
 };
 
 class Mat2: public Value, public QMatrix2x2 {
     public:
+        DEFINE_PTR(Mat2)
+
         Mat2(float a, float b, float c, float d): Value(VALUE_MAT2) {
             float comp[] = {a, b, c, d};
             copyDataTo(comp);
@@ -88,6 +104,8 @@ class Mat2: public Value, public QMatrix2x2 {
 
 class Mat3: public Value, public QMatrix3x3 {
     public:
+        DEFINE_PTR(Mat3)
+
         Mat3(float a, float b, float c, float d, float e, float f, float g, float h, float i): Value(VALUE_MAT3) {
             float comp[] = {a, b, c, d, e, f, g, h, i};
             copyDataTo(comp);
@@ -96,6 +114,8 @@ class Mat3: public Value, public QMatrix3x3 {
 
 class Mat4: public Value, public QMatrix4x4 {
     public:
+        DEFINE_PTR(Mat4)
+
         float a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p;
         Mat4(float a, float b, float c, float d, float e, float f, float g, float h, float i, float j, float k, float l, float m, float n, float o, float p): Value(VALUE_MAT4) {
             float comp[] = {a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p};
