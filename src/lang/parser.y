@@ -345,6 +345,7 @@ stmt_block: if_stmt { $$ = $1; }
     | WHILE OPEN_PAREN expr CLOSE_PAREN block { $$ = make_shared<While>($3, $5); }
     | FOR OPEN_PAREN IDENTIFIER IN expr COMMA expr COMMA expr CLOSE_PAREN block { $$ = make_shared<For>($3, $5, $7, $9, $11); }
     | FOR OPEN_PAREN IDENTIFIER IN IDENTIFIER CLOSE_PAREN block { $$ = make_shared<For>($3, $5, $7); }
+    | FOR OPEN_PAREN IDENTIFIER IN dot CLOSE_PAREN block { $$ = make_shared<For>($3, $5, $7); }
     ;
 
 if_stmt: IF OPEN_PAREN expr CLOSE_PAREN block { $$ = make_shared<If>($3, $5); }

@@ -81,7 +81,7 @@ print |b|;      // 4
 ```
 
 ## Looping constructs
-The `for` statements in the language can either iterate using an index in a range, or iterate through an explicitly defined list
+The `for` statements in the language can either iterate using an index in a range, or iterate through an explicitly defined list. It can also iterate through a buffer's attribute list.
 ```js
 for(i in 0, 10, 1) { // start, end (exclusive), interval
     print i;

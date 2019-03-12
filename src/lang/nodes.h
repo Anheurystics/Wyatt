@@ -1,4 +1,4 @@
-#ifndef NODES_H
+﻿#ifndef NODES_H
 #define NODES_H
 
 #include <string>
@@ -475,6 +475,7 @@ class For: public Stmt {
 
         For(Ident::ptr iterator, Expr::ptr start, Expr::ptr end, Expr::ptr increment, Stmts::ptr block): Stmt(NODE_FOR), iterator(iterator), start(start), end(end), increment(increment), block(block) {}
         For(Ident::ptr iterator, Expr::ptr list, Stmts::ptr block): Stmt(NODE_FOR), iterator(iterator), list(list), block(block) {}
+        For(Ident::ptr iterator, Dot::ptr list, Stmts::ptr block): Stmt(NODE_FOR), iterator(iterator), list(list), block(block) {}
 };
 
 class Break: public Stmt {

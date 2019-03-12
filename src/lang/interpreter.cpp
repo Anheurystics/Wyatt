@@ -1938,8 +1938,64 @@ Expr::ptr Wyatt::Interpreter::eval_stmt(Stmt::ptr stmt) {
                     }
                     breakable = false;
                     functionScopeStack.top()->detach();
-                }
+                } else if (list->type == NODE_DOT) {
+                    Dot::ptr dot = static_pointer_cast<Dot>(list);
+                    Expr::ptr owner = eval_expr(dot);
+                    if (owner->type == NODE_BUFFER)
+                    {
+                        Buffer::ptr buffer = static_pointer_cast<Buffer>(owner);
+                        if (buffer->data.find(dot->name) != buffer->data.end())
+                        {
+                            vector<float> attrib_data = buffer->data[dot->name];
+                            List::ptr list = make_shared<List>(nullptr);
+                            int size = buffer->sizes[dot->name];
+                            for (unsigned int i = 0; i < attrib_data.size(); i += size)
+                            {
+                                if (size == 1)
+                                {
+                                    list->list.push_back(make_shared<Float>(attrib_data[i]));
+                                }
+                                if (size == 2)
+                                {
+                                    list->list.push_back(make_shared<Vector2>(make_shared<Float>(attrib_data[i]), make_shared<Float>(attrib_data[i + 1])));
+                                }
+                                if (size == 3)
+                                {
+                                    list->list.push_back(make_shared<Vector3>(make_shared<Float>(attrib_data[i]), make_shared<Float>(attrib_data[i + 1]), make_shared<Float>(attrib_data[i + 2])));
+                                }
+                                if (size == 4)
+                                {
+                                    list->list.push_back(make_shared<Vector4>(make_shared<Float>(attrib_data[i]), make_shared<Float>(attrib_data[i + 1]), make_shared<Float>(attrib_data[i + 2]), make_shared<Float>(attrib_data[i + 3])));
+                                }
+                            }
+                            functionScopeStack.top()->attach("for");
+                            eval_stmt(make_shared<Decl>(make_shared<Ident>("var"), iterator, nullptr));
+                            unsigned int i = 0;
 
+                            time_t start = time(nullptr);
+
+                            breakable = true;
+                            while (i < list->list.size())
+                            {
+                                eval_stmt(make_shared<Assign>(iterator, list->list[i]));
+
+                                Expr::ptr returnValue = execute_stmts(forstmt->block);
+                                if (returnValue != nullptr)
+                                {
+                                    return returnValue;
+                                }
+
+                                i++;
+
+                                time_t now = time(nullptr);
+                                int diff = difftime(now, start);
+                                if (diff > LOOP_TIMEOUT) { break; }
+                            }
+                            breakable = false;
+                            functionScopeStack.top()->detach();
+                        }
+                    }
+                }
                 return nullptr;
             }
         case NODE_PRINT:
