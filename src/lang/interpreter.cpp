@@ -2113,9 +2113,13 @@ void Wyatt::Interpreter::execute_init() {
     Decl::ptr heightDecl = make_shared<Decl>(make_shared<Ident>("int"), make_shared<Ident>("HEIGHT"), make_shared<Int>(height));
     heightDecl->constant = true;
 
+    Decl::ptr aspectDecl = make_shared<Decl>(make_shared<Ident>("float"), make_shared<Ident>("ASPECT_RATIO"), make_shared<Float>(float(width) / height));
+    aspectDecl->constant = true;
+
     globals.insert(globals.begin(), piDecl);
     globals.insert(globals.begin(), widthDecl);
     globals.insert(globals.begin(), heightDecl);
+    globals.insert(globals.begin(), aspectDecl);
 
     for(auto it = globals.begin(); it != globals.end(); ++it) {
         Decl::ptr decl = *it;
