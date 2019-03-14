@@ -731,7 +731,7 @@ Expr::ptr Wyatt::Interpreter::eval_expr(Expr::ptr node) {
                     if(buffer->data.find(dot->name) != buffer->data.end()) {
                         vector<float> attrib_data = buffer->data[dot->name];
                         List::ptr list = make_shared<List>(nullptr);
-                        int size = buffer->sizes[dot->name];
+                        int size = buffer->layout->attributes[dot->name];
                         for(unsigned int i = 0 ; i < attrib_data.size(); i += size) {
                             if(size == 1) {
                                 list->list.push_back(make_shared<Float>(attrib_data[i]));
@@ -1948,7 +1948,7 @@ Expr::ptr Wyatt::Interpreter::eval_stmt(Stmt::ptr stmt) {
                         {
                             vector<float> attrib_data = buffer->data[dot->name];
                             List::ptr list = make_shared<List>(nullptr);
-                            int size = buffer->sizes[dot->name];
+                            int size = buffer->layout->attributes[dot->name];
                             for (unsigned int i = 0; i < attrib_data.size(); i += size)
                             {
                                 if (size == 1)
