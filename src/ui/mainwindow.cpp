@@ -209,7 +209,7 @@ void MainWindow::switchAspectRatio() {
         openGLWidget->aspectRatio = 4.0f/3.0f;
     }
     if(selected == "16:9") {
-        openGLWidget->aspectRatio = 16.0/9.0f;
+        openGLWidget->aspectRatio = 16.0f/9.0f;
     }
     openGLWidget->resizeGL(openGLWidget->width(), 0);
 }

@@ -34,7 +34,7 @@ layout         { return Parser::make_LAYOUT(curr_location); }
                  return Parser::make_SHADER(make_shared<String>(str), curr_location);
                }
 \"(\\.|[^\\"])*\" {
-                 std::string str = strdup(yytext);
+                 std::string str = _strdup(yytext);
                  str = str.substr(1, str.length() - 2);
                  String::ptr s = make_shared<String>(str);
                  s->first_line = s->last_line = *line;
@@ -75,7 +75,7 @@ true           { return Parser::make_BOOL(make_shared<Bool>(true), curr_location
 false          { return Parser::make_BOOL(make_shared<Bool>(false), curr_location); }
 const          { return Parser::make_CONST(curr_location); }
 [a-zA-Z]+[a-zA-Z0-9_]* {
-                 Ident::ptr id = make_shared<Ident>(strdup(yytext));
+                 Ident::ptr id = make_shared<Ident>(_strdup(yytext));
                  id->first_line = id->last_line = *line;
                  return Parser::make_IDENTIFIER(id, curr_location);
                }

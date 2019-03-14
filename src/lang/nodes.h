@@ -291,12 +291,14 @@ class Matrix3: public Matrix {
             if(i == 0) return v0;
             if(i == 1) return v1;
             if(i == 2) return v2;
+            return nullptr;
         }
 
         Expr::ptr get_col(unsigned int i) {
             if(i == 0) return c0;
             if(i == 1) return c1;
             if(i == 2) return c2;
+            return nullptr;
         }
 
         void generate_columns() {
@@ -326,6 +328,7 @@ class Matrix4: public Matrix {
             if(i == 1) return v1;
             if(i == 2) return v2;
             if(i == 3) return v3;
+            return nullptr;
         }
 
         Expr::ptr get_col(unsigned int i) {
@@ -333,6 +336,7 @@ class Matrix4: public Matrix {
             if(i == 1) return c1;
             if(i == 2) return c2;
             if(i == 3) return c3;
+            return nullptr;
         }
 
         void generate_columns() {
