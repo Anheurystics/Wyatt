@@ -6,15 +6,9 @@ namespace Wyatt {
     Scope::Scope(string name, LogWindow* logger, string* workingDir): name(name), logger(logger), workingDir(workingDir) {}
 
     void Scope::clear() {
-        for(auto it = variables.begin(); it != variables.end(); ++it) {
-            variables.erase(it);
-        }
-        for(auto it = types.begin(); it != types.end(); ++it) {
-            types.erase(it);
-        }
-        for(auto it = constants.begin(); it != constants.end(); ++it) {
-            constants.erase(it);
-        }
+        variables.clear();
+        types.clear();
+        constants.clear();
     }
 
     void Scope::declare(Stmt::ptr decl, Ident::ptr ident, string type, Expr::ptr value) {
